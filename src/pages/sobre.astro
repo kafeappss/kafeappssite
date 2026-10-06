@@ -39,13 +39,15 @@ const youtube = site.social.find((social) => social.label === 'YouTube');
 	description="Conheça a Kafé Apps: estúdio de produto digital fundado em 2021 em Niterói (RJ), com a missão de democratizar a criação de novos negócios por meio de tecnologias ágeis."
 >
 	<PageHero
+		liquid="k"
+		rail="Início"
 		eyebrow="Sobre a Kafé"
 		title="Muito prazer, <em>somos a Kafé.</em>"
 		lead={`Um estúdio de produto digital nascido em ${site.location.city} (${site.location.state}) em ${site.foundingYear}, que ajuda startups e empresas a transformar ideias em negócios — com tecnologia ágil, design inteligente e conversa franca.`}
 		breadcrumbs={[{ label: 'Sobre' }]}
 	/>
 
-	<section class="section manifesto" data-liquid="left">
+	<section class="section manifesto" data-liquid="rest" data-rail="Manifesto">
 		<div class="container manifesto-grid">
 			<div>
 				<p class="eyebrow" data-reveal>Manifesto</p>
@@ -59,7 +61,7 @@ const youtube = site.social.find((social) => social.label === 'YouTube');
 				<p>
 					Por isso, na Kafé, a primeira conversa nunca é sobre tecnologia. É sobre o seu negócio: quem é o seu
 					cliente, qual problema você resolve e o que precisa ser verdade para dar certo. A partir daí,
-					escolhemos o caminho mais curto e inteligente — seja no-code, low-code ou código sob medida.
+					escolhemos o caminho mais curto e inteligente, com código sob medida e engenheiros acelerados por IA.
 				</p>
 				<p>
 					Sob a liderança de {site.ceo}, nosso CEO, reunimos estratégia, UX Research, design e desenvolvimento
@@ -70,7 +72,7 @@ const youtube = site.social.find((social) => social.label === 'YouTube');
 		</div>
 	</section>
 
-	<section class="section" data-liquid="right">
+	<section class="section" data-liquid="rest" data-rail="Missão">
 		<div class="container">
 			<div class="mission card" data-reveal>
 				<p class="eyebrow">Nossa missão</p>
@@ -92,7 +94,7 @@ const youtube = site.social.find((social) => social.label === 'YouTube');
 		</div>
 	</section>
 
-	<section class="section" data-liquid="scatter">
+	<section class="section" data-liquid="rest" data-rail="Valores">
 		<div class="container">
 			<SectionHead eyebrow="No que acreditamos" title="Cinco ideias que guiam <em>cada projeto.</em>" />
 			<ol role="list" class="values">
@@ -109,7 +111,7 @@ const youtube = site.social.find((social) => social.label === 'YouTube');
 		</div>
 	</section>
 
-	<section class="section" data-liquid="left">
+	<section class="section" data-liquid="rest" data-rail="Diferenciais">
 		<div class="container">
 			<SectionHead eyebrow="Por que a Kafé" title="O que você ganha <em>trabalhando com a gente.</em>" />
 			<ul role="list" class="diffs">
@@ -128,7 +130,7 @@ const youtube = site.social.find((social) => social.label === 'YouTube');
 
 	{
 		(testimonials.length > 0 || clients.length > 0) && (
-			<section class="section" data-liquid="scatter">
+			<section class="section" data-liquid="rest">
 				<div class="container">
 					<SectionHead eyebrow="Quem confia" title="Quem já tomou um café <em>com a gente.</em>" />
 					<Testimonials />
@@ -144,7 +146,7 @@ const youtube = site.social.find((social) => social.label === 'YouTube');
 
 	{
 		youtube && (
-			<section class="section" data-liquid="right">
+			<section class="section" data-liquid="rest">
 				<div class="container">
 					<a class="card podcast" href={youtube.href} target="_blank" rel="noopener" data-reveal>
 						<span class="podcast-icon">
@@ -169,7 +171,7 @@ const youtube = site.social.find((social) => social.label === 'YouTube');
 		)
 	}
 
-	<CtaSection />
+	<CtaSection rail="Contato" />
 </Base>
 
 <style>

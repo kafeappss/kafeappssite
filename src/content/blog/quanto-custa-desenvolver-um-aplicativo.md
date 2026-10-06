@@ -35,9 +35,9 @@ Meios de pagamento, mapas, login com Google ou Apple, ERPs, CRMs, sistemas de lo
 
 Um design genérico custa menos que uma experiência desenhada a partir de pesquisa com usuários, com protótipo testado e identidade própria. A diferença é que o segundo costuma converter, reter e encantar muito mais — e isso também é retorno sobre o investimento.
 
-### 6. Tecnologia: no-code, low-code ou código
+### 6. Tecnologia e uso de IA no desenvolvimento
 
-Plataformas no-code e low-code podem reduzir significativamente o tempo e o custo de desenvolvimento, especialmente em MVPs e sistemas internos. Código sob medida exige mais investimento inicial, mas oferece controle total para produtos que precisam de performance e escala máximas. Escrevemos um guia só sobre isso: [no-code, low-code ou código](/blog/no-code-low-code-ou-codigo).
+A escolha da tecnologia e o jeito de trabalhar do time mexem diretamente no prazo — e prazo é custo. Times que usam IA no desenvolvimento, com revisão de engenheiros experientes, entregam em menos tempo testes, documentação, telas e integrações que antes consumiam semanas. Escrevemos um guia só sobre isso: [desenvolvimento de software com IA](/blog/desenvolvimento-de-software-com-ia).
 
 ### 7. Painel administrativo e back-end
 
@@ -49,7 +49,7 @@ Além do desenvolvimento, alguns custos aparecem depois. Vale colocá-los na con
 
 - **Contas de desenvolvedor nas lojas:** no momento em que escrevemos, a Apple cobra uma anuidade de US$ 99 pelo Apple Developer Program, e o Google cobra uma taxa única de US$ 25 para publicar no Google Play.
 - **Infraestrutura:** hospedagem, banco de dados, armazenamento de arquivos e serviços em nuvem, que crescem conforme o uso.
-- **Licenças de plataformas:** ferramentas no-code e low-code costumam ter planos mensais.
+- **Serviços de terceiros:** ferramentas de monitoramento, e-mail transacional e modelos de IA costumam ter planos mensais ou cobrança por uso.
 - **Serviços pagos por uso:** envio de SMS e e-mail, mapas, APIs de terceiros.
 - **Comissões:** as lojas podem cobrar comissão sobre a venda de produtos e assinaturas digitais dentro do app. Entenda as regras antes de definir o modelo de receita.
 - **Manutenção e evolução:** novas versões de iOS e Android, atualizações de segurança, correções e melhorias contínuas.

@@ -7,10 +7,13 @@ interface Props {
 	title: string;
 	lead?: string;
 	breadcrumbs?: { label: string; href?: string }[];
+	/** Formação do líquido (ex.: "phone", "page"). */
 	liquid?: string;
+	/** Nome da etapa no trilho lateral. */
+	rail?: string;
 }
 
-const { eyebrow, title, lead, breadcrumbs = [], liquid = 'page' } = Astro.props;
+const { eyebrow, title, lead, breadcrumbs = [], liquid = 'page', rail } = Astro.props;
 
 const trail = [{ label: 'Início', href: '/' }, ...breadcrumbs];
 const breadcrumbSchema = {
@@ -25,7 +28,7 @@ const breadcrumbSchema = {
 };
 ---
 
-<section class="page-hero" data-liquid={liquid}>
+<section class="page-hero" data-liquid={liquid} data-rail={rail}>
 	<div class="container">
 		{
 			breadcrumbs.length > 0 && (

@@ -1,0 +1,144 @@
+---
+/**
+ * Trilho lateral (desktop) com as etapas da página. É montado a partir das
+ * seções marcadas com data-rail="Nome" e mostra em qual delas você está.
+ */
+---
+
+<nav class="rail" aria-label="Seções desta página" data-rail-nav hidden>
+	<ol role="list" data-rail-list></ol>
+</nav>
+
+<script>
+	const nav = document.querySelector<HTMLElement>('[data-rail-nav]');
+	const list = document.querySelector<HTMLOListElement>('[data-rail-list]');
+	const sections = Array.from(document.querySelectorAll<HTMLElement>('[data-rail]'));
+
+	if (nav && list && sections.length >= 3) {
+		const smooth = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+		const buttons = sections.map((section, index) => {
+			const item = document.createElement('li');
+			const button = document.createElement('button');
+			button.type = 'button';
+			button.innerHTML = `<span class="rail-label"></span><span class="rail-num">${String(index + 1).padStart(2, '0')}</span><span class="rail-tick" aria-hidden="true"></span>`;
+			button.querySelector('.rail-label')!.textContent = section.dataset.rail ?? '';
+			button.setAttribute('aria-label', `${String(index + 1).padStart(2, '0')} — ${section.dataset.rail}`);
+			button.addEventListener('click', () => section.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto' }));
+			item.append(button);
+			list.append(item);
+			return button;
+		});
+		nav.hidden = false;
+
+		let scheduled = false;
+		const update = () => {
+			scheduled = false;
+			const line = window.innerHeight * 0.45;
+			let active = 0;
+			sections.forEach((section, index) => {
+				if (section.getBoundingClientRect().top <= line) active = index;
+			});
+			buttons.forEach((button, index) => {
+				if (index === active) button.setAttribute('aria-current', 'step');
+				else button.removeAttribute('aria-current');
+			});
+			nav.style.setProperty('--progress', String(active / Math.max(1, sections.length - 1)));
+		};
+		const schedule = () => {
+			if (scheduled) return;
+			scheduled = true;
+			requestAnimationFrame(update);
+		};
+		window.addEventListener('scroll', schedule, { passive: true });
+		window.addEventListener('resize', schedule, { passive: true });
+		update();
+	}
+</script>
+
+<style>
+	.rail {
+		position: fixed;
+		top: 50%;
+		right: 18px;
+		z-index: 70;
+		display: none;
+		transform: translateY(-50%);
+	}
+
+	.rail ol {
+		display: grid;
+		gap: 2px;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.rail :global(button) {
+		display: flex;
+		align-items: center;
+		justify-content: flex-end;
+		gap: 10px;
+		width: 100%;
+		padding: 6px 0 6px 12px;
+		color: var(--text-dim);
+		font-size: 0.68rem;
+		font-weight: 600;
+		letter-spacing: 0.16em;
+		text-transform: uppercase;
+		font-variant-numeric: tabular-nums;
+	}
+
+	.rail :global(.rail-label) {
+		opacity: 0;
+		transform: translateX(6px);
+		white-space: nowrap;
+		transition:
+			opacity 0.3s ease,
+			transform 0.4s var(--ease-out);
+	}
+
+	.rail :global(.rail-num) {
+		transition: color 0.3s ease;
+	}
+
+	.rail :global(.rail-tick) {
+		width: 10px;
+		height: 1px;
+		background: currentColor;
+		opacity: 0.6;
+		transition:
+			width 0.5s var(--ease-out),
+			opacity 0.3s ease;
+	}
+
+	.rail :global(button[aria-current]) {
+		color: var(--text);
+	}
+
+	.rail :global(button[aria-current] .rail-tick) {
+		width: 28px;
+		opacity: 1;
+	}
+
+	.rail:hover :global(.rail-label),
+	.rail:focus-within :global(.rail-label) {
+		opacity: 1;
+		transform: none;
+	}
+
+	.rail:hover,
+	.rail:focus-within {
+		padding-left: 18px;
+		background: linear-gradient(90deg, transparent, rgb(0 0 0 / 0.85) 30%);
+	}
+
+	.rail :global(button:hover) {
+		color: var(--text);
+	}
+
+	@media (min-width: 1100px) {
+		.rail {
+			display: block;
+		}
+	}
+</style>

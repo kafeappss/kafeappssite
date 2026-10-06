@@ -16,7 +16,7 @@ export const site = {
 	url: 'https://kafeapps.com.br',
 	tagline: 'Mais negócio, menos software.',
 	description:
-		'Estúdio de produto digital em Niterói (RJ). Transformamos ideias em aplicativos, MVPs, plataformas e sistemas — com código, low-code ou no-code — para startups e empresas que querem crescer.',
+		'Software house em Niterói (RJ). Criamos aplicativos, plataformas, sistemas e soluções de IA sob medida — em código, com engenharia acelerada por IA — para startups e empresas que querem crescer.',
 	foundingYear: 2021,
 	ceo: 'Danilo Fonseca',
 	location: {
@@ -65,46 +65,43 @@ export const nav: NavItem[] = [
 	{ label: 'Blog', href: '/blog' },
 ];
 
-/** Números exibidos na home e na página Sobre. Use apenas dados verificáveis. */
+/** Números exibidos na home e na página Sobre (vindos do site atual da Kafé). */
 export const stats = [
 	{ value: '2021', label: 'Ano em que a Kafé nasceu, em Niterói (RJ)' },
-	{ value: '4D', label: 'Metodologia própria para criar soluções digitais' },
-	{ value: '3', label: 'Formas de construir: no-code, low-code e código' },
-	/** TODO: manter apenas se houver base para a comparação (dado da landing page atual). */
+	{ value: '4Ds', label: 'Metodologia própria: Discovery, Design, Develop e Deploy' },
+	{ value: '10x', label: 'Mais agilidade na construção do seu produto' },
 	{ value: 'até 40%', label: 'Mais econômico que o desenvolvimento tradicional' },
 ];
 
-/** Diferenciais da Kafé (vindos da comunicação atual da empresa). */
+/** Diferenciais da Kafé. */
 export const differentials = [
 	{
-		title: 'Acompanhamento contínuo',
+		title: 'Engenharia aumentada por IA',
 		description:
-			'Você acompanha o projeto em tempo real, sprint a sprint, com um sistema próprio de acompanhamento e um time sempre por perto.',
+			'Engenheiros seniores trabalhando com agentes de IA: mais velocidade, com revisão humana em cada entrega.',
 	},
 	{
-		title: 'Metodologia 4D',
-		description:
-			'Um método próprio para descobrir, definir, desenvolver e lançar soluções com rapidez, organização e menos risco.',
+		title: 'Metodologia 4Ds',
+		description: 'Discovery, Design, Develop e Deploy: um processo próprio para lançar com rapidez e menos risco.',
 	},
 	{
-		title: 'Especialistas em startups',
+		title: 'CTO temporário',
 		description:
-			'Experiência em MVPs e em produtos que precisam provar valor rápido para conquistar usuários e investidores.',
+			'Assumimos o papel de CTO do seu projeto, para você focar no que realmente importa: o negócio.',
 	},
 	{
-		title: 'Design Inteligente',
+		title: 'Design Inteligente (I.D.)',
 		description:
-			'Um time de UX Research que baseia cada decisão de produto em pesquisa, testes e dados de uso.',
+			'UX research, testes A/B e protótipos para descobrir quais recursos o seu produto realmente precisa.',
 	},
 	{
-		title: 'Tecnologia na medida',
+		title: 'Segurança e LGPD',
 		description:
-			'No-code, low-code ou código: escolhemos o caminho que entrega mais resultado pelo seu investimento.',
+			'Sistemas dentro da LGPD, na mesma infraestrutura de nuvem usada pelas big techs.',
 	},
 	{
-		title: 'Investimento enxuto',
-		description:
-			'Escopo priorizado e entregas por ciclo: seu orçamento vai para o que gera aprendizado e receita.',
+		title: 'Acompanhamento em tempo real',
+		description: 'Um sistema de acompanhamento do projeto e um time sempre por perto, sprint a sprint.',
 	},
 ];
 
@@ -116,31 +113,50 @@ export type Testimonial = { quote: string; name: string; role: string; company?:
  */
 export const testimonials: Testimonial[] = [];
 
-export type Client = { name: string; logo?: string; href?: string };
-
 /**
- * TODO: adicionar clientes que autorizaram a divulgação.
- * Coloque os logos em /public/clientes/ e informe o caminho em `logo` (ex.: '/clientes/marca.svg').
+ * Empresas atendidas (logos em src/assets/clients/<logo>.svg, em branco).
+ * `size` ajusta o tamanho visual de cada logo para que todos pareçam equilibrados.
  */
-export const clients: Client[] = [];
+export type Client = { name: string; logo: string; size?: number };
 
-/**
- * TODO: liste as tecnologias e plataformas que a Kafé usa de fato
- * (ex.: 'Flutter', 'Bubble', 'FlutterFlow', 'Supabase'...). A faixa de tecnologias
- * aparece na página Método assim que houver itens.
- */
-export const technologies: string[] = [];
+export const clients: Client[] = [
+	{ name: 'G4 Educação', logo: 'g4', size: 1 },
+	{ name: 'V4 Company', logo: 'v4-company', size: 0.92 },
+	{ name: 'Grupo BMG', logo: 'grupo-bmg', size: 1.05 },
+	{ name: 'FUCAPE Business School', logo: 'fucape', size: 1.05 },
+	{ name: 'Aurica', logo: 'aurica', size: 0.72 },
+	{ name: 'Bossanova', logo: 'bossanova', size: 0.66 },
+	{ name: 'CPX', logo: 'cpx', size: 1.15 },
+	{ name: 'Platta', logo: 'platta', size: 0.9 },
+	{ name: 'Rufy', logo: 'rufy', size: 0.9 },
+	{ name: 'Turbox', logo: 'turbox', size: 0.85 },
+	{ name: 'Vision Metrics', logo: 'vision-metrics', size: 1 },
+];
 
-/** Tipos de produto que a Kafé constrói (usados na home). */
+/** Tecnologias e plataformas (as de código e IA que aparecem no site atual). */
+export const technologies: string[] = [
+	'React',
+	'Next.js',
+	'Supabase',
+	'Firebase',
+	'AWS',
+	'Vercel',
+	'Stripe',
+	'Tailwind CSS',
+	'OpenAI',
+	'Anthropic',
+];
+
+/** Tipos de produto que a Kafé constrói. */
 export const productTypes = [
 	'Marketplaces',
+	'Plataformas SaaS',
+	'Agentes de IA',
 	'Apps de delivery e pedidos',
 	'Agendamento de serviços',
-	'Plataformas SaaS',
 	'Saúde e bem-estar',
 	'Educação e cursos online',
 	'Fintechs e pagamentos',
-	'Comunidades e redes',
 	'CRMs sob medida',
 	'Painéis de indicadores',
 	'Clubes de fidelidade',

@@ -49,7 +49,7 @@ Se possível, teste também a disposição de pagar: uma página de pré-venda, 
 
 ## 7. Construa o MVP
 
-Com a ideia refinada e testada, é hora de construir a primeira versão real do produto: o [MVP](/blog/o-que-e-mvp). Mantenha o foco no essencial, escolha a [tecnologia adequada para a fase](/blog/no-code-low-code-ou-codigo) e trabalhe em ciclos curtos, com entregas que você consegue testar.
+Com a ideia refinada e testada, é hora de construir a primeira versão real do produto: o [MVP](/blog/o-que-e-mvp). Mantenha o foco no essencial, escolha a [tecnologia adequada para a fase](/blog/desenvolvimento-de-software-com-ia) e trabalhe em ciclos curtos, com entregas que você consegue testar.
 
 Uma boa pergunta para cada funcionalidade: "se isso não estiver no lançamento, o produto deixa de resolver o problema principal?". Se a resposta for não, ela pode esperar.
 

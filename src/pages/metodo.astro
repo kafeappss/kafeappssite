@@ -3,12 +3,11 @@ import Base from '../layouts/Base.astro';
 import PageHero from '../components/PageHero.astro';
 import SectionHead from '../components/SectionHead.astro';
 import MethodSteps from '../components/MethodSteps.astro';
-import BuildModes from '../components/BuildModes.astro';
 import Marquee from '../components/Marquee.astro';
 import Faq from '../components/Faq.astro';
 import CtaSection from '../components/CtaSection.astro';
 import Icon from '../components/Icon.astro';
-import { engagementModels, faq } from '../data/method';
+import { aiPillars, engagementModels, faq } from '../data/method';
 import { technologies } from '../data/site';
 
 const rituals = [
@@ -44,7 +43,7 @@ const rituals = [
 	},
 ] as const;
 
-const methodFaq = faq.filter((item) => /MVP|No-code|lançamento/.test(item.q));
+const methodFaq = faq.filter((item) => /IA|MVP|lançamento/.test(item.q));
 ---
 
 <Base
@@ -52,13 +51,15 @@ const methodFaq = faq.filter((item) => /MVP|No-code|lançamento/.test(item.q));
 	description="Conheça o Método Sprint da Kafé Apps: Descobrir, Definir, Desenvolver e Decolar. Entregas em sprints curtas, acompanhamento em tempo real e formatos de trabalho para cada fase."
 >
 	<PageHero
-		eyebrow="Método Sprint · Metodologia 4D"
+		liquid="cycle-0"
+		rail="Início"
+		eyebrow="Metodologia 4Ds"
 		title="Um jeito de construir <em>sem surpresas.</em>"
 		lead="Projetos de software costumam atrasar por falta de clareza, não de talento. Nosso método existe para que você saiba, a cada semana, o que está sendo feito, por que e o que vem depois."
 		breadcrumbs={[{ label: 'Método' }]}
 	/>
 
-	<section class="section method-section" data-liquid="stream">
+	<section class="section method-section" data-liquid="rest" data-rail="Etapas">
 		<div class="container">
 			<SectionHead
 				eyebrow="As quatro etapas"
@@ -69,7 +70,7 @@ const methodFaq = faq.filter((item) => /MVP|No-code|lançamento/.test(item.q));
 		</div>
 	</section>
 
-	<section class="section" data-liquid="scatter">
+	<section class="section" data-liquid="rest" data-rail="No dia a dia">
 		<div class="container">
 			<SectionHead
 				eyebrow="Durante o projeto"
@@ -92,7 +93,7 @@ const methodFaq = faq.filter((item) => /MVP|No-code|lançamento/.test(item.q));
 		</div>
 	</section>
 
-	<section class="section" data-liquid="left">
+	<section class="section" data-liquid="rest" data-rail="Formatos">
 		<div class="container">
 			<SectionHead
 				eyebrow="Formatos de trabalho"
@@ -120,20 +121,32 @@ const methodFaq = faq.filter((item) => /MVP|No-code|lançamento/.test(item.q));
 		</div>
 	</section>
 
-	<section class="section" data-liquid="right">
-		<div class="container">
-			<SectionHead
-				eyebrow="Tecnologia na medida"
-				title="A ferramenta certa <em>para cada fase.</em>"
-				lead="Definimos a tecnologia na etapa Definir, considerando prazo, orçamento, regras de negócio e planos de crescimento."
-			/>
-			<BuildModes />
+	<section class="section" data-liquid="code-ai" data-rail="IA">
+		<div class="container split">
+			<div class="split-text">
+				<SectionHead
+					eyebrow="Engenharia aumentada por IA"
+					title="Pessoas decidem. <em>A IA acelera.</em>"
+					lead="Na etapa Develop, nossos engenheiros trabalham com agentes de IA para escrever testes, documentar, revisar e construir telas e integrações em menos tempo. Toda entrega passa por revisão humana."
+				/>
+				<ul role="list" class="pillars">
+					{
+						aiPillars.map((pillar, index) => (
+							<li data-reveal style={`--delay: ${index * 0.06}s`}>
+								<h3>{pillar.title}</h3>
+								<p>{pillar.description}</p>
+							</li>
+						))
+					}
+				</ul>
+			</div>
+			<div class="stage" aria-hidden="true"></div>
 		</div>
 	</section>
 
 	{
 		technologies.length > 0 && (
-			<section class="tech" data-liquid="right">
+			<section class="tech" data-liquid="rest">
 				<p class="eyebrow container" data-reveal>
 					Ferramentas que usamos
 				</p>
@@ -142,7 +155,7 @@ const methodFaq = faq.filter((item) => /MVP|No-code|lançamento/.test(item.q));
 		)
 	}
 
-	<section class="section" data-liquid="rest">
+	<section class="section" data-liquid="rest" data-rail="Dúvidas">
 		<div class="container faq-layout">
 			<SectionHead eyebrow="Perguntas frequentes" title="Ainda com <em>dúvidas?</em>" />
 			<Faq items={methodFaq} />
@@ -150,6 +163,7 @@ const methodFaq = faq.filter((item) => /MVP|No-code|lançamento/.test(item.q));
 	</section>
 
 	<CtaSection
+		rail="Contato"
 		title="Pronto para a <em>primeira sprint?</em>"
 		lead="Começamos com uma conversa para entender o seu negócio. Depois, você recebe um plano claro, com etapas, prazos e investimento."
 	/>
@@ -236,6 +250,34 @@ const methodFaq = faq.filter((item) => /MVP|No-code|lançamento/.test(item.q));
 	.tech {
 		display: grid;
 		gap: 24px;
+	}
+
+	.pillars {
+		display: grid;
+		gap: 0 32px;
+		border-top: 1px solid var(--line);
+	}
+
+	.pillars li {
+		padding: 24px 0;
+		border-bottom: 1px solid var(--line);
+	}
+
+	.pillars h3 {
+		font-size: 1.2rem;
+		letter-spacing: -0.02em;
+	}
+
+	.pillars p {
+		margin-top: 6px;
+		font-size: var(--fs-small);
+		color: var(--text-muted);
+	}
+
+	@media (min-width: 720px) {
+		.pillars {
+			grid-template-columns: repeat(2, 1fr);
+		}
 	}
 
 	.faq-layout {

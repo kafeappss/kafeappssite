@@ -1,17 +1,21 @@
 /**
- * Serviços da Kafé Apps. Cada item gera um card na home e em /servicos
+ * Serviços da Kafé Apps. Cada item gera um bloco na home, um card em /servicos
  * e uma página própria em /servicos/[slug].
  *
- * Nos títulos, o trecho entre <em></em> recebe o destaque em itálico serifado.
+ * Nos títulos, o trecho entre <em></em> aparece no segundo tom (cinza).
+ * `shape` é a forma que o metal líquido assume quando o serviço aparece na tela.
  */
 
-export type IconName = 'phone' | 'rocket' | 'blocks' | 'browser' | 'gear' | 'pen';
+import type { ShapeName } from '../scripts/shapes';
+
+export type IconName = 'phone' | 'rocket' | 'spark' | 'browser' | 'gear' | 'pen';
 
 export type Service = {
 	slug: string;
 	title: string;
 	short: string;
 	icon: IconName;
+	shape: ShapeName;
 	keywords: string[];
 	seo: { title: string; description: string };
 	hero: { title: string; lead: string };
@@ -27,23 +31,24 @@ export const services: Service[] = [
 		slug: 'desenvolvimento-de-aplicativos',
 		title: 'Desenvolvimento de aplicativos',
 		short:
-			'Apps para iOS e Android pensados como produto: bonitos, rápidos, publicados nas lojas e prontos para crescer.',
+			'Apps para iOS e Android em código, pensados como produto: rápidos, bonitos, publicados nas lojas e prontos para crescer.',
 		icon: 'phone',
+		shape: 'phone',
 		keywords: ['iOS', 'Android', 'Multiplataforma', 'Publicação nas lojas'],
 		seo: {
 			title: 'Desenvolvimento de aplicativos iOS e Android',
 			description:
-				'Criamos aplicativos para iOS e Android do protótipo à publicação nas lojas, com design de produto, painel administrativo e integrações. Peça uma proposta.',
+				'Criamos aplicativos para iOS e Android em código, do protótipo à publicação nas lojas, com engenharia acelerada por IA, painel administrativo e integrações.',
 		},
 		hero: {
 			title: 'Aplicativos que as pessoas <em>abrem todo dia.</em>',
-			lead: 'Do primeiro rascunho à publicação na App Store e no Google Play, desenhamos e desenvolvemos aplicativos sob medida para o seu modelo de negócio — com a tecnologia que equilibra prazo, orçamento e escala.',
+			lead: 'Do primeiro rascunho à publicação na App Store e no Google Play, desenhamos e desenvolvemos aplicativos sob medida para o seu modelo de negócio — em código, com engenheiros acelerados por IA.',
 		},
 		intro: {
 			title: 'Mais do que telas <em>bonitas.</em>',
 			paragraphs: [
 				'Um bom aplicativo começa muito antes da primeira linha de código. Antes de desenhar telas, entendemos quem vai usar, qual problema precisa ser resolvido e como o app vai gerar resultado para o seu negócio — seja venda, retenção, produtividade ou captação de investimento.',
-				'Com isso claro, escolhemos o caminho técnico mais inteligente para o seu momento: desenvolvimento multiplataforma para chegar ao iOS e ao Android de uma só vez, low-code para acelerar a entrega ou código sob medida quando o produto exige performance e flexibilidade máximas.',
+				'Com isso claro, escolhemos a arquitetura certa: desenvolvimento multiplataforma para chegar ao iOS e ao Android com uma só base de código, ou nativo quando o produto exige o máximo do aparelho. A IA acelera o trabalho repetitivo; nossos engenheiros cuidam das decisões e da qualidade.',
 			],
 		},
 		forWho: [
@@ -64,7 +69,7 @@ export const services: Service[] = [
 			},
 			{
 				title: 'App para iOS e Android',
-				description: 'Desenvolvimento multiplataforma ou nativo, com foco em desempenho e experiência fluida.',
+				description: 'Código multiplataforma ou nativo, com foco em desempenho e experiência fluida.',
 			},
 			{
 				title: 'Painel administrativo',
@@ -84,7 +89,7 @@ export const services: Service[] = [
 			},
 			{
 				title: 'Evolução contínua',
-				description: 'Suporte pós-lançamento e novas versões com o Kafé Ongoing™.',
+				description: 'Suporte pós-lançamento e novas versões com o OnGoing™, nosso squad dedicado.',
 			},
 		],
 		highlights: {
@@ -110,7 +115,7 @@ export const services: Service[] = [
 		faq: [
 			{
 				q: 'Quanto tempo leva para desenvolver um aplicativo?',
-				a: 'Depende do escopo. Um MVP enxuto pode ter as primeiras entregas testáveis em poucas semanas; produtos mais completos levam alguns meses. Na etapa de definição, você recebe um cronograma por sprints, com o que será entregue em cada ciclo.',
+				a: 'Depende do escopo. Um MVP enxuto pode ter as primeiras entregas testáveis em poucas semanas; produtos mais completos levam alguns meses. Na etapa de Discovery, você recebe um cronograma por sprints, com o que será entregue em cada ciclo.',
 			},
 			{
 				q: 'Vocês publicam o app nas lojas?',
@@ -127,210 +132,21 @@ export const services: Service[] = [
 		],
 	},
 	{
-		slug: 'mvp-para-startups',
-		title: 'MVP para startups',
-		short:
-			'Valide sua ideia com um produto mínimo viável no ar rapidamente, com investimento enxuto e foco no que importa.',
-		icon: 'rocket',
-		keywords: ['Método Sprint', 'Validação', 'Tração', 'Investimento'],
-		seo: {
-			title: 'Desenvolvimento de MVP para startups',
-			description:
-				'Tire sua ideia do papel com um MVP construído pelo Método Sprint: escopo enxuto, entregas rápidas e foco em validação, tração e investimento.',
-		},
-		hero: {
-			title: 'Sua ideia no ar <em>antes que o mercado mude.</em>',
-			lead: 'O MVP (produto mínimo viável) é a forma mais inteligente de testar uma ideia com usuários reais investindo apenas o necessário. Com o Método Sprint, levamos o seu do conceito à primeira versão em ciclos curtos e previsíveis.',
-		},
-		intro: {
-			title: 'Aprender rápido <em>custa menos.</em>',
-			paragraphs: [
-				'Toda startup começa com hipóteses: alguém tem esse problema, está disposto a pagar pela solução e vai usar o produto do jeito que imaginamos. O MVP existe para testar essas hipóteses no mundo real, o mais cedo possível.',
-				'O erro mais comum é tentar lançar o produto completo de uma vez. Isso consome meses e boa parte do orçamento antes do primeiro feedback. Na Kafé, fazemos o contrário: identificamos o menor conjunto de funcionalidades capaz de entregar valor e gerar aprendizado — e colocamos isso nas mãos dos seus usuários o quanto antes.',
-			],
-		},
-		forWho: [
-			'Fundadores com uma ideia promissora, mas ainda sem produto.',
-			'Startups que precisam de tração ou de uma versão funcional para captar investimento.',
-			'Empresas que querem testar um novo produto digital sem montar um time interno.',
-			'Empreendedores que já tentaram tirar a ideia do papel e esbarraram em prazo ou custo.',
-		],
-		deliverables: [
-			{
-				title: 'Mapa de hipóteses',
-				description: 'O que precisamos aprender primeiro e como cada funcionalidade ajuda a validar isso.',
-			},
-			{
-				title: 'Escopo enxuto e priorizado',
-				description: 'Funcionalidades essenciais separadas do que pode esperar a próxima versão.',
-			},
-			{
-				title: 'Protótipo navegável',
-				description: 'Para testar o fluxo com usuários e apresentar a ideia antes de desenvolver.',
-			},
-			{
-				title: 'MVP funcional',
-				description: 'Aplicativo ou plataforma web no ar, pronto para receber usuários reais.',
-			},
-			{
-				title: 'Métricas de validação',
-				description: 'Indicadores definidos para saber, com dados, se a ideia está funcionando.',
-			},
-			{
-				title: 'Plano de próximos passos',
-				description: 'Roadmap para evoluir o produto a partir dos primeiros aprendizados.',
-			},
-		],
-		highlights: {
-			title: 'Por que construir seu MVP <em>com a Kafé.</em>',
-			items: [
-				{
-					title: 'Especialistas em startups',
-					description: 'Falamos a língua de quem está começando: validação, tração, métricas e investimento.',
-				},
-				{
-					title: 'A tecnologia certa para a fase',
-					description:
-						'No-code, low-code ou código: escolhemos o que coloca o seu MVP no ar mais rápido, sem fechar portas para o futuro.',
-				},
-				{
-					title: 'Acompanhamento transparente',
-					description: 'Você acompanha cada sprint e vê o produto ganhar forma em tempo real.',
-				},
-				{
-					title: 'Investimento enxuto',
-					description: 'Seu orçamento vai para o que gera aprendizado, não para funcionalidades que ninguém pediu.',
-				},
-			],
-		},
-		faq: [
-			{
-				q: 'O que entra em um MVP?',
-				a: 'Somente o essencial para resolver o problema principal do seu cliente e medir se a solução funciona. Definimos isso juntos na etapa de descoberta, priorizando as funcionalidades pelo impacto na validação.',
-			},
-			{
-				q: 'Em quanto tempo meu MVP fica pronto?',
-				a: 'Com o Método Sprint, as primeiras entregas testáveis chegam em poucos dias ou semanas, conforme o escopo. O prazo total é definido no planejamento, antes do início do desenvolvimento.',
-			},
-			{
-				q: 'Um MVP feito em no-code aguenta crescer?',
-				a: 'Sim, para a grande maioria dos produtos em fase de validação. Quando o crescimento exigir, planejamos a migração gradual para código próprio, sem jogar fora o que já foi aprendido.',
-			},
-			{
-				q: 'E depois que o MVP estiver no ar?',
-				a: 'Analisamos os dados de uso com você e planejamos as próximas versões. O produto pode continuar evoluindo com o Kafé Ongoing™, nosso modelo de evolução contínua.',
-			},
-		],
-	},
-	{
-		slug: 'no-code-e-low-code',
-		title: 'No-code e low-code',
-		short:
-			'Velocidade de startup com qualidade de software: plataformas visuais para lançar e evoluir produtos em tempo recorde.',
-		icon: 'blocks',
-		keywords: ['No-code', 'Low-code', 'Automação', 'Kafé Ongoing™'],
-		seo: {
-			title: 'Desenvolvimento no-code e low-code',
-			description:
-				'Desenvolvemos aplicativos, plataformas e automações com no-code e low-code para lançar mais rápido e investir menos — com arquitetura pensada para escalar.',
-		},
-		hero: {
-			title: 'Menos código. <em>Mais velocidade.</em>',
-			lead: 'Plataformas no-code e low-code permitem construir aplicativos, sistemas e automações em uma fração do tempo do desenvolvimento tradicional. Nós usamos essas ferramentas com rigor de engenharia — para você ganhar velocidade sem abrir mão de qualidade.',
-		},
-		intro: {
-			title: 'Não é atalho. <em>É estratégia.</em>',
-			paragraphs: [
-				'No-code e low-code deixaram de ser apenas ferramentas de protótipo. Hoje, essas plataformas sustentam marketplaces, aplicativos com milhares de usuários e sistemas internos de empresas de todos os tamanhos.',
-				'O que faz a diferença é como elas são usadas. Banco de dados bem modelado, regras de negócio organizadas, segurança e performance pensadas desde o início: é isso que separa um produto que escala de um que precisa ser refeito em seis meses.',
-			],
-		},
-		forWho: [
-			'Quem precisa lançar rápido para validar uma ideia ou aproveitar uma janela de mercado.',
-			'Empresas que querem digitalizar processos sem esperar meses por um sistema.',
-			'Times que precisam de ferramentas internas sob medida, mas não têm desenvolvedores disponíveis.',
-			'Produtos que precisam evoluir toda semana, com custo previsível.',
-		],
-		deliverables: [
-			{
-				title: 'Aplicativos móveis e web',
-				description: 'Construídos em plataformas visuais modernas, com design sob medida.',
-			},
-			{
-				title: 'Back-end e banco de dados',
-				description: 'Estrutura de dados, regras de negócio e APIs organizadas para crescer.',
-			},
-			{
-				title: 'Automações de fluxo',
-				description: 'Integração entre ferramentas e fim das tarefas manuais e repetitivas.',
-			},
-			{
-				title: 'Integrações',
-				description: 'Pagamentos, e-mail, WhatsApp, planilhas, CRMs, ERPs e APIs externas.',
-			},
-			{
-				title: 'Governança e segurança',
-				description: 'Controle de acesso, boas práticas de privacidade e documentação do produto.',
-			},
-			{
-				title: 'Plano de escala',
-				description: 'Quando e como migrar partes do produto para código — se e quando fizer sentido.',
-			},
-		],
-		highlights: {
-			title: 'No-code, low-code <em>ou código?</em>',
-			items: [
-				{
-					title: 'No-code',
-					description:
-						'Construção 100% visual. Ideal para MVPs, sistemas internos e produtos que precisam ir ao ar muito rápido.',
-				},
-				{
-					title: 'Low-code',
-					description:
-						'Plataformas visuais com código personalizado onde é preciso. Mais flexibilidade para regras complexas e integrações.',
-				},
-				{
-					title: 'Código sob medida',
-					description:
-						'Controle total de performance e arquitetura. Indicado quando o produto já validou o mercado e precisa escalar sem limites.',
-				},
-			],
-		},
-		faq: [
-			{
-				q: 'No-code é seguro?',
-				a: 'As principais plataformas oferecem infraestrutura robusta, criptografia e controles de acesso. Somado a boas práticas de modelagem e permissões, um produto no-code pode ser tão seguro quanto um desenvolvido em código.',
-			},
-			{
-				q: 'Vou ficar preso à plataforma?',
-				a: 'Toda tecnologia traz algum grau de dependência — inclusive o código tradicional, que depende de frameworks e de quem o escreveu. Escolhemos plataformas consolidadas, documentamos o produto e, quando faz sentido, desenhamos a arquitetura para facilitar uma migração futura.',
-			},
-			{
-				q: 'Quais plataformas vocês usam?',
-				a: 'Escolhemos a ferramenta conforme o projeto: construtores de aplicativos web e móveis, bancos de dados e back-ends gerenciados e ferramentas de automação. A decisão leva em conta escopo, custo de licenças, desempenho e planos de escala.',
-			},
-			{
-				q: 'O que é o Kafé Ongoing™?',
-				a: 'É o nosso modelo de evolução contínua: um time da Kafé dedicado às demandas tecnológicas do seu negócio com no-code e low-code, de forma recorrente e com custo previsível.',
-			},
-		],
-	},
-	{
 		slug: 'plataformas-web-e-saas',
 		title: 'Plataformas web e SaaS',
 		short:
 			'Marketplaces, portais e produtos SaaS com assinatura — arquitetura sólida, experiência impecável e prontos para escalar.',
 		icon: 'browser',
+		shape: 'browser',
 		keywords: ['SaaS', 'Marketplaces', 'Portais', 'Assinaturas'],
 		seo: {
 			title: 'Desenvolvimento de plataformas web, marketplaces e SaaS',
 			description:
-				'Criamos plataformas web, marketplaces, portais e produtos SaaS com pagamentos recorrentes, painéis e integrações. Do MVP à escala.',
+				'Criamos plataformas web, marketplaces, portais e produtos SaaS em código, com pagamentos recorrentes, painéis e integrações. Do MVP à escala.',
 		},
 		hero: {
 			title: 'Plataformas que <em>viram negócio.</em>',
-			lead: 'Marketplaces, portais de clientes, plataformas de cursos e produtos SaaS com assinatura: construímos a base digital que conecta pessoas, automatiza operações e gera receita recorrente.',
+			lead: 'Marketplaces, portais de clientes, plataformas de cursos e produtos SaaS com assinatura: construímos em código a base digital que conecta pessoas, automatiza operações e gera receita recorrente.',
 		},
 		intro: {
 			title: 'Muitas vezes, a plataforma <em>é o negócio.</em>',
@@ -403,31 +219,224 @@ export const services: Service[] = [
 			},
 			{
 				q: 'Vocês integram com o sistema que eu já uso?',
-				a: 'Na maioria dos casos, sim. Se o seu sistema oferece API ou permite exportar dados, conseguimos integrar. Avaliamos isso logo na etapa de descoberta.',
+				a: 'Na maioria dos casos, sim. Se o seu sistema oferece API ou permite exportar dados, conseguimos integrar. Avaliamos isso logo na etapa de Discovery.',
+			},
+		],
+	},
+	{
+		slug: 'inteligencia-artificial',
+		title: 'IA aplicada e agentes',
+		short:
+			'Agentes de IA, assistentes dentro do seu produto e automações inteligentes, integrados aos seus sistemas e com segurança.',
+		icon: 'spark',
+		shape: 'ai',
+		keywords: ['Agentes de IA', 'Assistentes', 'Automação inteligente', 'LLMs'],
+		seo: {
+			title: 'Agentes de IA, assistentes e automação com inteligência artificial',
+			description:
+				'Desenvolvemos agentes de IA, assistentes integrados ao seu produto e automações inteligentes com modelos de linguagem, conectados aos seus dados e com segurança.',
+		},
+		hero: {
+			title: 'IA que trabalha <em>para o seu negócio.</em>',
+			lead: 'Colocamos modelos de linguagem para trabalhar onde eles geram resultado: agentes que atendem e executam tarefas, assistentes dentro do seu produto e automações que leem, classificam e respondem — integrados aos seus sistemas.',
+		},
+		intro: {
+			title: 'IA de verdade, <em>não demonstração.</em>',
+			paragraphs: [
+				'Fazer um chatbot responder bem numa apresentação é fácil. Difícil é colocar IA em produção: conectada aos dados certos, com respostas confiáveis, custos sob controle e pessoas no comando quando a decisão importa.',
+				'É aí que entramos. Começamos pelo problema de negócio, escolhemos o modelo e a arquitetura adequados, medimos a qualidade das respostas e integramos tudo ao seu produto e à sua operação.',
+			],
+		},
+		forWho: [
+			'Empresas com atendimento sobrecarregado ou fora do horário comercial.',
+			'Produtos que querem recursos de IA: busca inteligente, resumos, recomendações e copilotos.',
+			'Operações que lidam com muitos documentos, e-mails, planilhas e tarefas repetitivas.',
+			'Times que querem automatizar processos com IA sem abrir mão de segurança e controle.',
+		],
+		deliverables: [
+			{
+				title: 'Diagnóstico de oportunidades',
+				description: 'Onde a IA gera retorno de verdade no seu negócio — e onde ela ainda não compensa.',
+			},
+			{
+				title: 'Agentes de IA',
+				description: 'Agentes que consultam seus sistemas, executam tarefas e pedem ajuda humana quando precisam.',
+			},
+			{
+				title: 'Assistentes no produto',
+				description: 'Busca inteligente, resumos, respostas e copilotos dentro do seu app ou plataforma.',
+			},
+			{
+				title: 'Automação inteligente',
+				description: 'Leitura de documentos, triagem de mensagens e extração de dados sem trabalho manual.',
+			},
+			{
+				title: 'Conexão com os seus dados',
+				description: 'A IA responde com base nas informações da sua empresa, com controle de acesso.',
+			},
+			{
+				title: 'Qualidade, segurança e custos',
+				description: 'Testes das respostas, limites claros, LGPD e custos de uso monitorados.',
+			},
+		],
+		highlights: {
+			title: 'Como fazemos IA <em>que funciona.</em>',
+			items: [
+				{
+					title: 'Começa pelo problema',
+					description: 'Primeiro o resultado de negócio que queremos mudar. Depois a tecnologia.',
+				},
+				{
+					title: 'Dados no lugar certo',
+					description: 'A IA só acessa o que precisa, com permissões e registros de uso.',
+				},
+				{
+					title: 'Pessoas no controle',
+					description: 'Decisões sensíveis passam por alguém da sua equipe antes de acontecer.',
+				},
+				{
+					title: 'Custos previsíveis',
+					description: 'Escolhemos modelos pelo equilíbrio entre qualidade e custo, e monitoramos o uso.',
+				},
+			],
+		},
+		faq: [
+			{
+				q: 'Meus dados ficam seguros?',
+				a: 'Definimos com você quais dados a IA pode acessar, aplicamos controle de acesso e seguimos a LGPD. Priorizamos provedores e planos em que as informações enviadas não são usadas para treinar modelos.',
+			},
+			{
+				q: 'Quais modelos de IA vocês usam?',
+				a: 'Escolhemos caso a caso, entre provedores como OpenAI e Anthropic, avaliando qualidade das respostas, custo, velocidade e privacidade.',
+			},
+			{
+				q: 'A IA vai substituir a minha equipe?',
+				a: 'A ideia é tirar das pessoas o trabalho repetitivo, para que elas foquem no que exige julgamento e relacionamento. Os melhores resultados vêm de pessoas e IA trabalhando juntas.',
+			},
+			{
+				q: 'Quanto custa manter uma solução de IA?',
+				a: 'Além do desenvolvimento, existe o custo de uso dos modelos, que varia com o volume. Estimamos esse custo antes de começar e o acompanhamos depois do lançamento.',
+			},
+		],
+	},
+	{
+		slug: 'mvp-para-startups',
+		title: 'MVP para startups',
+		short:
+			'Valide sua ideia com um produto mínimo viável em código, no ar rapidamente, com investimento enxuto e foco no que importa.',
+		icon: 'rocket',
+		shape: 'rocket',
+		keywords: ['Validação', 'Tração', 'Investimento', 'Código + IA'],
+		seo: {
+			title: 'Desenvolvimento de MVP para startups',
+			description:
+				'Tire sua ideia do papel com um MVP em código, construído com a Metodologia 4Ds e engenharia acelerada por IA: escopo enxuto, entregas rápidas e base pronta para escalar.',
+		},
+		hero: {
+			title: 'Sua ideia no ar <em>antes que o mercado mude.</em>',
+			lead: 'O MVP (produto mínimo viável) é a forma mais inteligente de testar uma ideia com usuários reais investindo apenas o necessário. Com engenheiros acelerados por IA, levamos o seu do conceito à primeira versão em ciclos curtos e previsíveis.',
+		},
+		intro: {
+			title: 'Aprender rápido <em>custa menos.</em>',
+			paragraphs: [
+				'Toda startup começa com hipóteses: alguém tem esse problema, está disposto a pagar pela solução e vai usar o produto do jeito que imaginamos. O MVP existe para testar essas hipóteses no mundo real, o mais cedo possível.',
+				'O erro mais comum é tentar lançar o produto completo de uma vez. Na Kafé, fazemos o contrário: identificamos o menor conjunto de funcionalidades capaz de entregar valor e gerar aprendizado — e construímos em código, para que o MVP vire a base do produto, e não algo a ser jogado fora.',
+			],
+		},
+		forWho: [
+			'Fundadores com uma ideia promissora, mas ainda sem produto.',
+			'Startups que precisam de tração ou de uma versão funcional para captar investimento.',
+			'Empresas que querem testar um novo produto digital sem montar um time interno.',
+			'Empreendedores que já tentaram tirar a ideia do papel e esbarraram em prazo ou custo.',
+		],
+		deliverables: [
+			{
+				title: 'Mapa de hipóteses',
+				description: 'O que precisamos aprender primeiro e como cada funcionalidade ajuda a validar isso.',
+			},
+			{
+				title: 'Escopo enxuto e priorizado',
+				description: 'Funcionalidades essenciais separadas do que pode esperar a próxima versão.',
+			},
+			{
+				title: 'Protótipo navegável',
+				description: 'Para testar o fluxo com usuários e apresentar a ideia antes de desenvolver.',
+			},
+			{
+				title: 'MVP funcional',
+				description: 'Aplicativo ou plataforma web no ar, pronto para receber usuários reais.',
+			},
+			{
+				title: 'Métricas de validação',
+				description: 'Indicadores definidos para saber, com dados, se a ideia está funcionando.',
+			},
+			{
+				title: 'Plano de próximos passos',
+				description: 'Roadmap para evoluir o produto a partir dos primeiros aprendizados.',
+			},
+		],
+		highlights: {
+			title: 'Por que construir seu MVP <em>com a Kafé.</em>',
+			items: [
+				{
+					title: 'Especialistas em startups',
+					description: 'Falamos a língua de quem está começando: validação, tração, métricas e investimento.',
+				},
+				{
+					title: 'Código desde o dia 1',
+					description: 'O MVP já nasce sobre uma base sólida, que cresce junto com o produto.',
+				},
+				{
+					title: 'Velocidade com IA',
+					description: 'Engenheiros acelerados por IA entregam em semanas o que antes levava meses.',
+				},
+				{
+					title: 'Acompanhamento transparente',
+					description: 'Você acompanha cada sprint e vê o produto ganhar forma em tempo real.',
+				},
+			],
+		},
+		faq: [
+			{
+				q: 'O que entra em um MVP?',
+				a: 'Somente o essencial para resolver o problema principal do seu cliente e medir se a solução funciona. Definimos isso juntos na etapa de Discovery, priorizando as funcionalidades pelo impacto na validação.',
+			},
+			{
+				q: 'Em quanto tempo meu MVP fica pronto?',
+				a: 'As primeiras entregas testáveis chegam em poucas semanas, conforme o escopo. O prazo total é definido no planejamento, antes do início do desenvolvimento.',
+			},
+			{
+				q: 'O MVP aguenta crescer?',
+				a: 'Sim. Como construímos em código desde o início, o MVP vira a fundação do produto: novas funcionalidades são adicionadas sobre a mesma base, sem precisar recomeçar.',
+			},
+			{
+				q: 'E depois que o MVP estiver no ar?',
+				a: 'Analisamos os dados de uso com você e planejamos as próximas versões. O produto pode continuar evoluindo com o OnGoing™, nosso squad dedicado.',
 			},
 		],
 	},
 	{
 		slug: 'sistemas-internos-e-automacao',
-		title: 'Sistemas internos e automação',
+		title: 'Sistemas internos e integrações',
 		short:
-			'Ferramentas sob medida para a sua operação: menos planilhas, menos retrabalho e processos que rodam sozinhos.',
+			'Ferramentas sob medida para a sua operação: menos planilhas, menos retrabalho e sistemas que conversam entre si.',
 		icon: 'gear',
-		keywords: ['Sistemas de gestão', 'Painéis', 'Automação', 'Integrações'],
+		shape: 'nodes',
+		keywords: ['Sistemas de gestão', 'Painéis', 'Integrações', 'APIs'],
 		seo: {
-			title: 'Sistemas internos sob medida e automação de processos',
+			title: 'Sistemas internos sob medida e integração entre sistemas',
 			description:
-				'Desenvolvemos sistemas internos, painéis, CRMs sob medida e automações que eliminam tarefas manuais e conectam as ferramentas da sua empresa.',
+				'Desenvolvemos sistemas internos, painéis, CRMs sob medida e integrações que eliminam tarefas manuais e conectam as ferramentas da sua empresa.',
 		},
 		hero: {
-			title: 'Sua operação <em>no piloto automático.</em>',
-			lead: 'Planilhas que ninguém entende, informações espalhadas em cinco ferramentas e tarefas repetidas todos os dias. Criamos sistemas internos e automações sob medida para a sua equipe trabalhar melhor — e crescer sem aumentar o caos.',
+			title: 'Sua operação, <em>finalmente conectada.</em>',
+			lead: 'Planilhas que ninguém entende, informações espalhadas em cinco ferramentas e tarefas repetidas todos os dias. Criamos sistemas internos e integrações sob medida para a sua equipe trabalhar melhor — e crescer sem aumentar o caos.',
 		},
 		intro: {
 			title: 'O software pronto <em>não te serve?</em>',
 			paragraphs: [
 				'Sistemas de prateleira nem sempre se encaixam no jeito que a sua empresa trabalha. O resultado costuma ser uma coleção de remendos: planilhas paralelas, controles manuais, informações duplicadas e decisões tomadas no escuro.',
-				'Desenvolvemos ferramentas internas desenhadas para os seus processos — de um painel de indicadores a um sistema completo de gestão — e automatizamos o que hoje consome horas da sua equipe.',
+				'Desenvolvemos ferramentas internas desenhadas para os seus processos — de um painel de indicadores a um sistema completo de gestão — e conectamos os sistemas que você já usa.',
 			],
 		},
 		forWho: [
@@ -451,17 +460,16 @@ export const services: Service[] = [
 				description: 'Dados consolidados e atualizados para decisões mais rápidas.',
 			},
 			{
+				title: 'Integração entre sistemas',
+				description: 'ERPs, CRMs, planilhas, formulários, WhatsApp e e-mail trabalhando juntos, via APIs.',
+			},
+			{
 				title: 'Automação de tarefas',
 				description: 'Fluxos que disparam e-mails, mensagens, documentos e atualizações sem intervenção manual.',
 			},
 			{
-				title: 'Integração entre ferramentas',
-				description: 'ERPs, CRMs, planilhas, formulários, WhatsApp e e-mail trabalhando juntos.',
-			},
-			{
-				title: 'Automações com IA',
-				description:
-					'Triagem de mensagens, leitura de documentos e respostas assistidas por inteligência artificial, onde isso fizer sentido.',
+				title: 'Segurança e LGPD',
+				description: 'Controle de acesso, registros de auditoria e dados tratados conforme a LGPD.',
 			},
 		],
 		highlights: {
@@ -492,7 +500,7 @@ export const services: Service[] = [
 			},
 			{
 				q: 'Quanto tempo leva para automatizar um processo?',
-				a: 'Automações pontuais podem ficar prontas em poucos dias. Sistemas completos são entregues em módulos, para que a equipe comece a usar — e a ganhar tempo — o quanto antes.',
+				a: 'Integrações pontuais podem ficar prontas em poucos dias. Sistemas completos são entregues em módulos, para que a equipe comece a usar — e a ganhar tempo — o quanto antes.',
 			},
 			{
 				q: 'Minha equipe vai conseguir usar?',
@@ -505,11 +513,12 @@ export const services: Service[] = [
 		title: 'UX/UI design e discovery',
 		short: 'Pesquisa, estratégia e interfaces que fazem sentido para quem usa — e para o seu negócio.',
 		icon: 'pen',
-		keywords: ['UX Research', 'Discovery', 'Protótipos', 'Design system'],
+		shape: 'layout',
+		keywords: ['UX Research', 'Design Inteligente', 'Protótipos', 'Design system'],
 		seo: {
 			title: 'UX/UI design, pesquisa e discovery de produto',
 			description:
-				'Pesquisa com usuários, discovery de produto, protótipos navegáveis e interfaces para apps e plataformas. Design que resolve problemas reais.',
+				'Pesquisa com usuários, discovery de produto, protótipos navegáveis e interfaces para apps e plataformas. Design Inteligente que resolve problemas reais.',
 		},
 		hero: {
 			title: 'Design que <em>resolve</em>, não só decora.',
@@ -519,7 +528,7 @@ export const services: Service[] = [
 			title: 'Construir a coisa certa <em>vem primeiro.</em>',
 			paragraphs: [
 				'Grande parte do custo de um software vem de construir a coisa errada. Discovery e design existem para reduzir esse risco: entender o problema a fundo, testar soluções baratas primeiro e só então investir em desenvolvimento.',
-				'Na Kafé, o design não é uma etapa isolada. Ele acompanha o produto do primeiro rascunho às versões seguintes, guiado por pesquisa com usuários e pelos indicadores do negócio. É o que chamamos de Design Inteligente.',
+				'Na Kafé, o design não é uma etapa isolada. Ele acompanha o produto do primeiro rascunho às versões seguintes, guiado por pesquisa com usuários, testes A/B e indicadores do negócio. É o que chamamos de Design Inteligente (I.D.).',
 			],
 		},
 		forWho: [
@@ -550,7 +559,7 @@ export const services: Service[] = [
 				description: 'Interfaces consistentes, acessíveis e prontas para o desenvolvimento.',
 			},
 			{
-				title: 'Testes de usabilidade',
+				title: 'Testes de usabilidade e A/B',
 				description: 'Validação com usuários reais antes e depois do lançamento.',
 			},
 		],

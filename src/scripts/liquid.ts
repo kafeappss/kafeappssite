@@ -1,207 +1,20 @@
 /**
- * Metal líquido — um único corpo de líquido em WebGL que acompanha a navegação.
+ * Metal líquido — um único corpo de líquido em WebGL que acompanha a navegação
+ * e muda de forma para ilustrar o que está escrito.
  *
- * Cada seção da página declara uma "formação" com o atributo data-liquid
- * (ex.: data-liquid="hero"). Quando a seção chega ao centro da tela, as gotas
- * escorrem até as novas posições usando molas, se fundindo e se separando no
- * caminho. O cursor também é uma gota, e a rolagem dá inércia ao líquido.
+ * Cada seção (ou bloco) declara uma formação com data-liquid, por exemplo
+ * data-liquid="clock" ou data-liquid="cup bottom" (forma + posicionamento).
+ * Quando o elemento chega ao centro da tela, as peças do líquido escorrem e se
+ * remodelam até a nova forma. No topo, o líquido ganha olhos: é o mascote.
  *
  * Sem WebGL, ou com "reduzir movimento" ativo no sistema, o site continua
- * funcionando com um fundo estático.
+ * funcionando com um fundo estático (e as formas aparecem sem animação).
  */
 
-type Spot = readonly [x: number, y: number, r: number];
-type Formation = { dim: number; land: readonly Spot[]; port?: readonly Spot[] };
+import { shapes, type Placement, type Prim, type ShapeDef } from './shapes';
 
-const FORMATION_SIZE = 9;
-const MAX_BLOBS = FORMATION_SIZE + 1; // + a gota do cursor
-const STORAGE_KEY = 'kafe:liquid';
-
-/*
- * Coordenadas: x vai de -1 (borda esquerda) a 1 (borda direita), y de -1 (base)
- * a 1 (topo). O raio é medido em relação à menor metade da tela, então as gotas
- * mantêm a proporção no desktop e no celular.
- */
-export const formations: Record<string, Formation> = {
-	hero: {
-		dim: 1,
-		land: [
-			[0.58, 0.0, 0.34],
-			[0.84, 0.36, 0.2],
-			[0.8, -0.4, 0.19],
-			[0.44, -0.44, 0.11],
-			[1.04, -0.02, 0.16],
-			[0.48, 0.46, 0.085],
-			[0.68, 0.68, 0.07],
-			[0.96, -0.76, 0.1],
-			[0.3, -0.12, 0.04],
-		],
-		port: [
-			[0.3, -0.66, 0.58],
-			[-0.5, -0.9, 0.44],
-			[0.9, -0.38, 0.3],
-			[-0.95, -0.55, 0.2],
-			[0.8, -1.0, 0.36],
-			[0.05, -0.36, 0.13],
-			[1.0, 0.86, 0.36],
-			[0.62, 0.66, 0.12],
-			[-0.25, -1.02, 0.3],
-		],
-	},
-	right: {
-		dim: 0.8,
-		land: [
-			[1.02, 0.22, 0.3],
-			[0.84, -0.22, 0.15],
-			[1.04, -0.58, 0.22],
-			[0.88, 0.62, 0.1],
-			[0.74, 0.04, 0.06],
-			[1.25, 0.9, 0.12],
-			[1.3, -0.95, 0.12],
-			[0.95, -0.95, 0.08],
-			[1.2, 0.0, 0.1],
-		],
-		port: [
-			[1.2, 0.5, 0.46],
-			[1.08, 0.12, 0.2],
-			[1.18, -0.6, 0.38],
-			[0.96, 0.84, 0.13],
-			[1.02, -0.26, 0.1],
-			[1.3, 0.95, 0.2],
-			[1.3, -0.95, 0.2],
-			[1.0, -0.98, 0.16],
-			[1.3, 0.0, 0.2],
-		],
-	},
-	left: {
-		dim: 0.8,
-		land: [
-			[-1.02, -0.18, 0.3],
-			[-0.84, 0.24, 0.15],
-			[-1.04, 0.6, 0.22],
-			[-0.88, -0.62, 0.11],
-			[-0.74, -0.02, 0.06],
-			[-1.25, -0.9, 0.12],
-			[-1.3, 0.95, 0.12],
-			[-0.95, 0.95, 0.08],
-			[-1.2, 0.0, 0.1],
-		],
-		port: [
-			[-1.2, -0.5, 0.46],
-			[-1.08, -0.12, 0.2],
-			[-1.18, 0.6, 0.38],
-			[-0.96, -0.84, 0.13],
-			[-1.02, 0.26, 0.1],
-			[-1.3, -0.95, 0.2],
-			[-1.3, 0.95, 0.2],
-			[-1.0, 0.98, 0.16],
-			[-1.3, 0.0, 0.2],
-		],
-	},
-	scatter: {
-		dim: 0.72,
-		land: [
-			[-1.04, 0.72, 0.22],
-			[1.04, -0.66, 0.26],
-			[-0.94, -0.88, 0.12],
-			[0.97, 0.86, 0.1],
-			[-0.82, 0.92, 0.06],
-			[0.86, -0.96, 0.08],
-			[1.15, 0.2, 0.1],
-			[-1.15, -0.2, 0.1],
-			[0.0, -1.18, 0.1],
-		],
-	},
-	stream: {
-		dim: 0.85,
-		land: [
-			[-1.0, -0.95, 0.14],
-			[-0.72, -0.98, 0.12],
-			[-0.44, -0.94, 0.1],
-			[-0.16, -0.99, 0.13],
-			[0.12, -0.95, 0.1],
-			[0.4, -0.98, 0.12],
-			[0.68, -0.94, 0.11],
-			[0.96, -0.97, 0.15],
-			[0.3, -0.78, 0.035],
-		],
-		port: [
-			[-1.0, 0.95, 0.3],
-			[-1.04, 0.62, 0.22],
-			[-0.98, 0.3, 0.2],
-			[-1.05, -0.02, 0.24],
-			[-0.98, -0.34, 0.2],
-			[-1.04, -0.66, 0.22],
-			[-1.0, -0.96, 0.28],
-			[1.2, 0.5, 0.12],
-			[-0.84, 0.1, 0.06],
-		],
-	},
-	pool: {
-		dim: 1,
-		land: [
-			[0.0, -1.08, 0.42],
-			[-0.44, -0.98, 0.3],
-			[0.44, -1.0, 0.32],
-			[-0.84, -1.02, 0.25],
-			[0.84, -0.97, 0.24],
-			[0.12, -0.58, 0.085],
-			[-0.24, -0.5, 0.055],
-			[0.33, -0.42, 0.045],
-			[-0.58, -0.66, 0.065],
-		],
-		port: [
-			[0.0, -1.1, 0.8],
-			[-0.65, -1.0, 0.56],
-			[0.65, -1.02, 0.6],
-			[-1.05, -0.92, 0.36],
-			[1.05, -0.9, 0.34],
-			[0.2, -0.7, 0.16],
-			[-0.35, -0.64, 0.11],
-			[0.45, -0.56, 0.09],
-			[-0.7, -0.74, 0.12],
-		],
-	},
-	page: {
-		dim: 0.9,
-		land: [
-			[0.84, 0.74, 0.32],
-			[1.04, 0.3, 0.22],
-			[0.6, 0.96, 0.18],
-			[0.68, 0.36, 0.085],
-			[0.96, -0.1, 0.07],
-			[1.2, -0.5, 0.12],
-			[1.25, 0.95, 0.12],
-			[0.45, 0.7, 0.05],
-			[1.15, -0.85, 0.1],
-		],
-		port: [
-			[0.85, 0.9, 0.5],
-			[1.05, 0.55, 0.34],
-			[0.4, 1.02, 0.3],
-			[0.55, 0.62, 0.12],
-			[1.0, 0.25, 0.1],
-			[1.3, -0.5, 0.2],
-			[1.3, 0.95, 0.2],
-			[0.2, 0.86, 0.08],
-			[1.25, -0.85, 0.16],
-		],
-	},
-	rest: {
-		dim: 0.6,
-		land: [
-			[1.1, 0.8, 0.26],
-			[1.08, -0.72, 0.2],
-			[-1.1, -0.9, 0.16],
-			[0.96, 0.98, 0.08],
-			[1.2, 0.1, 0.1],
-			[-1.25, 0.6, 0.1],
-			[1.3, -0.2, 0.1],
-			[-1.3, -0.3, 0.1],
-			[0.9, -0.98, 0.06],
-		],
-	},
-};
+const SLOTS = 14;
+const STORAGE_KEY = 'kafe:liquid:v2';
 
 const VERTEX_SHADER = /* glsl */ `
 attribute vec2 aPos;
@@ -217,11 +30,21 @@ precision highp float;
 precision mediump float;
 #endif
 
+#define SLOTS ${SLOTS}
+
 uniform vec2 uRes;
 uniform float uTime;
 uniform float uDim;
+uniform float uK;
+uniform float uBevel;
+uniform float uWob;
+uniform float uChrome;
 uniform vec2 uLight;
-uniform vec4 uB[${MAX_BLOBS}];
+uniform vec4 uA[SLOTS];
+uniform vec4 uB[SLOTS];
+uniform vec3 uCur;
+uniform vec4 uEye;
+uniform vec4 uEye2;
 
 const vec3 BG = vec3(0.0);
 
@@ -251,28 +74,64 @@ float fbm(vec2 p) {
 	return v;
 }
 
-// União suave entre gotas: é o que faz o líquido "grudar" ao se aproximar.
 float smin(float a, float b, float k) {
 	float h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0);
 	return mix(b, a, h) - k * h * (1.0 - h);
 }
 
-float field(vec2 p) {
-	p += 0.011 * vec2(sin(p.y * 7.0 + uTime * 0.9), cos(p.x * 6.0 - uTime * 0.7));
-	float d = 8.0;
-	for (int i = 0; i < ${MAX_BLOBS}; i++) {
-		vec4 b = uB[i];
-		if (b.z > 0.001) {
-			d = smin(d, length(p - b.xy) - b.z, 0.2);
-		}
-	}
+float smax(float a, float b, float k) {
+	return -smin(-a, -b, k);
+}
+
+float sdRBox(vec2 p, vec2 b, float r) {
+	r = min(r, min(b.x, b.y));
+	vec2 q = abs(p) - b + r;
+	return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - r;
+}
+
+float prim(vec2 p, vec4 a, vec4 b) {
+	vec2 q = p - a.xy;
+	float c = cos(b.y);
+	float s = sin(b.y);
+	q = vec2(c * q.x + s * q.y, -s * q.x + c * q.y);
+	float d = sdRBox(q, a.zw, b.x);
+	if (b.z > 0.0) d = abs(d) - b.z;
 	return d;
 }
 
-// Perfil arredondado da borda: dá volume de gota ao campo de distância.
+// Combina as peças em ordem: união suave ou buraco suave.
+float field(vec2 p) {
+	p += uWob * vec2(sin(p.y * 7.0 + uTime * 0.9), cos(p.x * 6.0 - uTime * 0.7));
+	float d = 8.0;
+	for (int i = 0; i < SLOTS; i++) {
+		vec4 a = uA[i];
+		if (max(a.z, a.w) < 0.002) continue;
+		vec4 b = uB[i];
+		float di = prim(p, a, b);
+		d = b.w > 0.0 ? smin(d, di, uK) : smax(d, -di, uK * 0.6);
+	}
+	if (uCur.z > 0.002) d = smin(d, length(p - uCur.xy) - uCur.z, 0.18);
+	return d;
+}
+
 float bevel(float d) {
-	float t = clamp(-d / 0.15, 0.0, 1.0);
+	float t = clamp(-d / uBevel, 0.0, 1.0);
 	return sqrt(1.0 - (1.0 - t) * (1.0 - t));
+}
+
+// Olhos do mascote: paralelogramos inclinados, como os recortes das letras do logo.
+float eyes(vec2 p) {
+	float s = uEye.z;
+	vec2 q = p - uEye.xy - uEye2.xy * s * 0.22;
+	float open = max(uEye2.z, 0.06);
+	float d = 1e3;
+	for (int j = 0; j < 2; j++) {
+		float side = j == 0 ? -1.0 : 1.0;
+		vec2 e = q - vec2(side * 0.34 * s, 0.1 * s);
+		e.x -= e.y * 0.3;
+		d = min(d, sdRBox(e, vec2(0.085 * s, 0.2 * s * open), 0.02 * s));
+	}
+	return d;
 }
 
 void main() {
@@ -284,7 +143,6 @@ void main() {
 	float d = field(p);
 	vec3 col = BG;
 
-	// Brilho discreto em volta do metal e uma névoa subindo devagar.
 	float aura = exp(-max(d, 0.0) * 3.6);
 	col += vec3(0.22) * aura * 0.07;
 	vec2 q = p * 1.3 + vec2(0.0, -uTime * 0.045);
@@ -297,7 +155,8 @@ void main() {
 		float h = bevel(d);
 		float hx = bevel(field(p + vec2(e, 0.0)));
 		float hy = bevel(field(p + vec2(0.0, e)));
-		vec3 n = normalize(vec3((h - hx) / e * 0.075, (h - hy) / e * 0.075, 1.0));
+		float slope = uBevel * 0.5;
+		vec3 n = normalize(vec3((h - hx) / e * slope, (h - hy) / e * slope, 1.0));
 
 		vec3 V = vec3(0.0, 0.0, 1.0);
 		vec3 L = normalize(vec3(-0.45 + uLight.x * 0.35, 0.6 + uLight.y * 0.25, 0.66));
@@ -307,28 +166,29 @@ void main() {
 		float spec2 = pow(max(dot(n, normalize(L2 + V)), 0.0), 36.0);
 		float fres = pow(1.0 - max(n.z, 0.0), 2.2);
 
-		// Metal líquido escuro: o corpo quase preto, e a cor vem dos reflexos.
-		vec3 deep = vec3(0.01);
-		vec3 body = vec3(0.045);
-		vec3 rim = vec3(0.22);
-		vec3 liquid = mix(rim, mix(body, deep, smoothstep(0.35, 1.0, h)), smoothstep(0.0, 0.42, h));
+		// Metal escuro: o corpo é quase preto, a cor vem dos reflexos.
+		vec3 liquid = mix(vec3(0.22), mix(vec3(0.045 + 0.05 * uChrome), vec3(0.01), smoothstep(0.35, 1.0, h)), smoothstep(0.0, 0.42, h));
 		float swirl = fbm(p * 2.1 + vec2(uTime * 0.05, -uTime * 0.03));
 		liquid += vec3(0.05) * smoothstep(0.55, 0.92, swirl) * h;
 		liquid *= 0.6 + 0.5 * diff;
 
-		// Estúdio refletido: luz forte no alto, uma linha de horizonte e uma
-		// luz lateral; o que aponta para quem olha reflete o escuro.
 		vec3 r = reflect(-V, n);
 		float sky = smoothstep(0.15, 0.85, r.y);
 		float horizon = exp(-pow((r.y + 0.08) * 9.0, 2.0));
 		float side = smoothstep(0.35, 0.95, r.x) * smoothstep(-0.5, 0.3, r.y);
 		vec3 env = vec3(0.015) + vec3(1.0) * sky * 0.95 + vec3(0.5) * horizon + vec3(0.3) * side;
 		env *= smoothstep(0.98, 0.3, r.z);
-		liquid = mix(liquid, env, clamp(0.1 + fres * 0.9, 0.0, 1.0));
-		liquid += vec3(1.0) * spec;
+		liquid = mix(liquid, env, clamp(mix(0.1, 0.4, uChrome) + fres * 0.9, 0.0, 1.0));
+		liquid += vec3(1.0) * spec * (1.0 + 0.6 * uChrome);
 		liquid += vec3(0.7) * spec2 * 0.3;
 
 		col = mix(col, liquid, smoothstep(px, -px, d));
+	}
+
+	if (uEye.w > 0.01) {
+		float ed = eyes(p);
+		col = mix(col, vec3(1.0), smoothstep(px, -px, ed) * uEye.w);
+		col += vec3(1.0) * exp(-max(ed, 0.0) * 55.0) * 0.18 * uEye.w;
 	}
 
 	col = mix(BG, col, 0.4 + 0.6 * uDim);
@@ -339,16 +199,15 @@ void main() {
 }
 `;
 
-type Blob = {
-	x: number;
-	y: number;
-	r: number;
-	vx: number;
-	vy: number;
-	vr: number;
-	tx: number;
-	ty: number;
-	tr: number;
+/* ---------------------------------------------------------------------------
+   Física
+   --------------------------------------------------------------------------- */
+
+type Slot = {
+	/** x, y, w, h, r, rot, shell */
+	v: number[];
+	vel: number[];
+	op: number;
 	phase: number;
 	ampX: number;
 	ampY: number;
@@ -357,7 +216,13 @@ type Blob = {
 	drag: number;
 };
 
+type Formation = { name: string; def: ShapeDef; place: Placement };
+
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+const random = (seed: number) => {
+	const x = Math.sin(seed * 91.17 + 7.31) * 43758.5453;
+	return x - Math.floor(x);
+};
 
 function createShader(gl: WebGLRenderingContext, type: number, source: string) {
 	const shader = gl.createShader(type);
@@ -388,6 +253,39 @@ function createProgram(gl: WebGLRenderingContext) {
 	return program;
 }
 
+function parseFormation(value: string | undefined): Formation {
+	const [name = 'page', place] = (value ?? 'page').trim().split(/\s+/);
+	const def: ShapeDef = (shapes as Record<string, ShapeDef>)[name] ?? shapes.page;
+	const resolved = name in shapes ? name : 'page';
+	return { name: resolved, def, place: (place as Placement) ?? def.place ?? 'stage' };
+}
+
+/** Onde a forma fica na tela: centro (cx, cy) e escala, em unidades do WebGL. */
+function placementOf(place: Placement, aspect: number, isMascot: boolean) {
+	const R = Math.min(aspect, 1);
+	const portrait = aspect < 0.9;
+	// No celular o texto ocupa a largura toda: as formas ficam menores, num canto
+	// e mais discretas, para nunca competir com o conteúdo.
+	switch (place) {
+		case 'view':
+			return { cx: 0, cy: 0, s: R, sx: aspect, view: true, dim: 1 };
+		case 'bottom':
+			return portrait
+				? { cx: 0, cy: -0.74, s: 0.36 * R, sx: 0, view: false, dim: 0.8 }
+				: { cx: 0, cy: -0.68, s: 0.27, sx: 0, view: false, dim: 1 };
+		case 'center':
+			return { cx: 0, cy: 0, s: portrait ? 0.62 * R : 0.38, sx: 0, view: false, dim: 1 };
+		default:
+			if (portrait) {
+				return isMascot
+					? { cx: 0.5 * aspect, cy: -0.76, s: 0.3 * R, sx: 0, view: false, dim: 1 }
+					: { cx: 0.64 * aspect, cy: 0.6, s: 0.3 * R, sx: 0, view: false, dim: 0.5 };
+			}
+			if (aspect < 1.25) return { cx: 0.6 * aspect, cy: 0, s: 0.3, sx: 0, view: false, dim: 1 };
+			return { cx: 0.52 * aspect, cy: 0, s: isMascot ? 0.36 : 0.4, sx: 0, view: false, dim: 1 };
+	}
+}
+
 export function initLiquid(canvas: HTMLCanvasElement) {
 	const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 	const finePointer = window.matchMedia('(pointer: fine)').matches;
@@ -406,7 +304,6 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 	if (!program) return;
 	gl.useProgram(program);
 
-	// Um triângulo que cobre a tela inteira.
 	const buffer = gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
 	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
@@ -414,12 +311,24 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 	gl.enableVertexAttribArray(aPos);
 	gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
 
-	const uRes = gl.getUniformLocation(program, 'uRes');
-	const uTime = gl.getUniformLocation(program, 'uTime');
-	const uDim = gl.getUniformLocation(program, 'uDim');
-	const uLight = gl.getUniformLocation(program, 'uLight');
-	const uB = gl.getUniformLocation(program, 'uB[0]');
-	const blobData = new Float32Array(MAX_BLOBS * 4);
+	const u = (name: string) => gl.getUniformLocation(program, name);
+	const uniforms = {
+		res: u('uRes'),
+		time: u('uTime'),
+		dim: u('uDim'),
+		k: u('uK'),
+		bevel: u('uBevel'),
+		wob: u('uWob'),
+		chrome: u('uChrome'),
+		light: u('uLight'),
+		a: u('uA[0]'),
+		b: u('uB[0]'),
+		cur: u('uCur'),
+		eye: u('uEye'),
+		eye2: u('uEye2'),
+	};
+	const dataA = new Float32Array(SLOTS * 4);
+	const dataB = new Float32Array(SLOTS * 4);
 
 	// ---------------------------------------------------------------- estado
 	let width = 1;
@@ -427,62 +336,112 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 	let aspect = 1;
 	let quality = window.innerWidth < 768 ? 0.7 : 0.72;
 	let time = 0;
-	let dim = 1;
-	let targetDim = 1;
-	let formationName = 'page';
 	let running = false;
 	let frame = 0;
 	let lastFrame = 0;
 	let skipFrame = false;
 	let lastInteraction = performance.now();
 
-	const random = (seed: number) => {
-		const x = Math.sin(seed * 91.17 + 7.31) * 43758.5453;
-		return x - Math.floor(x);
-	};
+	const globals = { dim: 1, k: 0.2, bevel: 0.15, wob: 0.011, chrome: 0 };
+	const eye = { alpha: 0, open: 1, gx: 0, gy: 0, nextBlink: 2, blinkUntil: 0, happyUntil: 0 };
 
-	const blobs: Blob[] = Array.from({ length: MAX_BLOBS }, (_, i) => ({
-		x: 0,
-		y: 0,
-		r: 0,
-		vx: 0,
-		vy: 0,
-		vr: 0,
-		tx: 0,
-		ty: 0,
-		tr: 0,
+	const slots: Slot[] = Array.from({ length: SLOTS }, (_, i) => ({
+		v: [0, 0, 0, 0, 0, 0, 0],
+		vel: [0, 0, 0, 0, 0, 0, 0],
+		op: 1,
 		phase: random(i + 1) * Math.PI * 2,
-		ampX: 0.025 + random(i + 11) * 0.05,
-		ampY: 0.025 + random(i + 21) * 0.05,
+		ampX: 0.02 + random(i + 11) * 0.04,
+		ampY: 0.02 + random(i + 21) * 0.04,
 		freqX: 0.18 + random(i + 31) * 0.22,
 		freqY: 0.16 + random(i + 41) * 0.22,
 		drag: 0.6 + random(i + 51) * 0.8,
 	}));
-	const cursor = blobs[MAX_BLOBS - 1];
-
+	const cursor = { x: 0, y: 0, r: 0, vx: 0, vy: 0, vr: 0 };
 	const pointer = { x: 0, y: 0, active: false, lastMove: 0, lightX: 0, lightY: 0 };
 
-	function applyFormation(name: string, instant = false) {
-		const formation = formations[name] ?? formations.page;
-		formationName = name in formations ? name : 'page';
-		const portrait = aspect < 0.9;
-		const spots = (portrait && formation.port) || formation.land;
-		const radiusScale = Math.min(aspect, 1);
-		targetDim = formation.dim;
-		for (let i = 0; i < FORMATION_SIZE; i++) {
-			const [x, y, r] = spots[i] ?? [1.4, 0, 0];
-			const blob = blobs[i];
-			blob.tx = x * aspect;
-			blob.ty = y;
-			blob.tr = r * radiusScale;
-			if (instant) {
-				blob.x = blob.tx;
-				blob.y = blob.ty;
-				blob.r = blob.tr;
-				blob.vx = blob.vy = blob.vr = 0;
+	const sections = Array.from(document.querySelectorAll<HTMLElement>('[data-liquid]'));
+	let formation = parseFormation(sections[0]?.dataset.liquid);
+	let formationEl: HTMLElement | undefined = sections[0];
+
+	/**
+	 * Se a seção tiver um espaço reservado ([data-liquid-anchor] visível), a forma
+	 * mora ali e rola junto com o conteúdo, como o mascote no celular.
+	 */
+	function anchorPlacement() {
+		const anchor = formationEl?.querySelector<HTMLElement>('[data-liquid-anchor]');
+		if (!anchor) return null;
+		const r = anchor.getBoundingClientRect();
+		if (!r.width || !r.height) return null;
+		const c = canvas.getBoundingClientRect();
+		return {
+			cx: (((r.left + r.width / 2 - c.left) / c.width) * 2 - 1) * aspect,
+			cy: 1 - ((r.top + r.height / 2 - c.top) / c.height) * 2,
+			s: (Math.min(r.height, r.width * 0.6) / c.height) * 0.95,
+			sx: 0,
+			view: false,
+			dim: 1,
+			anchored: true,
+		};
+	}
+
+	function currentPlacement() {
+		return anchorPlacement() ?? { ...placementOf(formation.place, aspect, Boolean(formation.def.eyes)), anchored: false };
+	}
+
+	const hit = document.querySelector<HTMLElement>('[data-mascot-hit]');
+	const bubble = document.querySelector<HTMLElement>('[data-mascot-bubble]');
+
+	/** Alvos de cada peça para a formação atual, já em coordenadas da tela. */
+	function targets(t: number, place = currentPlacement()) {
+		const def = formation.def;
+		const prims: Prim[] = def.prims.map((prim) => [...prim] as Prim);
+		def.anim?.(t, prims);
+		const drift = (def.drift ?? 1) * (place.view ? 1 : place.s * 2.2);
+		const out: { v: number[]; op: number }[] = [];
+		let sumX = 0;
+		let sumY = 0;
+		for (let i = 0; i < SLOTS; i++) {
+			const prim = prims[i];
+			if (!prim) {
+				out.push({ v: [], op: 0 });
+				continue;
 			}
+			const slot = slots[i];
+			const [x, y, w, h, r, rot, shell, op] = prim;
+			const wx = place.view ? x * place.sx : place.cx + x * place.s;
+			const wy = place.view ? y : place.cy + y * place.s;
+			const dx = slot.ampX * drift * Math.sin(t * slot.freqX + slot.phase);
+			const dy = slot.ampY * drift * Math.cos(t * slot.freqY + slot.phase * 1.3);
+			const v = [wx + dx, wy + dy, w * place.s, h * place.s, r * place.s, rot, shell * place.s];
+			sumX += v[0];
+			sumY += v[1];
+			out.push({ v, op });
 		}
-		if (instant) dim = targetDim;
+		const count = Math.max(1, prims.length);
+		const centerX = sumX / count;
+		const centerY = sumY / count;
+		// Peças que sobram derretem para dentro da forma.
+		for (let i = prims.length; i < SLOTS; i++) {
+			out[i] = { v: [centerX, centerY, 0, 0, 0, slots[i].v[5], 0], op: slots[i].op };
+		}
+		return out;
+	}
+
+	function settle() {
+		const place = currentPlacement();
+		const out = targets(time, place);
+		out.forEach(({ v, op }, i) => {
+			slots[i].v = [...v];
+			slots[i].vel = [0, 0, 0, 0, 0, 0, 0];
+			slots[i].op = op || slots[i].op;
+		});
+		const def = formation.def;
+		globals.dim = (def.dim ?? 0.95) * place.dim;
+		globals.k = def.k ?? 0.2;
+		globals.bevel = def.bevel ?? 0.15;
+		globals.wob = def.wob ?? 0.011;
+		globals.chrome = def.chrome ?? 0;
+		eye.alpha = def.eyes ? 1 : 0;
 	}
 
 	function resize() {
@@ -490,12 +449,12 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 		const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
 		const nextWidth = Math.max(1, Math.round(rect.width * dpr * quality));
 		const nextHeight = Math.max(1, Math.round(rect.height * dpr * quality));
+		aspect = rect.width / Math.max(rect.height, 1);
 		if (nextWidth === width && nextHeight === height) return;
 		width = canvas.width = nextWidth;
 		height = canvas.height = nextHeight;
-		aspect = rect.width / Math.max(rect.height, 1);
 		gl!.viewport(0, 0, width, height);
-		applyFormation(formationName, reducedMotion);
+		if (reducedMotion) settle();
 	}
 
 	// ----------------------------------------------------- continuidade entre páginas
@@ -504,10 +463,9 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 			const saved = JSON.parse(sessionStorage.getItem(STORAGE_KEY) ?? 'null');
 			if (!saved || Date.now() - saved.savedAt > 15 * 60 * 1000) return false;
 			time = Number(saved.time) || 0;
-			(saved.blobs as number[][]).slice(0, FORMATION_SIZE).forEach(([x, y, r], i) => {
-				blobs[i].x = x;
-				blobs[i].y = y;
-				blobs[i].r = r;
+			(saved.slots as { v: number[]; op: number }[]).slice(0, SLOTS).forEach((s, i) => {
+				slots[i].v = s.v.slice(0, 7);
+				slots[i].op = s.op;
 			});
 			return true;
 		} catch {
@@ -519,11 +477,7 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 		try {
 			sessionStorage.setItem(
 				STORAGE_KEY,
-				JSON.stringify({
-					savedAt: Date.now(),
-					time,
-					blobs: blobs.slice(0, FORMATION_SIZE).map((b) => [b.x, b.y, b.r]),
-				}),
+				JSON.stringify({ savedAt: Date.now(), time, slots: slots.map((s) => ({ v: s.v, op: s.op })) }),
 			);
 		} catch {
 			// Armazenamento indisponível (aba anônima, por exemplo): sem problemas.
@@ -531,10 +485,7 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 	}
 
 	// ------------------------------------------------------------ formações
-	const sections = Array.from(document.querySelectorAll<HTMLElement>('[data-liquid]'));
 	const visible = new Set<HTMLElement>();
-	if (sections[0]) formationName = sections[0].dataset.liquid ?? 'page';
-
 	const observer = new IntersectionObserver(
 		(entries) => {
 			for (const entry of entries) {
@@ -543,10 +494,17 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 				else visible.delete(element);
 			}
 			const current = sections.filter((section) => visible.has(section)).at(-1);
-			const name = current?.dataset.liquid;
-			if (name && name !== formationName) {
-				applyFormation(name, reducedMotion);
-				if (reducedMotion) render();
+			if (!current) return;
+			const next = parseFormation(current.dataset.liquid);
+			if (current === formationEl || (next.name === formation.name && next.place === formation.place)) {
+				formationEl = current;
+				return;
+			}
+			formation = next;
+			formationEl = current;
+			if (reducedMotion) {
+				settle();
+				render();
 			}
 		},
 		{ rootMargin: '-45% 0px -45% 0px' },
@@ -555,15 +513,19 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 
 	// --------------------------------------------------------- interação
 	let lastScroll = window.scrollY;
+	const toWorld = (clientX: number, clientY: number) => {
+		const rect = canvas.getBoundingClientRect();
+		return { x: ((clientX / rect.width) * 2 - 1) * aspect, y: -((clientY / rect.height) * 2 - 1) };
+	};
 
-	if (!reducedMotion && finePointer) {
+	if (!reducedMotion) {
 		window.addEventListener(
 			'pointermove',
 			(event) => {
-				const rect = canvas.getBoundingClientRect();
-				pointer.x = ((event.clientX / rect.width) * 2 - 1) * aspect;
-				pointer.y = -((event.clientY / rect.height) * 2 - 1);
-				pointer.active = true;
+				const world = toWorld(event.clientX, event.clientY);
+				pointer.x = world.x;
+				pointer.y = world.y;
+				pointer.active = finePointer || event.pointerType === 'mouse';
 				pointer.lastMove = performance.now();
 				lastInteraction = pointer.lastMove;
 			},
@@ -574,53 +536,88 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 		});
 	}
 
+	/** Cutucada no mascote: ele pula, as gotinhas se espalham e os olhos sorriem. */
+	window.addEventListener('kafe:mascot-poke', () => {
+		lastInteraction = performance.now();
+		eye.happyUntil = time + 1.1;
+		const body = slots[0];
+		body.vel[2] += 1.6;
+		body.vel[3] -= 1.6;
+		body.vel[1] += 1.2;
+		for (let i = 1; i < 6; i++) {
+			const s = slots[i];
+			const dx = s.v[0] - body.v[0];
+			const dy = s.v[1] - body.v[1];
+			const len = Math.hypot(dx, dy) || 1;
+			s.vel[0] += (dx / len) * 1.4;
+			s.vel[1] += (dy / len) * 1.4;
+		}
+		if (reducedMotion) render();
+	});
+
 	// ------------------------------------------------------------- física
 	function step(dt: number) {
 		time += dt;
 		const now = performance.now();
 		if (pointer.active && now - pointer.lastMove > 4000) pointer.active = false;
 
-		// Inércia da rolagem: o líquido "atrasa" um pouco em relação à página.
 		const scrollY = window.scrollY;
 		const scrollDelta = clamp(scrollY - lastScroll, -160, 160);
 		if (scrollDelta !== 0) lastInteraction = now;
 		lastScroll = scrollY;
-		const impulse = (scrollDelta / Math.max(window.innerHeight, 1)) * 2 * 2.4;
+		const def = formation.def;
+		const place = currentPlacement();
+		// Formas ancoradas já acompanham a rolagem; o empurrão extra seria em dobro.
+		const impulse = place.anchored
+			? 0
+			: (scrollDelta / Math.max(window.innerHeight, 1)) * 2 * 2.4 * (def.inertia ?? 1);
 
+		const out = targets(time, place);
 		const stiffness = 6.5;
 		const damping = 3.7;
 
-		for (let i = 0; i < FORMATION_SIZE; i++) {
-			const b = blobs[i];
-			let tx = b.tx + b.ampX * Math.sin(time * b.freqX + b.phase);
-			let ty = b.ty + b.ampY * Math.cos(time * b.freqY + b.phase * 1.3);
-			const tr = b.tr * (1 + 0.05 * Math.sin(time * 0.6 + b.phase * 2));
+		for (let i = 0; i < SLOTS; i++) {
+			const slot = slots[i];
+			const target = out[i];
+			let tv = target.v;
+			// Ao trocar entre "peça" e "buraco", a peça some antes de reaparecer.
+			if (target.op && target.op !== slot.op) {
+				tv = [...tv];
+				tv[2] = tv[3] = tv[4] = 0;
+				if (Math.max(slot.v[2], slot.v[3]) < 0.004) slot.op = target.op;
+			}
 
-			if (pointer.active) {
+			let tx = tv[0];
+			let ty = tv[1];
+			if (def.magnet && pointer.active && i > 0) {
 				const dx = pointer.x - tx;
 				const dy = pointer.y - ty;
 				const distance = Math.hypot(dx, dy);
-				const reach = 0.6;
-				if (distance < reach) {
-					const pull = (1 - distance / reach) * 0.09;
+				if (distance < 0.6) {
+					const pull = (1 - distance / 0.6) * 0.09;
 					tx += dx * pull;
 					ty += dy * pull;
 				}
 			}
+			if (def.eyes && i === 0 && pointer.active) {
+				tx += clamp(pointer.x - tx, -0.6, 0.6) * 0.05;
+				ty += clamp(pointer.y - ty, -0.6, 0.6) * 0.05;
+			}
 
-			b.vy += impulse * b.drag;
-			b.vx += ((tx - b.x) * stiffness - b.vx * damping) * dt;
-			b.vy += ((ty - b.y) * stiffness - b.vy * damping) * dt;
-			b.vr += ((tr - b.r) * stiffness - b.vr * damping) * dt;
-			b.vx = clamp(b.vx, -4, 4);
-			b.vy = clamp(b.vy, -4, 4);
-			b.x += b.vx * dt;
-			b.y += b.vy * dt;
-			b.r = Math.max(0, b.r + b.vr * dt);
+			slot.vel[1] += impulse * slot.drag;
+			const goal = [tx, ty, tv[2], tv[3], tv[4], tv[5], tv[6]];
+			// Rotação pelo caminho mais curto.
+			goal[5] = slot.v[5] + ((((goal[5] - slot.v[5] + Math.PI) % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2)) - Math.PI;
+			for (let k = 0; k < 7; k++) {
+				slot.vel[k] += ((goal[k] - slot.v[k]) * stiffness - slot.vel[k] * damping) * dt;
+				slot.vel[k] = clamp(slot.vel[k], -5, 5);
+				slot.v[k] += slot.vel[k] * dt;
+			}
+			for (const k of [2, 3, 4, 6]) slot.v[k] = Math.max(0, slot.v[k]);
 		}
 
-		// A gota do cursor segue o mouse de perto.
-		const cursorTarget = pointer.active ? 0.055 * Math.min(aspect, 1) : 0;
+		// Gota do cursor (só nas formações "orgânicas").
+		const cursorTarget = pointer.active && def.magnet ? 0.055 * Math.min(aspect, 1) : 0;
 		if (cursor.r < 0.002 && pointer.active) {
 			cursor.x = pointer.x;
 			cursor.y = pointer.y;
@@ -632,25 +629,84 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 		cursor.y += cursor.vy * dt;
 		cursor.r = Math.max(0, cursor.r + cursor.vr * dt);
 
+		// Olhos: aparecem só no mascote, piscam e acompanham o cursor.
+		eye.alpha += ((def.eyes ? 1 : 0) - eye.alpha) * Math.min(1, dt * 4);
+		if (time > eye.nextBlink) {
+			eye.blinkUntil = time + 0.14;
+			eye.nextBlink = time + 2 + random(time) * 3.5;
+		}
+		const happy = time < eye.happyUntil;
+		const openTarget = time < eye.blinkUntil ? 0.06 : happy ? 0.3 : 1;
+		eye.open += (openTarget - eye.open) * Math.min(1, dt * 18);
+		const body = slots[0].v;
+		let gx = Math.sin(time * 0.5) * 0.4;
+		let gy = Math.sin(time * 0.37) * 0.2;
+		if (pointer.active) {
+			const dx = pointer.x - body[0];
+			const dy = pointer.y - body[1];
+			const len = Math.hypot(dx, dy) || 1;
+			const reach = Math.min(1, len / 0.6);
+			gx = (dx / len) * reach;
+			gy = (dy / len) * reach;
+		}
+		eye.gx += (gx - eye.gx) * Math.min(1, dt * 6);
+		eye.gy += (gy - eye.gy) * Math.min(1, dt * 6);
+
 		pointer.lightX += ((pointer.active ? pointer.x / aspect : 0) - pointer.lightX) * Math.min(1, dt * 2);
 		pointer.lightY += ((pointer.active ? pointer.y : 0) - pointer.lightY) * Math.min(1, dt * 2);
-		dim += (targetDim - dim) * Math.min(1, dt * 1.5);
+
+		const ease = Math.min(1, dt * 2);
+		globals.dim += ((def.dim ?? 0.95) * place.dim - globals.dim) * ease;
+		globals.k += ((def.k ?? 0.2) - globals.k) * ease;
+		globals.bevel += ((def.bevel ?? 0.15) - globals.bevel) * ease;
+		globals.wob += ((def.wob ?? 0.011) - globals.wob) * ease;
+		globals.chrome += ((def.chrome ?? 0) - globals.chrome) * ease;
+	}
+
+	/** Posiciona o botão invisível e o balão de fala sobre o mascote. */
+	function placeMascotUi() {
+		if (!hit && !bubble) return;
+		const show = eye.alpha > 0.5;
+		const body = slots[0].v;
+		const rect = canvas.getBoundingClientRect();
+		const sx = ((body[0] / aspect + 1) / 2) * rect.width;
+		const sy = ((1 - body[1]) / 2) * rect.height;
+		const radius = (Math.max(body[2], body[3]) / 2) * rect.height;
+		if (hit) {
+			hit.dataset.visible = String(show);
+			hit.style.transform = `translate(${sx - radius}px, ${sy - radius}px)`;
+			hit.style.width = hit.style.height = `${radius * 2}px`;
+		}
+		if (bubble) {
+			bubble.dataset.visible = String(show);
+			// No celular o balão encosta na margem direita para não cobrir o texto.
+			const bx = rect.width < 640 ? rect.width - 16 : clamp(sx - radius * 0.35, 180, rect.width - 16);
+			bubble.style.transform = `translate(${bx}px, ${sy - radius * 1.02}px)`;
+		}
 	}
 
 	function render() {
-		for (let i = 0; i < MAX_BLOBS; i++) {
-			const b = blobs[i];
-			blobData[i * 4] = b.x;
-			blobData[i * 4 + 1] = b.y;
-			blobData[i * 4 + 2] = b.r;
-			blobData[i * 4 + 3] = 0;
+		for (let i = 0; i < SLOTS; i++) {
+			const v = slots[i].v;
+			dataA.set([v[0], v[1], v[2], v[3]], i * 4);
+			dataB.set([v[4], v[5], v[6], slots[i].op], i * 4);
 		}
-		gl!.uniform2f(uRes, width, height);
-		gl!.uniform1f(uTime, time);
-		gl!.uniform1f(uDim, dim);
-		gl!.uniform2f(uLight, pointer.lightX, pointer.lightY);
-		gl!.uniform4fv(uB, blobData);
+		const body = slots[0].v;
+		gl!.uniform2f(uniforms.res, width, height);
+		gl!.uniform1f(uniforms.time, time);
+		gl!.uniform1f(uniforms.dim, globals.dim);
+		gl!.uniform1f(uniforms.k, globals.k);
+		gl!.uniform1f(uniforms.bevel, globals.bevel);
+		gl!.uniform1f(uniforms.wob, globals.wob);
+		gl!.uniform1f(uniforms.chrome, globals.chrome);
+		gl!.uniform2f(uniforms.light, pointer.lightX, pointer.lightY);
+		gl!.uniform4fv(uniforms.a, dataA);
+		gl!.uniform4fv(uniforms.b, dataB);
+		gl!.uniform3f(uniforms.cur, cursor.x, cursor.y, cursor.r);
+		gl!.uniform4f(uniforms.eye, body[0], body[1], Math.min(body[2], body[3]), eye.alpha);
+		gl!.uniform4f(uniforms.eye2, eye.gx, eye.gy, eye.open, 0);
 		gl!.drawArrays(gl!.TRIANGLES, 0, 3);
+		placeMascotUi();
 	}
 
 	// --------------------------------------------- qualidade adaptativa
@@ -666,7 +722,7 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 				quality = Math.max(0.35, quality * 0.75);
 				resize();
 			} else {
-				skipFrame = true; // aparelhos mais modestos: 30 quadros por segundo
+				skipFrame = true;
 			}
 		}
 	}
@@ -675,8 +731,7 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 		if (!running) return;
 		frame = requestAnimationFrame(loop);
 		const delta = lastFrame ? now - lastFrame : 16.7;
-		// Parado (sem rolagem nem mouse), o líquido só deriva devagar: 30 quadros
-		// por segundo bastam e poupam bateria.
+		// Parado (sem rolagem nem mouse), 30 quadros por segundo bastam e poupam bateria.
 		const idle = now - lastInteraction > 3000;
 		if ((skipFrame || idle) && delta < 30) return;
 		lastFrame = now;
@@ -700,14 +755,14 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 	// --------------------------------------------------------------- início
 	resize();
 	const restored = restore();
-	applyFormation(formationName, reducedMotion);
-	if (!restored && !reducedMotion) {
-		// Primeira visita: as gotas brotam e sobem até a posição inicial.
-		for (let i = 0; i < FORMATION_SIZE; i++) {
-			blobs[i].x = blobs[i].tx;
-			blobs[i].y = blobs[i].ty - 0.5;
-			blobs[i].r = 0;
-		}
+	if (reducedMotion) {
+		settle();
+	} else if (!restored) {
+		// Primeira visita: as peças brotam e sobem até a posição inicial.
+		targets(0).forEach(({ v, op }, i) => {
+			slots[i].v = [v[0], v[1] - 0.5, 0, 0, 0, v[5], v[6]];
+			slots[i].op = op || 1;
+		});
 	}
 
 	render();
@@ -726,9 +781,31 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 
 	window.addEventListener('pagehide', save);
 
+	if (reducedMotion) {
+		// Sem animação, a forma ancorada só precisa ser redesenhada ao rolar.
+		window.addEventListener(
+			'scroll',
+			() => {
+				if (!currentPlacement().anchored) return;
+				settle();
+				render();
+			},
+			{ passive: true },
+		);
+	}
+
 	canvas.addEventListener('webglcontextlost', (event) => {
 		event.preventDefault();
 		stop();
 		canvas.classList.remove('is-live');
 	});
+
+	// Ferramenta de inspeção: window.__liquid.show('clock') no console.
+	(window as unknown as { __liquid: unknown }).__liquid = {
+		show: (value: string) => {
+			formation = parseFormation(value);
+			formationEl = undefined;
+			lastInteraction = performance.now();
+		},
+	};
 }

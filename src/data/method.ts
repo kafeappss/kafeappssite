@@ -1,91 +1,90 @@
 /**
- * Método Sprint e Metodologia 4D.
- * TODO: confirmar com o time se os quatro "D" usados aqui (Descobrir, Definir,
- * Desenvolver e Decolar) são os mesmos da metodologia oficial da Kafé.
+ * Metodologia 4Ds, formatos de trabalho, engenharia aumentada por IA e
+ * perguntas frequentes.
  */
 
 export const methodSteps = [
 	{
-		id: 'descobrir',
-		name: 'Descobrir',
+		id: 'discovery',
+		name: 'Discovery',
 		coffee: 'a escolha do grão',
-		title: 'Imersão no seu negócio',
+		title: 'Entender antes de construir',
 		description:
-			'Entrevistas, análise de mercado e mapeamento de hipóteses. Entendemos o problema, o público e o que significa sucesso para você.',
-		output: 'Mapa do produto e hipóteses priorizadas',
+			'Descobrimos as prioridades do seu negócio, definimos as dores principais e desenhamos as soluções necessárias.',
+		output: 'Problemas priorizados e escopo definido',
 	},
 	{
-		id: 'definir',
-		name: 'Definir',
+		id: 'design',
+		name: 'Design',
 		coffee: 'a torra',
-		title: 'Escopo, protótipo e plano',
+		title: 'Design Inteligente (I.D.)',
 		description:
-			'Desenhamos os fluxos e o protótipo navegável, escolhemos a tecnologia ideal — no-code, low-code ou código — e dividimos o projeto em sprints com entregas claras.',
-		output: 'Protótipo navegável e plano de sprints',
+			'UX research e UI para criar fluxos e telas que entregam performance, usabilidade e experiência. Tudo testado em protótipo antes do código.',
+		output: 'Protótipo navegável validado',
 	},
 	{
-		id: 'desenvolver',
-		name: 'Desenvolver',
+		id: 'develop',
+		name: 'Develop',
 		coffee: 'a extração',
-		title: 'Sprints curtas e transparentes',
+		title: 'Código acelerado por IA',
 		description:
-			'Construímos em ciclos curtos, com entregas testáveis. Você acompanha o andamento em tempo real e valida cada etapa antes da próxima.',
-		output: 'Entregas incrementais testadas',
+			'Engenheiros apoiados por IA desenvolvem em sprints curtas, com revisão humana e testes automatizados. Você acompanha tudo em tempo real.',
+		output: 'Entregas testadas a cada sprint',
 	},
 	{
-		id: 'decolar',
-		name: 'Decolar',
+		id: 'deploy',
+		name: 'Deploy',
 		coffee: 'servido',
-		title: 'Lançamento e primeiros usuários',
+		title: 'Lançamento e evolução',
 		description:
-			'Publicamos nas lojas ou na web, configuramos as métricas e acompanhamos de perto os primeiros dias de uso.',
-		output: 'Produto no ar e painel de métricas',
+			'Publicamos, acompanhamos os primeiros usuários e seguimos com suporte e melhorias para o produto ter sucesso no mercado.',
+		output: 'Produto no ar e monitorado',
 	},
 ];
 
 export const engagementModels = [
 	{
-		name: 'Projeto Sprint',
-		badge: 'Para começar',
+		name: 'OnDemand™',
+		badge: 'Projeto com escopo',
 		description:
-			'Para tirar uma ideia do papel ou lançar um MVP. Escopo enxuto, entregas por sprint e prazo definido desde o início.',
-		items: ['Discovery e protótipo navegável', 'Desenvolvimento em sprints', 'Publicação e métricas de validação'],
+			'Transformamos a sua ideia em aplicativo ou sistema, com escopo, prazo e investimento combinados desde o início.',
+		items: ['Definição de escopo', 'Desenvolvimento em sprints', 'Deploy no prazo estimado'],
 	},
 	{
-		name: 'Projeto sob medida',
-		badge: 'Para estruturar',
+		name: 'OnGoing™',
+		badge: 'Squad as a Service',
 		description:
-			'Para produtos e sistemas mais robustos, com vários módulos, integrações e perfis de usuário.',
-		items: ['Arquitetura e roadmap do produto', 'Entregas por módulos', 'Integrações com sistemas existentes'],
+			'Um squad dedicado de engenheiros e designers para criar e evoluir o seu produto continuamente, com custo previsível.',
+		items: ['Plano sob medida para o seu objetivo', 'Levantamento de demandas mensais', 'Entregas constantes'],
 	},
 	{
-		name: 'Kafé Ongoing™',
-		badge: 'Para evoluir',
+		name: 'InfoScale™',
+		badge: 'Para infoprodutores',
 		description:
-			'Evolução contínua com custo previsível: um time da Kafé dedicado às demandas tecnológicas do seu negócio, com no-code e low-code.',
-		items: ['Melhorias e novas funcionalidades todo mês', 'Suporte e monitoramento', 'Prioridades definidas com você'],
+			'Transformamos o seu infoproduto ou metodologia em um aplicativo, com um time de tecnologia e produto dedicado ao seu negócio.',
+		items: ['Plano adequado ao seu projeto', 'Desenvolvimento do app', 'Lançamento e evolução'],
 	},
 ];
 
-/** Comparativo geral entre as três formas de construir (escala de 1 a 5). */
-export const buildModes = [
+/** Engenharia aumentada por IA: como a IA entra no nosso jeito de construir. */
+export const aiPillars = [
 	{
-		name: 'No-code',
-		summary: 'Construção 100% visual, para lançar em tempo recorde.',
-		bestFor: 'MVPs, sistemas internos e validação rápida',
-		scores: { Velocidade: 5, Economia: 5, Flexibilidade: 3, Escala: 3 },
+		title: 'Mais velocidade',
+		description:
+			'Agentes de IA aceleram testes, documentação, telas e integrações. O que levava semanas sai em dias.',
 	},
 	{
-		name: 'Low-code',
-		summary: 'Visual onde dá, código onde precisa.',
-		bestFor: 'Produtos em crescimento e regras de negócio complexas',
-		scores: { Velocidade: 4, Economia: 4, Flexibilidade: 4, Escala: 4 },
+		title: 'Qualidade revisada',
+		description:
+			'Toda entrega passa por engenheiros seniores e por testes automatizados antes de chegar a você.',
 	},
 	{
-		name: 'Código',
-		summary: 'Controle total de arquitetura e performance.',
-		bestFor: 'Produtos validados que precisam escalar sem limites',
-		scores: { Velocidade: 3, Economia: 2, Flexibilidade: 5, Escala: 5 },
+		title: 'Investimento menor',
+		description: 'Menos horas em tarefas mecânicas: até 40% mais econômico que o desenvolvimento tradicional.',
+	},
+	{
+		title: 'Seus dados protegidos',
+		description: 'Código e informações do projeto tratados com confidencialidade e dentro da LGPD.',
 	},
 ];
 
@@ -93,19 +92,19 @@ export const buildModes = [
 export const faq = [
 	{
 		q: 'Quanto custa desenvolver um aplicativo ou sistema?',
-		a: 'Depende do escopo, das plataformas, das integrações e da tecnologia escolhida — no-code e low-code costumam reduzir bastante o investimento. Depois de uma conversa inicial e da etapa de descoberta, você recebe uma proposta clara, dividida por sprints.',
+		a: 'Depende do escopo, das plataformas e das integrações. Como nossos engenheiros trabalham acelerados por IA, o tempo de desenvolvimento cai — e isso aparece no investimento. Depois da etapa de Discovery, você recebe uma proposta clara, dividida por sprints.',
+	},
+	{
+		q: 'Como vocês usam IA no desenvolvimento?',
+		a: 'Nossos engenheiros usam ferramentas e agentes de IA para acelerar tarefas como escrever testes, documentar, revisar e prototipar. As decisões de arquitetura e a revisão final são sempre de pessoas, e o código e os dados do seu projeto são tratados com confidencialidade.',
 	},
 	{
 		q: 'Em quanto tempo meu MVP fica pronto?',
-		a: 'Com o Método Sprint, as primeiras entregas testáveis chegam em poucos dias ou semanas. O prazo total varia conforme o escopo e é definido no planejamento, antes de qualquer linha de código.',
+		a: 'As primeiras entregas testáveis chegam em poucas semanas. O prazo total varia conforme o escopo e é definido no planejamento, antes de qualquer linha de código.',
 	},
 	{
-		q: 'No-code é coisa séria? Meu produto vai aguentar crescer?',
-		a: 'Sim. As plataformas atuais sustentam produtos com milhares de usuários. Quando o crescimento pedir, planejamos a migração gradual para código próprio, sem perder o que já foi construído e aprendido.',
-	},
-	{
-		q: 'O produto fica no nome da minha empresa?',
-		a: 'Recomendamos — e ajudamos a configurar — que contas de lojas, domínios e plataformas fiquem em nome da sua empresa desde o início. Assim, você tem controle total sobre o que é seu.',
+		q: 'O código e o produto ficam no nome da minha empresa?',
+		a: 'Recomendamos — e ajudamos a configurar — que repositórios, contas de lojas, domínios e servidores fiquem em nome da sua empresa desde o início. Assim, você tem controle total sobre o que é seu.',
 	},
 	{
 		q: 'Vocês assinam acordo de confidencialidade?',
@@ -117,6 +116,6 @@ export const faq = [
 	},
 	{
 		q: 'E depois do lançamento?',
-		a: 'O produto continua evoluindo. Com o Kafé Ongoing™, um time da Kafé cuida de melhorias, novas funcionalidades e suporte, com prioridades definidas junto com você.',
+		a: 'O produto continua evoluindo. Com o OnGoing™, um squad dedicado cuida de melhorias, novas funcionalidades e suporte, com prioridades definidas junto com você.',
 	},
 ];

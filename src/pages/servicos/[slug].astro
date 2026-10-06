@@ -34,6 +34,8 @@ const serviceSchema = {
 
 <Base title={service.seo.title} description={service.seo.description} schema={[serviceSchema]}>
 	<PageHero
+		liquid={service.shape}
+		rail="Início"
 		eyebrow={service.title}
 		title={service.hero.title}
 		lead={service.hero.lead}
@@ -45,7 +47,7 @@ const serviceSchema = {
 		</div>
 	</PageHero>
 
-	<section class="section intro" data-liquid="left">
+	<section class="section intro" data-liquid="rest" data-rail="Visão geral">
 		<div class="container intro-grid">
 			<h2 class="h2" data-split set:html={service.intro.title} />
 			<div class="intro-body">
@@ -67,7 +69,7 @@ const serviceSchema = {
 		</div>
 	</section>
 
-	<section class="section" id="entregas" data-liquid="right">
+	<section class="section" id="entregas" data-liquid="rest" data-rail="Entregas">
 		<div class="container">
 			<SectionHead eyebrow="O que entregamos" title="Tudo o que entra <em>no projeto.</em>" />
 			<ol role="list" class="deliverables">
@@ -84,7 +86,7 @@ const serviceSchema = {
 		</div>
 	</section>
 
-	<section class="section" data-liquid="scatter">
+	<section class="section" data-liquid="rest" data-rail="Na prática">
 		<div class="container">
 			<SectionHead eyebrow="Na prática" title={service.highlights.title} />
 			<div class:list={['highlights', `count-${service.highlights.items.length}`]}>
@@ -100,7 +102,7 @@ const serviceSchema = {
 		</div>
 	</section>
 
-	<section class="section" data-liquid="stream">
+	<section class="section" data-liquid="rest" data-rail="Método">
 		<div class="container">
 			<SectionHead
 				eyebrow="Como trabalhamos"
@@ -111,7 +113,7 @@ const serviceSchema = {
 		</div>
 	</section>
 
-	<section class="section" data-liquid="rest">
+	<section class="section" data-liquid="rest" data-rail="Dúvidas">
 		<div class="container faq-layout">
 			<SectionHead eyebrow="Perguntas frequentes" title="Dúvidas sobre <em>este serviço.</em>" />
 			<Faq items={service.faq} />
@@ -138,6 +140,7 @@ const serviceSchema = {
 	</section>
 
 	<CtaSection
+		rail="Contato"
 		title="Vamos tirar o seu projeto <em>do papel?</em>"
 		lead="Conte o que você quer construir e receba uma proposta clara, dividida por sprints — sem compromisso."
 	/>

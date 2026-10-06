@@ -12,12 +12,13 @@ const posts = (await getCollection('blog', ({ data }) => !data.draft)).sort(
 
 <Base
 	title="Blog: produto, tecnologia e negócios digitais"
-	description="Artigos da Kafé Apps sobre desenvolvimento de aplicativos, MVP, no-code, low-code, UX e como tirar ideias do papel."
+	description="Artigos da Kafé Apps sobre desenvolvimento de aplicativos, MVP, IA, UX e como tirar ideias do papel."
 >
 	<PageHero
+		liquid="layout"
 		eyebrow="Blog"
 		title="Ideias para quem <em>constrói produtos.</em>"
-		lead="Guias práticos sobre aplicativos, MVPs, no-code, low-code e tudo o que envolve transformar uma ideia em negócio digital."
+		lead="Guias práticos sobre aplicativos, MVPs, inteligência artificial e tudo o que envolve transformar uma ideia em negócio digital."
 		breadcrumbs={[{ label: 'Blog' }]}
 	/>
 

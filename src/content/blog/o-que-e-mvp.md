@@ -35,7 +35,7 @@ Antes de investir em desenvolvimento, vale considerar formatos mais simples. Alg
 - **Mágico de Oz:** para o cliente, parece automático; nos bastidores, uma pessoa faz o trabalho. Ótimo para testar a experiência antes de construir a tecnologia.
 - **Protótipo navegável:** uma simulação clicável do produto, usada para testes com usuários e conversas com investidores.
 - **Funcionalidade única:** um aplicativo que faz uma coisa só — muito bem.
-- **Combinação de ferramentas prontas:** formulários, planilhas, automações e plataformas no-code costurados para entregar o serviço.
+- **Combinação de ferramentas prontas:** formulários, planilhas e automações costurados para entregar o serviço antes de existir um produto próprio.
 
 ## Exemplos que viraram referência
 
@@ -58,7 +58,7 @@ Nenhum desses começos era sofisticado. Todos eram focados em aprender.
 - **O MVP que vira produto completo.** "Só mais essa funcionalidade" é a frase que transforma três meses em doze.
 - **Não definir métricas.** Sem números combinados antes, qualquer resultado vira "promissor".
 - **Testar só com amigos e família.** Eles amam você — não necessariamente o seu produto. Busque usuários reais do seu público.
-- **Escolher a tecnologia pela moda.** A melhor tecnologia para um MVP é a que coloca o produto no ar mais rápido, com qualidade, sem fechar portas para o futuro. Muitas vezes, isso significa [no-code ou low-code](/blog/no-code-low-code-ou-codigo).
+- **Escolher a tecnologia pela moda.** A melhor tecnologia para um MVP é a que coloca o produto no ar rápido, com qualidade, sem fechar portas para o futuro. Hoje, código bem estruturado e [acelerado por IA](/blog/desenvolvimento-de-software-com-ia) entrega essa velocidade sem criar uma base que precise ser jogada fora.
 - **Não planejar o "depois".** O MVP é o começo de um ciclo. Reserve energia — e orçamento — para aprender com os dados e evoluir.
 
 ## Depois do MVP: perseverar, pivotar ou parar

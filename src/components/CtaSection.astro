@@ -5,17 +5,20 @@ import { site, whatsappLink } from '../data/site';
 interface Props {
 	title?: string;
 	lead?: string;
+	/** Nome da etapa no trilho lateral. */
+	rail?: string;
 }
 
 const {
 	title = 'O café está passando. <em>Vamos falar da sua ideia?</em>',
 	lead = 'Conte o que você quer construir. A gente responde com os próximos passos — sem compromisso e sem “tecniquês”.',
+	rail,
 } = Astro.props;
 
 const whatsapp = whatsappLink();
 ---
 
-<section class="section cta" data-liquid="pool">
+<section class="section cta" data-liquid="cup bottom" data-rail={rail}>
 	<div class="container cta-inner">
 		<p class="eyebrow" data-reveal>Próximo passo</p>
 		<h2 class="h1" data-split set:html={title} />

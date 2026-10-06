@@ -304,6 +304,24 @@ ol[role='list'] {
 	max-width: 640px;
 }
 
+/* Seção em duas colunas: texto à esquerda, "palco" à direita, onde o
+   líquido assume a forma que ilustra o conteúdo. */
+.split {
+	display: grid;
+	gap: 40px;
+}
+
+.split-text {
+	min-width: 0;
+}
+
+@media (min-width: 1024px) {
+	.split {
+		grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+		gap: 56px;
+	}
+}
+
 .visually-hidden {
 	position: absolute !important;
 	width: 1px;

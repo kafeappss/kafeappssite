@@ -26,7 +26,7 @@ Um app nativo é desenvolvido especificamente para cada sistema operacional, com
 
 ## Aplicativo multiplataforma
 
-No desenvolvimento multiplataforma, uma única base de código gera aplicativos para iOS e Android. As tecnologias mais conhecidas são o Flutter, criado pelo Google, e o React Native, criado pela Meta. Muitas plataformas low-code e no-code também geram apps multiplataforma.
+No desenvolvimento multiplataforma, uma única base de código gera aplicativos para iOS e Android. As tecnologias mais conhecidas são o Flutter, criado pelo Google, e o React Native, criado pela Meta.
 
 **Vantagens**
 
