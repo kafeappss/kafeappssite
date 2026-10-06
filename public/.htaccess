@@ -1,2 +1,5 @@
-# Hospedagem com Apache/LiteSpeed (ex.: Hostinger): mostra a página de erro do site.
+# Hospedagem com Apache/LiteSpeed (ex.: Hostinger).
+# Abre o index.html do site novo mesmo se ainda houver um index.php (WordPress) na pasta.
+DirectoryIndex index.html index.php
+# Página de erro do site.
 ErrorDocument 404 /404.html
