@@ -51,10 +51,10 @@ import { buildModes } from '../data/method';
 	}
 
 	.mode.featured {
-		border-color: rgb(214 153 92 / 0.35);
+		border-color: rgb(255 255 255 / 0.19);
 		background:
-			radial-gradient(420px circle at var(--mx) var(--my), rgb(214 153 92 / 0.12), transparent 60%),
-			linear-gradient(180deg, rgb(52 34 22 / 0.8), rgb(23 16 12 / 0.8));
+			radial-gradient(420px circle at var(--mx) var(--my), rgb(255 255 255 / 0.07), transparent 60%),
+			linear-gradient(180deg, rgb(34 34 34 / 0.8), rgb(14 14 14 / 0.8));
 	}
 
 	.mode-badge {
@@ -62,12 +62,12 @@ import { buildModes } from '../data/method';
 		top: 22px;
 		right: 22px;
 		padding: 6px 10px;
-		border-radius: 999px;
+		border-radius: var(--radius-sm);
 		font-size: 0.7rem;
 		letter-spacing: 0.1em;
 		text-transform: uppercase;
 		color: var(--bg);
-		background: var(--gradient-crema);
+		background: var(--gradient-metal);
 	}
 
 	.mode-summary {
@@ -108,7 +108,7 @@ import { buildModes } from '../data/method';
 	}
 
 	.mode-bars span.on {
-		background: var(--gradient-crema);
+		background: var(--gradient-metal);
 	}
 
 	.mode-best {

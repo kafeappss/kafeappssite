@@ -23,12 +23,12 @@ const href = whatsappLink();
 		place-items: center;
 		width: 56px;
 		height: 56px;
-		border-radius: 50%;
+		border-radius: var(--radius-sm);
 		color: var(--bg);
-		background: var(--milk);
+		background: var(--white);
 		box-shadow:
 			0 12px 32px -8px rgb(0 0 0 / 0.6),
-			0 0 0 6px rgb(244 236 225 / 0.08);
+			0 0 0 6px rgb(255 255 255 / 0.08);
 		transition:
 			transform 0.5s var(--ease-out),
 			background-color 0.3s ease;
@@ -36,6 +36,6 @@ const href = whatsappLink();
 
 	.wa-float:hover {
 		transform: translateY(-3px) scale(1.04);
-		background: var(--crema);
+		background: var(--text);
 	}
 </style>

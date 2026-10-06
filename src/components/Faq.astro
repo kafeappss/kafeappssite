@@ -64,7 +64,7 @@ const { items } = Astro.props;
 	}
 
 	summary:hover {
-		color: var(--crema);
+		color: var(--text);
 	}
 
 	.faq-sign {
@@ -72,7 +72,7 @@ const { items } = Astro.props;
 		width: 36px;
 		height: 36px;
 		flex: none;
-		border-radius: 50%;
+		border-radius: var(--radius-sm);
 		border: 1px solid var(--line-strong);
 		transition:
 			background-color 0.3s ease,
@@ -99,8 +99,8 @@ const { items } = Astro.props;
 	}
 
 	.faq-item[open] .faq-sign {
-		background: var(--milk);
-		border-color: var(--milk);
+		background: var(--white);
+		border-color: var(--white);
 		color: var(--bg);
 		transform: rotate(180deg);
 	}

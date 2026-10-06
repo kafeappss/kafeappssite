@@ -179,10 +179,10 @@ const methodFaq = faq.filter((item) => /MVP|No-code|lançamento/.test(item.q));
 		width: 50px;
 		height: 50px;
 		margin-bottom: 6px;
-		border-radius: 14px;
-		color: var(--crema);
-		background: rgb(214 153 92 / 0.1);
-		border: 1px solid rgb(214 153 92 / 0.22);
+		border-radius: var(--radius-sm);
+		color: var(--text);
+		background: rgb(255 255 255 / 0.06);
+		border: 1px solid rgb(255 255 255 / 0.12);
 	}
 
 	.ritual h3 {
@@ -205,8 +205,8 @@ const methodFaq = faq.filter((item) => /MVP|No-code|lançamento/.test(item.q));
 
 	.model .tag {
 		justify-self: start;
-		color: var(--crema);
-		border-color: rgb(214 153 92 / 0.3);
+		color: var(--text);
+		border-color: rgb(255 255 255 / 0.17);
 	}
 
 	.model p {
@@ -230,7 +230,7 @@ const methodFaq = faq.filter((item) => /MVP|No-code|lançamento/.test(item.q));
 	.model li :global(svg) {
 		flex: none;
 		margin-top: 2px;
-		color: var(--caramel);
+		color: var(--accent);
 	}
 
 	.tech {

@@ -68,7 +68,7 @@ const { showOngoing = true } = Astro.props;
 	}
 
 	.method-steps::after {
-		background: linear-gradient(180deg, var(--crema), var(--caramel), var(--roast));
+		background: linear-gradient(180deg, var(--text), var(--accent), var(--gray-600));
 		transform-origin: top;
 		transform: scaleY(0);
 		transition: transform 1.8s var(--ease-in-out) 0.2s;
@@ -98,26 +98,27 @@ const { showOngoing = true } = Astro.props;
 		place-items: center;
 		width: 44px;
 		height: 44px;
-		border-radius: 50%;
+		border-radius: var(--radius-sm);
 		font-size: 0.8rem;
-		color: var(--crema);
+		color: var(--text);
 		background: var(--bg-2);
-		border: 1px solid rgb(214 153 92 / 0.45);
-		box-shadow: 0 0 0 6px rgb(11 8 6 / 0.8);
+		border: 1px solid rgb(255 255 255 / 0.25);
+		box-shadow: 0 0 0 6px rgb(0 0 0 / 0.8);
 	}
 
 	.method-name {
 		font-size: clamp(1.9rem, 1.3rem + 1.3vw, 2.6rem);
-		font-weight: 500;
+		font-weight: 600;
 		line-height: 1;
 		letter-spacing: -0.045em;
 	}
 
 	.method-coffee {
-		font-family: var(--font-serif);
-		font-style: italic;
-		font-size: 1.2rem;
-		color: var(--caramel);
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		letter-spacing: 0.16em;
+		text-transform: uppercase;
+		color: var(--text-dim);
 	}
 
 	.method-title {
@@ -139,11 +140,11 @@ const { showOngoing = true } = Astro.props;
 		justify-self: start;
 		margin-top: 8px;
 		padding: 8px 14px;
-		border-radius: 999px;
+		border-radius: var(--radius-sm);
 		font-size: var(--fs-xs);
-		color: var(--crema);
-		background: rgb(214 153 92 / 0.08);
-		border: 1px solid rgb(214 153 92 / 0.2);
+		color: var(--text);
+		background: rgb(255 255 255 / 0.04);
+		border: 1px solid rgb(255 255 255 / 0.11);
 	}
 
 	.method-ongoing {
@@ -168,9 +169,9 @@ const { showOngoing = true } = Astro.props;
 		width: 44px;
 		height: 44px;
 		flex: none;
-		border-radius: 50%;
+		border-radius: var(--radius-sm);
 		color: var(--bg);
-		background: var(--gradient-crema);
+		background: var(--gradient-metal);
 	}
 
 	@media (min-width: 960px) {
@@ -192,7 +193,7 @@ const { showOngoing = true } = Astro.props;
 		}
 
 		.method-steps::after {
-			background: linear-gradient(90deg, var(--crema), var(--caramel), var(--roast));
+			background: linear-gradient(90deg, var(--text), var(--accent), var(--gray-600));
 			transform-origin: left;
 			transform: scaleX(0);
 		}

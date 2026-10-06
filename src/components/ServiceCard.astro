@@ -51,10 +51,10 @@ const { service, index } = Astro.props;
 		place-items: center;
 		width: 56px;
 		height: 56px;
-		border-radius: 16px;
-		color: var(--crema);
-		background: radial-gradient(circle at 30% 20%, rgb(214 153 92 / 0.22), rgb(214 153 92 / 0.06));
-		border: 1px solid rgb(214 153 92 / 0.22);
+		border-radius: var(--radius-sm);
+		color: var(--text);
+		background: radial-gradient(circle at 30% 20%, rgb(255 255 255 / 0.12), rgb(255 255 255 / 0.03));
+		border: 1px solid rgb(255 255 255 / 0.12);
 	}
 
 	.service-num {
@@ -82,7 +82,7 @@ const { service, index } = Astro.props;
 		margin-top: 6px;
 		font-size: var(--fs-small);
 		font-weight: 500;
-		color: var(--crema);
+		color: var(--text);
 	}
 
 	.service-more :global(svg) {

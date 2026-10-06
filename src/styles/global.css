@@ -1,37 +1,46 @@
 /* ==========================================================================
    Kafé Apps — sistema visual
-   Paleta inspirada no café: espresso (fundo), crema e caramelo (destaques),
-   leite (texto). Para trocar as cores da marca, altere apenas os tokens abaixo.
+   Monocromático: preto, branco e uma escala de cinzas, como a marca.
+   Para ajustar as cores, altere apenas os tokens abaixo.
    ========================================================================== */
 
 :root {
 	/* Cores */
-	--bg: #0b0806;
-	--bg-2: #110c09;
-	--surface: #17110d;
-	--surface-2: #1f1712;
-	--surface-3: #2a2019;
-	--line: rgb(244 236 225 / 0.09);
-	--line-strong: rgb(244 236 225 / 0.17);
+	--black: #000;
+	--white: #fff;
+	--gray-100: #f2f2f2;
+	--gray-200: #d9d9d9;
+	--gray-300: #b3b3b3;
+	--gray-400: #8f8f8f;
+	--gray-500: #6e6e6e;
+	--gray-600: #4d4d4d;
+	--gray-700: #2e2e2e;
+	--gray-800: #1c1c1c;
+	--gray-900: #0f0f0f;
 
-	--text: #f4ece1;
-	--text-muted: #b8a797;
-	--text-dim: #8f7e6f;
+	--bg: var(--black);
+	--bg-2: #070707;
+	--surface: #0e0e0e;
+	--surface-2: #161616;
+	--surface-3: #262626;
+	--line: rgb(255 255 255 / 0.09);
+	--line-strong: rgb(255 255 255 / 0.17);
 
-	--caramel: #d6995c;
-	--crema: #ecc9a0;
-	--roast: #a4552d;
-	--milk: #f4ece1;
+	--text: var(--white);
+	--text-muted: #a8a8a8;
+	--text-dim: #8a8a8a;
+	/* Segunda cor das manchetes (o trecho entre <em>). */
+	--text-quiet: #7a7a7a;
+	--accent: var(--white);
 
-	--gradient-crema: linear-gradient(100deg, #f6dcb6 0%, #e2ad73 42%, #c47a45 100%);
-	--glow-caramel: 0 0 0 1px rgb(214 153 92 / 0.25), 0 20px 60px -20px rgb(214 153 92 / 0.35);
+	--gradient-metal: linear-gradient(100deg, #ffffff 0%, #cfcfcf 45%, #7d7d7d 100%);
+	--glow: 0 0 0 1px rgb(255 255 255 / 0.2), 0 20px 60px -20px rgb(255 255 255 / 0.25);
 
 	/* Tipografia */
 	--font-sans: 'Geist Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-	--font-serif: 'Instrument Serif', ui-serif, Georgia, 'Times New Roman', serif;
 	--font-mono: 'Geist Mono Variable', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
 
-	--fs-display: clamp(3.3rem, 1.1rem + 7.4vw, 7.75rem);
+	--fs-display: clamp(3.2rem, 1rem + 6.6vw, 7rem);
 	--fs-h1: clamp(2.6rem, 1.2rem + 5.2vw, 5.75rem);
 	--fs-h2: clamp(2.15rem, 1.1rem + 3.9vw, 4.5rem);
 	--fs-h3: clamp(1.35rem, 1.05rem + 1vw, 1.8rem);
@@ -45,9 +54,9 @@
 	--container-narrow: 820px;
 	--gutter: clamp(20px, 4.5vw, 56px);
 	--section-y: clamp(88px, 5rem + 5vw, 172px);
-	--radius-sm: 12px;
-	--radius: 22px;
-	--radius-lg: 32px;
+	--radius-sm: 4px;
+	--radius: 6px;
+	--radius-lg: 10px;
 	--header-h: 76px;
 
 	/* Movimento */
@@ -142,7 +151,7 @@ h1,
 h2,
 h3,
 h4 {
-	font-weight: 500;
+	font-weight: 600;
 	line-height: 1.05;
 	letter-spacing: -0.035em;
 	text-wrap: balance;
@@ -159,14 +168,14 @@ ol[role='list'] {
 }
 
 ::selection {
-	background: var(--caramel);
+	background: var(--accent);
 	color: var(--bg);
 }
 
 :focus-visible {
-	outline: 2px solid var(--caramel);
+	outline: 2px solid var(--accent);
 	outline-offset: 3px;
-	border-radius: 6px;
+	border-radius: var(--radius-sm);
 }
 
 /* --------------------------------------------------------------------------
@@ -176,8 +185,8 @@ ol[role='list'] {
 .display {
 	font-size: var(--fs-display);
 	line-height: 0.92;
-	letter-spacing: -0.05em;
-	font-weight: 500;
+	letter-spacing: -0.055em;
+	font-weight: 600;
 }
 
 .h1 {
@@ -198,18 +207,10 @@ ol[role='list'] {
 	letter-spacing: -0.025em;
 }
 
-/* A palavra em itálico serifado é a "assinatura" das manchetes. */
-:is(.display, .h1, .h2, .h3) em,
-.serif-accent {
-	font-family: var(--font-serif);
-	font-style: italic;
-	font-weight: 400;
-	letter-spacing: -0.012em;
-	padding-right: 0.1em;
-	background: var(--gradient-crema);
-	-webkit-background-clip: text;
-	background-clip: text;
-	color: transparent;
+/* Manchetes em dois tons: o trecho entre <em> fica em cinza. */
+:is(.display, .h1, .h2, .h3) em {
+	font-style: normal;
+	color: var(--text-quiet);
 }
 
 .lead {
@@ -234,23 +235,21 @@ ol[role='list'] {
 	font-family: var(--font-mono);
 	font-size: 0.75rem;
 	font-weight: 500;
-	letter-spacing: 0.14em;
+	letter-spacing: 0.18em;
 	text-transform: uppercase;
 	color: var(--text-muted);
 }
 
 .eyebrow::before {
 	content: '';
-	width: 7px;
-	height: 7px;
-	border-radius: 50%;
-	background: var(--caramel);
-	box-shadow: 0 0 12px 2px rgb(214 153 92 / 0.55);
+	width: 6px;
+	height: 6px;
+	background: var(--accent);
 	flex: none;
 }
 
 .eyebrow .num {
-	color: var(--caramel);
+	color: var(--text);
 }
 
 /* --------------------------------------------------------------------------
@@ -309,8 +308,8 @@ ol[role='list'] {
 	left: 12px;
 	z-index: 200;
 	padding: 10px 16px;
-	border-radius: 999px;
-	background: var(--milk);
+	border-radius: var(--radius-sm);
+	background: var(--white);
 	color: var(--bg);
 	font-weight: 600;
 	transform: translateY(-150%);
@@ -326,7 +325,7 @@ ol[role='list'] {
    -------------------------------------------------------------------------- */
 
 .btn {
-	--btn-bg: var(--milk);
+	--btn-bg: var(--white);
 	--btn-fg: var(--bg);
 	position: relative;
 	display: inline-flex;
@@ -334,13 +333,13 @@ ol[role='list'] {
 	justify-content: center;
 	gap: 0.65em;
 	min-height: 52px;
-	padding: 0 26px;
-	border-radius: 999px;
+	padding: 0 28px;
+	border-radius: var(--radius-sm);
 	background: var(--btn-bg);
 	color: var(--btn-fg);
-	font-size: 0.975rem;
+	font-size: 0.95rem;
 	font-weight: 550;
-	letter-spacing: -0.01em;
+	letter-spacing: -0.005em;
 	white-space: nowrap;
 	isolation: isolate;
 	overflow: hidden;
@@ -356,14 +355,14 @@ ol[role='list'] {
 	position: absolute;
 	inset: 0;
 	z-index: -1;
-	background: var(--gradient-crema);
+	background: var(--gray-200);
 	opacity: 0;
 	transition: opacity 0.4s ease;
 }
 
 .btn:hover {
 	transform: translateY(-2px);
-	box-shadow: var(--glow-caramel);
+	box-shadow: var(--glow);
 }
 
 .btn:hover::before {
@@ -385,7 +384,7 @@ ol[role='list'] {
 }
 
 .btn-ghost {
-	--btn-bg: rgb(244 236 225 / 0.06);
+	--btn-bg: rgb(255 255 255 / 0.06);
 	--btn-fg: var(--text);
 	border: 1px solid var(--line-strong);
 	backdrop-filter: blur(12px);
@@ -393,12 +392,12 @@ ol[role='list'] {
 }
 
 .btn-ghost::before {
-	background: rgb(244 236 225 / 0.08);
+	background: rgb(255 255 255 / 0.08);
 }
 
 .btn-ghost:hover {
 	box-shadow: none;
-	border-color: rgb(244 236 225 / 0.3);
+	border-color: rgb(255 255 255 / 0.3);
 }
 
 .btn-sm {
@@ -427,7 +426,7 @@ ol[role='list'] {
 }
 
 .link-arrow:hover {
-	border-color: var(--caramel);
+	border-color: var(--accent);
 	gap: 0.8em;
 }
 
@@ -446,8 +445,8 @@ ol[role='list'] {
 	position: relative;
 	border-radius: var(--radius);
 	background:
-		radial-gradient(420px circle at var(--mx) var(--my), rgb(214 153 92 / 0.09), transparent 60%),
-		linear-gradient(180deg, rgb(31 23 18 / 0.78), rgb(17 12 9 / 0.78));
+		radial-gradient(420px circle at var(--mx) var(--my), rgb(255 255 255 / 0.05), transparent 60%),
+		linear-gradient(180deg, rgb(20 20 20 / 0.78), rgb(8 8 8 / 0.78));
 	border: 1px solid var(--line);
 	backdrop-filter: blur(18px);
 	-webkit-backdrop-filter: blur(18px);
@@ -462,7 +461,7 @@ ol[role='list'] {
 	inset: -1px;
 	border-radius: inherit;
 	padding: 1px;
-	background: radial-gradient(260px circle at var(--mx) var(--my), rgb(236 201 160 / 0.5), transparent 70%);
+	background: radial-gradient(260px circle at var(--mx) var(--my), rgb(255 255 255 / 0.5), transparent 70%);
 	-webkit-mask:
 		linear-gradient(#000 0 0) content-box,
 		linear-gradient(#000 0 0);
@@ -482,11 +481,11 @@ ol[role='list'] {
 	align-items: center;
 	gap: 6px;
 	padding: 6px 12px;
-	border-radius: 999px;
+	border-radius: var(--radius-sm);
 	border: 1px solid var(--line-strong);
 	font-size: var(--fs-xs);
 	color: var(--text-muted);
-	background: rgb(244 236 225 / 0.03);
+	background: rgb(255 255 255 / 0.03);
 	white-space: nowrap;
 }
 
@@ -531,15 +530,15 @@ ol[role='list'] {
 }
 
 .prose a {
-	color: var(--crema);
+	color: var(--text);
 	text-decoration: underline;
-	text-decoration-color: rgb(236 201 160 / 0.4);
+	text-decoration-color: rgb(255 255 255 / 0.4);
 	text-underline-offset: 3px;
 	transition: text-decoration-color 0.3s ease;
 }
 
 .prose a:hover {
-	text-decoration-color: var(--crema);
+	text-decoration-color: var(--text);
 }
 
 .prose :is(ul, ol) {
@@ -551,16 +550,16 @@ ol[role='list'] {
 }
 
 .prose li::marker {
-	color: var(--caramel);
+	color: var(--accent);
 }
 
 .prose blockquote {
-	border-left: 2px solid var(--caramel);
+	border-left: 2px solid var(--accent);
 	padding: 0.2em 0 0.2em 1.2em;
-	font-family: var(--font-serif);
-	font-size: 1.5rem;
-	line-height: 1.4;
-	font-style: italic;
+	font-size: 1.35rem;
+	font-weight: 500;
+	line-height: 1.45;
+	letter-spacing: -0.02em;
 	color: var(--text);
 }
 
@@ -599,7 +598,7 @@ ol[role='list'] {
 	padding: 0.15em 0.4em;
 	border-radius: 6px;
 	background: var(--surface-2);
-	color: var(--crema);
+	color: var(--text);
 }
 
 /* --------------------------------------------------------------------------
@@ -612,7 +611,7 @@ ol[role='list'] {
 	z-index: -1;
 	pointer-events: none;
 	opacity: 0.075;
-	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 0.93 0 0 0 0 0.85 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 @media (prefers-reduced-motion: no-preference) {

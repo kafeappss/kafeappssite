@@ -89,7 +89,7 @@ const capabilities = [
 				<a class="btn btn-ghost" href="#metodo">Conhecer o método</a>
 			</div>
 			<ul role="list" class="hero-proof" data-reveal style="--delay: 0.65s">
-				<li><Icon name="bean" size={18} /> Desde {site.foundingYear}</li>
+				<li><Icon name="clock" size={18} /> Desde {site.foundingYear}</li>
 				<li><Icon name="rocket" size={18} /> Especialistas em MVP</li>
 				<li><Icon name="blocks" size={18} /> No-code, low-code e código</li>
 			</ul>
@@ -212,7 +212,7 @@ const capabilities = [
 					productTypes.map((type) => (
 						<li>
 							<span>{type}</span>
-							<Icon name="bean" size={20} class="types-bean" />
+							<Icon name="square" size={12} class="types-mark" />
 						</li>
 					))
 				}
@@ -379,7 +379,7 @@ const capabilities = [
 	}
 
 	.hero-proof :global(svg) {
-		color: var(--caramel);
+		color: var(--accent);
 	}
 
 	.scroll-cue {
@@ -408,7 +408,7 @@ const capabilities = [
 		content: '';
 		position: absolute;
 		inset: 0;
-		background: linear-gradient(180deg, transparent, var(--crema));
+		background: linear-gradient(180deg, transparent, var(--text));
 		animation: drip 2.2s var(--ease-in-out) infinite;
 	}
 
@@ -432,7 +432,7 @@ const capabilities = [
 
 	.pain-num {
 		font-size: var(--fs-xs);
-		color: var(--caramel);
+		color: var(--accent);
 	}
 
 	.pain p {
@@ -473,12 +473,11 @@ const capabilities = [
 	}
 
 	.stage-name {
-		font-family: var(--font-serif);
-		font-style: italic;
 		font-size: clamp(3rem, 2rem + 4vw, 5.5rem);
+		font-weight: 600;
 		line-height: 0.95;
-		letter-spacing: -0.02em;
-		background: var(--gradient-crema);
+		letter-spacing: -0.055em;
+		background: var(--gradient-metal);
 		-webkit-background-clip: text;
 		background-clip: text;
 		color: transparent;
@@ -530,18 +529,15 @@ const capabilities = [
 	}
 
 	.types li:nth-child(3n + 2) span {
-		font-family: var(--font-serif);
-		font-style: italic;
-		letter-spacing: -0.01em;
-		color: var(--crema);
+		color: var(--text);
 	}
 
-	.types :global(.types-bean) {
-		color: var(--caramel);
+	.types :global(.types-mark) {
+		color: var(--accent);
 		opacity: 0.55;
 	}
 
-	.types li:last-child :global(.types-bean) {
+	.types li:last-child :global(.types-mark) {
 		display: none;
 	}
 
@@ -566,10 +562,10 @@ const capabilities = [
 	}
 
 	.soul-quote {
-		font-family: var(--font-serif);
-		font-style: italic;
-		font-size: clamp(1.5rem, 1.2rem + 1vw, 2rem);
+		font-size: clamp(1.35rem, 1.1rem + 0.9vw, 1.8rem);
+		font-weight: 600;
 		line-height: 1.3;
+		letter-spacing: -0.03em;
 		color: var(--text);
 	}
 
@@ -589,7 +585,7 @@ const capabilities = [
 		padding: clamp(20px, 3vw, 32px);
 		border-right: 1px solid var(--line);
 		border-bottom: 1px solid var(--line);
-		background: rgb(11 8 6 / 0.35);
+		background: rgb(0 0 0 / 0.35);
 	}
 
 	.stat dd {
@@ -621,7 +617,7 @@ const capabilities = [
 	.diff :global(.diff-icon) {
 		flex: none;
 		margin-top: 3px;
-		color: var(--caramel);
+		color: var(--accent);
 	}
 
 	.diff h3 {
@@ -693,7 +689,7 @@ const capabilities = [
 			place-items: center;
 			width: 24px;
 			height: 24px;
-			color: var(--caramel);
+			color: var(--accent);
 			background: var(--bg);
 		}
 

@@ -227,9 +227,9 @@ const timings = ['O quanto antes', 'Nos próximos 30 dias', 'Em 2 ou 3 meses', '
 		width: 100%;
 		min-height: 52px;
 		padding: 14px 16px;
-		border-radius: 14px;
+		border-radius: var(--radius-sm);
 		border: 1px solid var(--line-strong);
-		background: rgb(11 8 6 / 0.55);
+		background: rgb(0 0 0 / 0.55);
 		color: var(--text);
 		font-size: 1rem;
 		transition:
@@ -252,16 +252,16 @@ const timings = ['O quanto antes', 'Nos próximos 30 dias', 'Em 2 ou 3 meses', '
 	input:not([type='radio'], [type='checkbox']):hover,
 	textarea:hover,
 	select:hover {
-		border-color: rgb(244 236 225 / 0.3);
+		border-color: rgb(255 255 255 / 0.3);
 	}
 
 	input:not([type='radio'], [type='checkbox']):focus,
 	textarea:focus,
 	select:focus {
 		outline: none;
-		border-color: var(--caramel);
-		box-shadow: 0 0 0 4px rgb(214 153 92 / 0.18);
-		background: rgb(11 8 6 / 0.75);
+		border-color: var(--accent);
+		box-shadow: 0 0 0 4px rgb(255 255 255 / 0.10);
+		background: rgb(0 0 0 / 0.75);
 	}
 
 	.select {
@@ -314,7 +314,7 @@ const timings = ['O quanto antes', 'Nos próximos 30 dias', 'Em 2 ou 3 meses', '
 		align-items: center;
 		min-height: 44px;
 		padding: 0 18px;
-		border-radius: 999px;
+		border-radius: var(--radius-sm);
 		border: 1px solid var(--line-strong);
 		font-size: var(--fs-small);
 		color: var(--text-muted);
@@ -325,17 +325,17 @@ const timings = ['O quanto antes', 'Nos próximos 30 dias', 'Em 2 ou 3 meses', '
 	}
 
 	.chip:hover span {
-		border-color: rgb(244 236 225 / 0.3);
+		border-color: rgb(255 255 255 / 0.3);
 	}
 
 	.chip input:checked + span {
 		color: var(--bg);
-		background: var(--milk);
-		border-color: var(--milk);
+		background: var(--white);
+		border-color: var(--white);
 	}
 
 	.chip input:focus-visible + span {
-		outline: 2px solid var(--caramel);
+		outline: 2px solid var(--accent);
 		outline-offset: 3px;
 	}
 
@@ -353,11 +353,11 @@ const timings = ['O quanto antes', 'Nos próximos 30 dias', 'Em 2 ou 3 meses', '
 		height: 20px;
 		margin-top: 2px;
 		flex: none;
-		accent-color: var(--caramel);
+		accent-color: var(--accent);
 	}
 
 	.consent a {
-		color: var(--crema);
+		color: var(--text);
 		text-decoration: underline;
 		text-underline-offset: 3px;
 	}
@@ -393,20 +393,20 @@ const timings = ['O quanto antes', 'Nos próximos 30 dias', 'Em 2 ou 3 meses', '
 
 	.form-status {
 		padding: 16px 18px;
-		border-radius: 14px;
+		border-radius: var(--radius-sm);
 		font-size: var(--fs-small);
 		border: 1px solid var(--line-strong);
-		background: rgb(244 236 225 / 0.04);
+		background: rgb(255 255 255 / 0.04);
 	}
 
 	.form-status[data-tone='ok'] {
-		border-color: rgb(214 153 92 / 0.45);
-		color: var(--crema);
+		border-color: rgb(255 255 255 / 0.25);
+		color: var(--text);
 	}
 
 	.form-status[data-tone='error'] {
 		border-color: rgb(230 110 90 / 0.5);
-		color: #f3b4a6;
+		color: #f2a3a3;
 	}
 
 	@media (min-width: 720px) {

@@ -6,7 +6,7 @@ Feito com [Astro](https://astro.build), gera um site 100% estático (HTML, CSS e
 
 ## Destaques
 
-- **Café líquido em WebGL**: um único corpo de líquido acompanha toda a navegação. Cada seção declara uma "formação" (`data-liquid="hero"`, `"pool"` etc.), e as gotas escorrem entre elas. O cursor também vira gota. Código em `src/scripts/liquid.ts`.
+- **Metal líquido em WebGL**: um único corpo de líquido acompanha toda a navegação. Cada seção declara uma "formação" (`data-liquid="hero"`, `"pool"` etc.), e as gotas escorrem entre elas. O cursor também vira gota. Código em `src/scripts/liquid.ts`.
 - **Acessível e leve**: respeita "reduzir movimento" do sistema, tem fundo estático quando não há WebGL, reduz a qualidade em aparelhos mais modestos e economiza bateria quando a página está parada.
 - **Conteúdo para SEO**: página para cada serviço, blog com artigos originais, dados estruturados (schema.org), sitemap, `robots.txt` e imagem de compartilhamento.
 
@@ -31,8 +31,8 @@ npm run check    # verificação de tipos
 | Método, formatos de trabalho, comparativo e perguntas frequentes | `src/data/method.ts` |
 | Artigos do blog | `src/content/blog/*.md` |
 | Cases | `src/content/cases/*.md` (use `_modelo-de-case.md` como base) |
-| Cores, fontes e espaçamentos | `src/styles/global.css` (variáveis no topo) |
-| Logo | `src/components/Logo.astro` e `public/favicon.svg` |
+| Cores (preto, branco e cinzas), fontes e espaçamentos | `src/styles/global.css` (variáveis no topo) |
+| Logos (KAFÉ APPS e o símbolo K) | `src/assets/brand/` e `public/favicon.svg` |
 
 Seções que dependem de listas vazias (depoimentos, clientes, tecnologias, cases) **não aparecem** até receberem conteúdo. Assim nada de "exemplo" vai para o ar por engano.
 
@@ -77,6 +77,5 @@ O comando `npm run build` gera a pasta `dist/`, que funciona em qualquer hospeda
 - [ ] Confirmar os quatro "D" da Metodologia 4D (`src/data/method.ts`).
 - [ ] Revisar o número "até 40% mais econômico" (veio da landing page atual).
 - [ ] Revisar as respostas das perguntas frequentes (NDA, prazos, propriedade).
-- [ ] Trocar o logo provisório pelo logo oficial, se for diferente.
 - [ ] Adicionar cases, depoimentos, clientes e tecnologias reais.
 - [ ] Revisar a política de privacidade com o jurídico.

@@ -1,5 +1,5 @@
 /**
- * Café líquido — um único corpo de líquido em WebGL que acompanha a navegação.
+ * Metal líquido — um único corpo de líquido em WebGL que acompanha a navegação.
  *
  * Cada seção da página declara uma "formação" com o atributo data-liquid
  * (ex.: data-liquid="hero"). Quando a seção chega ao centro da tela, as gotas
@@ -26,15 +26,15 @@ export const formations: Record<string, Formation> = {
 	hero: {
 		dim: 1,
 		land: [
-			[0.5, 0.0, 0.36],
-			[0.78, 0.36, 0.21],
-			[0.74, -0.4, 0.2],
-			[0.34, -0.42, 0.12],
-			[1.0, -0.02, 0.17],
-			[0.38, 0.44, 0.09],
-			[0.6, 0.66, 0.07],
-			[0.93, -0.76, 0.1],
-			[0.17, -0.1, 0.045],
+			[0.58, 0.0, 0.34],
+			[0.84, 0.36, 0.2],
+			[0.8, -0.4, 0.19],
+			[0.44, -0.44, 0.11],
+			[1.04, -0.02, 0.16],
+			[0.48, 0.46, 0.085],
+			[0.68, 0.68, 0.07],
+			[0.96, -0.76, 0.1],
+			[0.3, -0.12, 0.04],
 		],
 		port: [
 			[0.3, -0.66, 0.58],
@@ -223,7 +223,7 @@ uniform float uDim;
 uniform vec2 uLight;
 uniform vec4 uB[${MAX_BLOBS}];
 
-const vec3 BG = vec3(0.043, 0.031, 0.024);
+const vec3 BG = vec3(0.0);
 
 float hash(vec2 p) {
 	p = fract(p * vec2(123.34, 456.21));
@@ -284,13 +284,13 @@ void main() {
 	float d = field(p);
 	vec3 col = BG;
 
-	// Aura quente em volta do líquido e vapor subindo devagar.
+	// Brilho discreto em volta do metal e uma névoa subindo devagar.
 	float aura = exp(-max(d, 0.0) * 3.6);
-	col += vec3(0.32, 0.17, 0.08) * aura * 0.11;
+	col += vec3(0.22) * aura * 0.07;
 	vec2 q = p * 1.3 + vec2(0.0, -uTime * 0.045);
 	float m = fbm(q + vec2(fbm(q * 0.9 + uTime * 0.02), 0.0) * 1.3);
 	float mist = smoothstep(0.42, 0.95, m) * (0.3 + 0.7 * aura);
-	col += vec3(0.93, 0.84, 0.72) * mist * 0.055;
+	col += vec3(0.9) * mist * 0.035;
 
 	if (d < px * 2.0) {
 		float e = px * 1.5;
@@ -307,20 +307,26 @@ void main() {
 		float spec2 = pow(max(dot(n, normalize(L2 + V)), 0.0), 36.0);
 		float fres = pow(1.0 - max(n.z, 0.0), 2.2);
 
-		// Bordas finas deixam passar luz âmbar; o corpo é espresso profundo.
-		vec3 deep = vec3(0.055, 0.028, 0.015);
-		vec3 body = vec3(0.19, 0.09, 0.043);
-		vec3 amber = vec3(0.64, 0.34, 0.14);
-		vec3 liquid = mix(amber, mix(body, deep, smoothstep(0.35, 1.0, h)), smoothstep(0.0, 0.42, h));
+		// Metal líquido escuro: o corpo quase preto, e a cor vem dos reflexos.
+		vec3 deep = vec3(0.01);
+		vec3 body = vec3(0.045);
+		vec3 rim = vec3(0.22);
+		vec3 liquid = mix(rim, mix(body, deep, smoothstep(0.35, 1.0, h)), smoothstep(0.0, 0.42, h));
 		float swirl = fbm(p * 2.1 + vec2(uTime * 0.05, -uTime * 0.03));
-		liquid += vec3(0.24, 0.12, 0.05) * smoothstep(0.55, 0.92, swirl) * 0.4 * h;
-		liquid *= 0.62 + 0.55 * diff;
+		liquid += vec3(0.05) * smoothstep(0.55, 0.92, swirl) * h;
+		liquid *= 0.6 + 0.5 * diff;
 
+		// Estúdio refletido: luz forte no alto, uma linha de horizonte e uma
+		// luz lateral; o que aponta para quem olha reflete o escuro.
 		vec3 r = reflect(-V, n);
-		vec3 env = mix(vec3(0.03, 0.02, 0.015), vec3(0.98, 0.8, 0.58), smoothstep(-0.1, 0.95, r.y));
-		liquid = mix(liquid, env, fres * 0.55);
-		liquid += vec3(1.0, 0.93, 0.82) * spec * 0.95;
-		liquid += vec3(0.86, 0.52, 0.28) * spec2 * 0.32;
+		float sky = smoothstep(0.15, 0.85, r.y);
+		float horizon = exp(-pow((r.y + 0.08) * 9.0, 2.0));
+		float side = smoothstep(0.35, 0.95, r.x) * smoothstep(-0.5, 0.3, r.y);
+		vec3 env = vec3(0.015) + vec3(1.0) * sky * 0.95 + vec3(0.5) * horizon + vec3(0.3) * side;
+		env *= smoothstep(0.98, 0.3, r.z);
+		liquid = mix(liquid, env, clamp(0.1 + fres * 0.9, 0.0, 1.0));
+		liquid += vec3(1.0) * spec;
+		liquid += vec3(0.7) * spec2 * 0.3;
 
 		col = mix(col, liquid, smoothstep(px, -px, d));
 	}

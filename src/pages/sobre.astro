@@ -205,20 +205,14 @@ const youtube = site.social.find((social) => social.label === 'YouTube');
 	.mission-text {
 		max-width: 22ch;
 		font-size: clamp(1.9rem, 1.2rem + 2.8vw, 3.75rem);
-		font-weight: 500;
+		font-weight: 600;
 		line-height: 1.08;
-		letter-spacing: -0.04em;
+		letter-spacing: -0.045em;
 	}
 
 	.mission-text em {
-		font-family: var(--font-serif);
-		font-weight: 400;
-		letter-spacing: -0.01em;
-		background: var(--gradient-crema);
-		-webkit-background-clip: text;
-		background-clip: text;
-		color: transparent;
-		padding-right: 0.06em;
+		font-style: normal;
+		color: var(--text-quiet);
 	}
 
 	.stats {
@@ -237,7 +231,7 @@ const youtube = site.social.find((social) => social.label === 'YouTube');
 		padding: clamp(20px, 3vw, 32px);
 		border-right: 1px solid var(--line);
 		border-bottom: 1px solid var(--line);
-		background: rgb(11 8 6 / 0.35);
+		background: rgb(0 0 0 / 0.35);
 	}
 
 	.stat dd {
@@ -266,7 +260,7 @@ const youtube = site.social.find((social) => social.label === 'YouTube');
 
 	.value-num {
 		font-size: var(--fs-xs);
-		color: var(--caramel);
+		color: var(--accent);
 	}
 
 	.value p {
@@ -287,7 +281,7 @@ const youtube = site.social.find((social) => social.label === 'YouTube');
 	}
 
 	.diff :global(.diff-icon) {
-		color: var(--caramel);
+		color: var(--accent);
 	}
 
 	.diff h3 {
@@ -326,9 +320,9 @@ const youtube = site.social.find((social) => social.label === 'YouTube');
 		place-items: center;
 		width: 76px;
 		height: 76px;
-		border-radius: 22px;
+		border-radius: var(--radius-sm);
 		color: var(--bg);
-		background: var(--gradient-crema);
+		background: var(--gradient-metal);
 	}
 
 	.podcast-text {

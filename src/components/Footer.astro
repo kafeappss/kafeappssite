@@ -1,5 +1,6 @@
 ---
 import Logo from './Logo.astro';
+import Wordmark from '../assets/brand/kafe-wordmark.svg';
 import Icon from './Icon.astro';
 import { site, whatsappLink } from '../data/site';
 import { services } from '../data/services';
@@ -99,7 +100,9 @@ const socialIcons = {
 		</div>
 	</div>
 
-	<div class="footer-word" aria-hidden="true">Kafé</div>
+	<div class="container footer-word" aria-hidden="true">
+		<Wordmark />
+	</div>
 
 	<div class="container footer-bottom">
 		<p>
@@ -117,7 +120,7 @@ const socialIcons = {
 		position: relative;
 		padding-top: clamp(72px, 9vw, 120px);
 		border-top: 1px solid var(--line);
-		background: linear-gradient(180deg, rgb(11 8 6 / 0.55), rgb(11 8 6 / 0.2) 70%, transparent);
+		background: linear-gradient(180deg, rgb(0 0 0 / 0.55), rgb(0 0 0 / 0.2) 70%, transparent);
 		overflow: hidden;
 	}
 
@@ -136,11 +139,11 @@ const socialIcons = {
 	}
 
 	.footer-tagline {
-		font-family: var(--font-serif);
-		font-style: italic;
-		font-size: 1.6rem;
+		font-size: 1.4rem;
+		font-weight: 600;
 		line-height: 1.2;
-		color: var(--crema);
+		letter-spacing: -0.035em;
+		color: var(--text);
 	}
 
 	.footer-desc {
@@ -193,7 +196,7 @@ const socialIcons = {
 		place-items: center;
 		width: 42px;
 		height: 42px;
-		border-radius: 50%;
+		border-radius: var(--radius-sm);
 		border: 1px solid var(--line-strong);
 		color: var(--text-muted);
 		transition:
@@ -203,24 +206,24 @@ const socialIcons = {
 	}
 
 	.footer-social a:hover {
-		color: var(--crema);
-		border-color: var(--caramel);
+		color: var(--text);
+		border-color: var(--accent);
 		transform: translateY(-2px);
 	}
 
 	.footer-word {
-		margin: clamp(48px, 7vw, 96px) 0 -0.24em;
-		font-size: clamp(7rem, 31vw, 30rem);
-		font-weight: 600;
-		line-height: 0.82;
-		letter-spacing: -0.075em;
-		text-align: center;
-		background: linear-gradient(180deg, rgb(236 201 160 / 0.22), rgb(236 201 160 / 0.02) 78%);
-		-webkit-background-clip: text;
-		background-clip: text;
-		color: transparent;
+		margin-top: clamp(56px, 8vw, 110px);
+		margin-bottom: clamp(-120px, -6vw, -40px);
+		color: rgb(255 255 255 / 0.09);
+		-webkit-mask-image: linear-gradient(180deg, #000 35%, transparent 92%);
+		mask-image: linear-gradient(180deg, #000 35%, transparent 92%);
 		user-select: none;
 		pointer-events: none;
+	}
+
+	.footer-word :global(svg) {
+		width: 100%;
+		height: auto;
 	}
 
 	.footer-bottom {
