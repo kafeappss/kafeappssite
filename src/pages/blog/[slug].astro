@@ -1,0 +1,295 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { getCollection, render, type CollectionEntry } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import BlogCard from '../../components/BlogCard.astro';
+import CtaSection from '../../components/CtaSection.astro';
+import Icon from '../../components/Icon.astro';
+import { site } from '../../data/site';
+import { formatDate, readingTime } from '../../scripts/format';
+
+export const getStaticPaths = (async () => {
+	const posts = await getCollection('blog', ({ data }) => !data.draft);
+	return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
+}) satisfies GetStaticPaths;
+
+interface Props {
+	post: CollectionEntry<'blog'>;
+}
+
+const { post } = Astro.props;
+const { Content, headings } = await render(post);
+const toc = headings.filter((heading) => heading.depth === 2);
+const url = new URL(`/blog/${post.id}`, site.url).href;
+
+const related = (await getCollection('blog', ({ data, id }) => !data.draft && id !== post.id))
+	.sort((a, b) => {
+		const shared = (entry: CollectionEntry<'blog'>) =>
+			entry.data.tags.filter((tag) => post.data.tags.includes(tag)).length;
+		return shared(b) - shared(a) || b.data.date.getTime() - a.data.date.getTime();
+	})
+	.slice(0, 3);
+
+const articleSchema = {
+	'@context': 'https://schema.org',
+	'@type': 'BlogPosting',
+	headline: post.data.title,
+	description: post.data.description,
+	datePublished: post.data.date.toISOString(),
+	dateModified: (post.data.updated ?? post.data.date).toISOString(),
+	inLanguage: 'pt-BR',
+	mainEntityOfPage: url,
+	url,
+	image: new URL('/og.png', site.url).href,
+	author: { '@type': 'Organization', name: post.data.author, url: site.url },
+	publisher: { '@id': `${site.url}/#organizacao` },
+};
+
+const breadcrumbSchema = {
+	'@context': 'https://schema.org',
+	'@type': 'BreadcrumbList',
+	itemListElement: [
+		{ '@type': 'ListItem', position: 1, name: 'Início', item: site.url },
+		{ '@type': 'ListItem', position: 2, name: 'Blog', item: new URL('/blog', site.url).href },
+		{ '@type': 'ListItem', position: 3, name: post.data.title, item: url },
+	],
+};
+---
+
+<Base
+	title={post.data.title}
+	description={post.data.description}
+	type="article"
+	schema={[articleSchema, breadcrumbSchema]}
+>
+	<article>
+		<header class="post-hero" data-liquid="page">
+			<div class:list={['container', 'post-layout', { 'has-toc': toc.length > 2 }]}>
+				{toc.length > 2 && <div class="toc-spacer" aria-hidden="true" />}
+				<div class="post-head">
+					<nav class="breadcrumbs" aria-label="Você está em" data-reveal>
+						<ol role="list">
+							<li><a href="/">Início</a></li>
+							<li><a href="/blog">Blog</a></li>
+						</ol>
+					</nav>
+					<h1 class="h1 post-title" data-split>{post.data.title}</h1>
+					<p class="lead" data-reveal style="--delay: 0.2s">{post.data.description}</p>
+					<p class="post-meta mono" data-reveal style="--delay: 0.3s">
+						<span>{post.data.author}</span>
+						<span aria-hidden="true">·</span>
+						<time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
+						<span aria-hidden="true">·</span>
+						<span>{readingTime(post.body)} min de leitura</span>
+					</p>
+				</div>
+			</div>
+		</header>
+
+		<div class="section post-body" data-liquid="rest">
+			<div class:list={['container', 'post-layout', { 'has-toc': toc.length > 2 }]}>
+				{
+					toc.length > 2 && (
+						<aside class="toc" aria-label="Neste artigo">
+							<p class="mono">Neste artigo</p>
+							<ol role="list">
+								{toc.map((heading) => (
+									<li>
+										<a href={`#${heading.slug}`}>{heading.text}</a>
+									</li>
+								))}
+							</ol>
+						</aside>
+					)
+				}
+				<div class="post-main">
+					<div class="prose">
+						<Content />
+					</div>
+					<aside class="card post-cta">
+						<p class="eyebrow">Kafé Apps</p>
+						<p class="post-cta-title">Tem uma ideia e quer saber por onde começar?</p>
+						<p>Em uma conversa rápida, ajudamos você a definir o primeiro passo — sem compromisso.</p>
+						<a class="btn" href="/contato">Falar com a Kafé <Icon name="arrow" class="arrow" /></a>
+					</aside>
+				</div>
+			</div>
+		</div>
+	</article>
+
+	{
+		related.length > 0 && (
+			<section class="section related" data-liquid="rest">
+				<div class="container">
+					<p class="eyebrow" data-reveal>Continue lendo</p>
+					<div class="posts-grid">
+						{related.map((item, index) => (
+							<BlogCard post={item} index={index} />
+						))}
+					</div>
+				</div>
+			</section>
+		)
+	}
+
+	<CtaSection />
+</Base>
+
+<style>
+	.post-hero {
+		padding-top: calc(var(--header-h) + clamp(56px, 8vw, 120px));
+		padding-bottom: clamp(40px, 5vw, 72px);
+	}
+
+	.post-head {
+		display: grid;
+		gap: 22px;
+		width: 100%;
+		max-width: 760px;
+		margin-inline: auto;
+	}
+
+	.toc-spacer {
+		display: none;
+	}
+
+	.post-title {
+		font-size: clamp(2.3rem, 1.3rem + 3.6vw, 4.25rem);
+	}
+
+	.post-meta {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px;
+		font-size: 0.75rem;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: var(--text-dim);
+	}
+
+	.breadcrumbs ol {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 6px;
+		font-size: var(--fs-xs);
+		color: var(--text-dim);
+	}
+
+	.breadcrumbs li + li::before {
+		content: '/';
+		margin-right: 6px;
+		opacity: 0.6;
+	}
+
+	.breadcrumbs a:hover {
+		color: var(--text);
+	}
+
+	.post-body {
+		padding-top: 0;
+	}
+
+	.post-layout {
+		display: grid;
+		gap: 48px;
+	}
+
+	.post-main {
+		display: grid;
+		gap: 64px;
+		width: 100%;
+		max-width: 760px;
+		margin-inline: auto;
+		padding: clamp(24px, 4vw, 56px);
+		border-radius: var(--radius-lg);
+		background: rgb(11 8 6 / 0.72);
+		border: 1px solid var(--line);
+		backdrop-filter: blur(20px);
+		-webkit-backdrop-filter: blur(20px);
+	}
+
+	.toc {
+		display: none;
+	}
+
+	.post-cta {
+		display: grid;
+		gap: 14px;
+		justify-items: start;
+		padding: clamp(24px, 3vw, 36px);
+	}
+
+	.post-cta-title {
+		font-size: 1.5rem;
+		font-weight: 500;
+		line-height: 1.2;
+		letter-spacing: -0.03em;
+	}
+
+	.post-cta p:not(.eyebrow, .post-cta-title) {
+		color: var(--text-muted);
+		font-size: var(--fs-small);
+	}
+
+	.posts-grid {
+		display: grid;
+		gap: 16px;
+		margin-top: 28px;
+	}
+
+	@media (min-width: 720px) {
+		.posts-grid {
+			grid-template-columns: repeat(3, 1fr);
+		}
+	}
+
+	@media (min-width: 1180px) {
+		.post-layout.has-toc {
+			grid-template-columns: 240px minmax(0, 760px);
+			justify-content: center;
+			gap: 56px;
+		}
+
+		.has-toc .post-main,
+		.has-toc .post-head {
+			margin-inline: 0;
+		}
+
+		.toc-spacer {
+			display: block;
+		}
+
+		.toc {
+			display: block;
+			position: sticky;
+			top: calc(var(--header-h) + 32px);
+			align-self: start;
+			font-size: var(--fs-small);
+		}
+
+		.toc p {
+			margin-bottom: 16px;
+			font-size: 0.72rem;
+			letter-spacing: 0.14em;
+			text-transform: uppercase;
+			color: var(--text-dim);
+		}
+
+		.toc ol {
+			display: grid;
+			gap: 12px;
+			padding-left: 14px;
+			border-left: 1px solid var(--line-strong);
+		}
+
+		.toc a {
+			color: var(--text-muted);
+			line-height: 1.4;
+			transition: color 0.25s ease;
+		}
+
+		.toc a:hover {
+			color: var(--crema);
+		}
+	}
+</style>

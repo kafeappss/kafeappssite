@@ -1,0 +1,422 @@
+---
+import Icon from './Icon.astro';
+import { site } from '../data/site';
+import { services } from '../data/services';
+
+const projectTypes = [...services.map((service) => service.title), 'Kafé Ongoing™ (evolução contínua)', 'Outro'];
+const stages = ['Só tenho a ideia', 'Já tenho protótipo', 'Produto já no ar'];
+const timings = ['O quanto antes', 'Nos próximos 30 dias', 'Em 2 ou 3 meses', 'Só estou pesquisando'];
+---
+
+<form
+	class="card contact-form"
+	data-contact-form
+	data-endpoint={site.contact.formEndpoint}
+	data-whatsapp={site.contact.whatsapp}
+	data-email={site.contact.email}
+	action={site.contact.formEndpoint || undefined}
+	method="post"
+	novalidate
+>
+	<div class="form-grid">
+		<div class="field">
+			<label for="nome">Seu nome *</label>
+			<input id="nome" name="nome" type="text" autocomplete="name" required />
+		</div>
+		<div class="field">
+			<label for="email">E-mail *</label>
+			<input id="email" name="email" type="email" autocomplete="email" inputmode="email" required />
+		</div>
+		<div class="field">
+			<label for="whatsapp">WhatsApp</label>
+			<input id="whatsapp" name="whatsapp" type="tel" autocomplete="tel" inputmode="tel" placeholder="(21) 90000-0000" />
+		</div>
+		<div class="field">
+			<label for="empresa">Empresa ou projeto</label>
+			<input id="empresa" name="empresa" type="text" autocomplete="organization" />
+		</div>
+		<div class="field">
+			<label for="tipo">O que você quer construir?</label>
+			<div class="select">
+				<select id="tipo" name="tipo">
+					<option value="">Selecione</option>
+					{projectTypes.map((type) => <option value={type}>{type}</option>)}
+				</select>
+			</div>
+		</div>
+		<div class="field">
+			<label for="prazo">Quando quer começar?</label>
+			<div class="select">
+				<select id="prazo" name="prazo">
+					<option value="">Selecione</option>
+					{timings.map((timing) => <option value={timing}>{timing}</option>)}
+				</select>
+			</div>
+		</div>
+		<fieldset class="field field-full">
+			<legend>Em que fase está?</legend>
+			<div class="chips">
+				{
+					stages.map((stage, index) => (
+						<label class="chip">
+							<input type="radio" name="fase" value={stage} checked={index === 0} />
+							<span>{stage}</span>
+						</label>
+					))
+				}
+			</div>
+		</fieldset>
+		<div class="field field-full">
+			<label for="mensagem">Conte um pouco sobre a ideia *</label>
+			<textarea
+				id="mensagem"
+				name="mensagem"
+				rows="5"
+				required
+				placeholder="Qual problema o produto resolve, para quem, e o que você imagina para a primeira versão?"
+			></textarea>
+		</div>
+		<div class="hp" aria-hidden="true">
+			<label for="site-url">Não preencha este campo</label>
+			<input id="site-url" name="_gotcha" type="text" tabindex="-1" autocomplete="off" />
+		</div>
+		<label class="consent field-full">
+			<input type="checkbox" name="consentimento" required />
+			<span>
+				Concordo com a <a href="/privacidade" target="_blank">Política de Privacidade</a> e autorizo a Kafé
+				Apps a entrar em contato sobre o meu projeto. *
+			</span>
+		</label>
+	</div>
+
+	<div class="form-actions">
+		<button class="btn" type="submit" data-submit>
+			<span data-submit-label>Enviar mensagem</span>
+			<Icon name="arrow" class="arrow" />
+		</button>
+		<p class="form-note">Respondemos em horário comercial. Seus dados ficam só com a gente.</p>
+	</div>
+
+	<p class="form-status" role="status" aria-live="polite" data-status></p>
+</form>
+
+<script>
+	const form = document.querySelector<HTMLFormElement>('[data-contact-form]');
+
+	if (form) {
+		const status = form.querySelector<HTMLElement>('[data-status]')!;
+		const submitLabel = form.querySelector<HTMLElement>('[data-submit-label]')!;
+		const submit = form.querySelector<HTMLButtonElement>('[data-submit]')!;
+		const { endpoint, whatsapp, email } = form.dataset;
+
+		const setStatus = (message: string, tone: 'ok' | 'error' | '' = '') => {
+			status.textContent = message;
+			status.dataset.tone = tone;
+		};
+
+		const buildMessage = (data: FormData) => {
+			const line = (label: string, key: string) => {
+				const value = String(data.get(key) ?? '').trim();
+				return value ? `${label}: ${value}` : '';
+			};
+			return [
+				'Olá, Kafé! Vim pelo site e quero conversar sobre um projeto.',
+				'',
+				line('Nome', 'nome'),
+				line('E-mail', 'email'),
+				line('WhatsApp', 'whatsapp'),
+				line('Empresa/projeto', 'empresa'),
+				line('O que quero construir', 'tipo'),
+				line('Fase', 'fase'),
+				line('Quando quero começar', 'prazo'),
+				'',
+				String(data.get('mensagem') ?? '').trim(),
+			]
+				.filter((part, index, all) => part !== '' || (all[index - 1] ?? '') !== '')
+				.join('\n');
+		};
+
+		form.addEventListener('submit', async (event) => {
+			event.preventDefault();
+			setStatus('');
+
+			if (!form.checkValidity()) {
+				form.reportValidity();
+				return;
+			}
+
+			const data = new FormData(form);
+			if (String(data.get('_gotcha') ?? '')) return;
+
+			const message = buildMessage(data);
+
+			if (endpoint) {
+				submit.disabled = true;
+				submitLabel.textContent = 'Enviando…';
+				try {
+					const response = await fetch(endpoint, {
+						method: 'POST',
+						body: data,
+						headers: { Accept: 'application/json' },
+					});
+					if (!response.ok) throw new Error(String(response.status));
+					form.reset();
+					setStatus('Mensagem enviada! Em breve a gente responde — enquanto isso, que tal um café? ☕', 'ok');
+				} catch {
+					setStatus(
+						`Não conseguimos enviar agora. Tente novamente ou escreva para ${email || 'a gente pelas redes sociais'}.`,
+						'error',
+					);
+				} finally {
+					submit.disabled = false;
+					submitLabel.textContent = 'Enviar mensagem';
+				}
+				return;
+			}
+
+			if (whatsapp) {
+				window.open(`https://wa.me/${whatsapp}?text=${encodeURIComponent(message)}`, '_blank', 'noopener');
+				setStatus('Abrimos o WhatsApp com a sua mensagem pronta. É só enviar!', 'ok');
+				return;
+			}
+
+			if (email) {
+				const subject = `Novo projeto pelo site — ${String(data.get('nome') ?? '').trim()}`;
+				window.location.href = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(message)}`;
+				setStatus('Abrimos o seu aplicativo de e-mail com a mensagem pronta. É só enviar!', 'ok');
+			}
+		});
+	}
+</script>
+
+<style>
+	.contact-form {
+		display: grid;
+		gap: 28px;
+		padding: clamp(24px, 4vw, 48px);
+	}
+
+	.form-grid {
+		display: grid;
+		gap: 20px;
+	}
+
+	.field {
+		display: grid;
+		gap: 8px;
+		min-width: 0;
+		border: 0;
+		padding: 0;
+	}
+
+	.field label,
+	.field legend {
+		font-size: var(--fs-small);
+		font-weight: 500;
+		color: var(--text);
+		padding: 0;
+	}
+
+	.field legend {
+		margin-bottom: 8px;
+	}
+
+	input:not([type='radio'], [type='checkbox']),
+	textarea,
+	select {
+		width: 100%;
+		min-height: 52px;
+		padding: 14px 16px;
+		border-radius: 14px;
+		border: 1px solid var(--line-strong);
+		background: rgb(11 8 6 / 0.55);
+		color: var(--text);
+		font-size: 1rem;
+		transition:
+			border-color 0.25s ease,
+			box-shadow 0.25s ease,
+			background-color 0.25s ease;
+		appearance: none;
+	}
+
+	textarea {
+		resize: vertical;
+		min-height: 140px;
+		line-height: 1.5;
+	}
+
+	::placeholder {
+		color: var(--text-dim);
+	}
+
+	input:not([type='radio'], [type='checkbox']):hover,
+	textarea:hover,
+	select:hover {
+		border-color: rgb(244 236 225 / 0.3);
+	}
+
+	input:not([type='radio'], [type='checkbox']):focus,
+	textarea:focus,
+	select:focus {
+		outline: none;
+		border-color: var(--caramel);
+		box-shadow: 0 0 0 4px rgb(214 153 92 / 0.18);
+		background: rgb(11 8 6 / 0.75);
+	}
+
+	.select {
+		position: relative;
+	}
+
+	.select::after {
+		content: '';
+		position: absolute;
+		right: 18px;
+		top: 50%;
+		width: 7px;
+		height: 7px;
+		border-right: 1.5px solid var(--text-muted);
+		border-bottom: 1.5px solid var(--text-muted);
+		transform: translateY(-70%) rotate(45deg);
+		pointer-events: none;
+	}
+
+	select {
+		padding-right: 44px;
+		cursor: pointer;
+	}
+
+	select option {
+		background: var(--surface);
+		color: var(--text);
+	}
+
+	.chips {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px;
+	}
+
+	.chip {
+		position: relative;
+		cursor: pointer;
+	}
+
+	.chip input {
+		position: absolute;
+		opacity: 0;
+		inset: 0;
+		cursor: pointer;
+	}
+
+	.chip span {
+		display: inline-flex;
+		align-items: center;
+		min-height: 44px;
+		padding: 0 18px;
+		border-radius: 999px;
+		border: 1px solid var(--line-strong);
+		font-size: var(--fs-small);
+		color: var(--text-muted);
+		transition:
+			background-color 0.25s ease,
+			border-color 0.25s ease,
+			color 0.25s ease;
+	}
+
+	.chip:hover span {
+		border-color: rgb(244 236 225 / 0.3);
+	}
+
+	.chip input:checked + span {
+		color: var(--bg);
+		background: var(--milk);
+		border-color: var(--milk);
+	}
+
+	.chip input:focus-visible + span {
+		outline: 2px solid var(--caramel);
+		outline-offset: 3px;
+	}
+
+	.consent {
+		display: flex;
+		gap: 12px;
+		align-items: flex-start;
+		font-size: var(--fs-small);
+		color: var(--text-muted);
+		cursor: pointer;
+	}
+
+	.consent input {
+		width: 20px;
+		height: 20px;
+		margin-top: 2px;
+		flex: none;
+		accent-color: var(--caramel);
+	}
+
+	.consent a {
+		color: var(--crema);
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+
+	.hp {
+		position: absolute;
+		left: -9999px;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+	}
+
+	.form-actions {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 16px 24px;
+	}
+
+	.form-actions .btn:disabled {
+		opacity: 0.7;
+		cursor: progress;
+	}
+
+	.form-note {
+		font-size: var(--fs-xs);
+		color: var(--text-dim);
+	}
+
+	.form-status:empty {
+		display: none;
+	}
+
+	.form-status {
+		padding: 16px 18px;
+		border-radius: 14px;
+		font-size: var(--fs-small);
+		border: 1px solid var(--line-strong);
+		background: rgb(244 236 225 / 0.04);
+	}
+
+	.form-status[data-tone='ok'] {
+		border-color: rgb(214 153 92 / 0.45);
+		color: var(--crema);
+	}
+
+	.form-status[data-tone='error'] {
+		border-color: rgb(230 110 90 / 0.5);
+		color: #f3b4a6;
+	}
+
+	@media (min-width: 720px) {
+		.form-grid {
+			grid-template-columns: 1fr 1fr;
+		}
+
+		.field-full,
+		.consent {
+			grid-column: 1 / -1;
+		}
+	}
+</style>

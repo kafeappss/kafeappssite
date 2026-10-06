@@ -1,0 +1,369 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHero from '../components/PageHero.astro';
+import SectionHead from '../components/SectionHead.astro';
+import Testimonials from '../components/Testimonials.astro';
+import Clients from '../components/Clients.astro';
+import CtaSection from '../components/CtaSection.astro';
+import Icon from '../components/Icon.astro';
+import { clients, differentials, site, stats, testimonials } from '../data/site';
+
+const values = [
+	{
+		title: 'Negócio antes do código',
+		description: 'Toda decisão técnica começa por uma pergunta: isso aproxima o produto do resultado que o negócio precisa?',
+	},
+	{
+		title: 'Velocidade com responsabilidade',
+		description: 'Lançar rápido não é desculpa para fazer mal feito. Agilidade e qualidade andam juntas.',
+	},
+	{
+		title: 'Transparência de ponta a ponta',
+		description: 'Você sabe o que está sendo feito, quanto custa e por quê — sem letras miúdas e sem “tecniquês”.',
+	},
+	{
+		title: 'Design que resolve',
+		description: 'Bonito é bom; útil é obrigatório. Desenhamos a partir de pesquisa e de dados reais de uso.',
+	},
+	{
+		title: 'Parceria de longo prazo',
+		description: 'O lançamento é o começo. Ficamos por perto para evoluir o produto junto com o seu negócio.',
+	},
+];
+
+const youtube = site.social.find((social) => social.label === 'YouTube');
+---
+
+<Base
+	title="Sobre a Kafé Apps"
+	description="Conheça a Kafé Apps: estúdio de produto digital fundado em 2021 em Niterói (RJ), com a missão de democratizar a criação de novos negócios por meio de tecnologias ágeis."
+>
+	<PageHero
+		eyebrow="Sobre a Kafé"
+		title="Muito prazer, <em>somos a Kafé.</em>"
+		lead={`Um estúdio de produto digital nascido em ${site.location.city} (${site.location.state}) em ${site.foundingYear}, que ajuda startups e empresas a transformar ideias em negócios — com tecnologia ágil, design inteligente e conversa franca.`}
+		breadcrumbs={[{ label: 'Sobre' }]}
+	/>
+
+	<section class="section manifesto" data-liquid="left">
+		<div class="container manifesto-grid">
+			<div>
+				<p class="eyebrow" data-reveal>Manifesto</p>
+				<h2 class="display manifesto-title" data-split>Mais negócio, <em>menos software.</em></h2>
+			</div>
+			<div class="manifesto-copy" data-reveal>
+				<p>
+					Ninguém acorda querendo um software. As pessoas querem vender mais, atender melhor, organizar a
+					operação, validar uma ideia ou conquistar um investimento. O software é só o meio.
+				</p>
+				<p>
+					Por isso, na Kafé, a primeira conversa nunca é sobre tecnologia. É sobre o seu negócio: quem é o seu
+					cliente, qual problema você resolve e o que precisa ser verdade para dar certo. A partir daí,
+					escolhemos o caminho mais curto e inteligente — seja no-code, low-code ou código sob medida.
+				</p>
+				<p>
+					Sob a liderança de {site.ceo}, nosso CEO, reunimos estratégia, UX Research, design e desenvolvimento
+					em um só time, com um método próprio para colocar projetos no ar de forma rápida, organizada e com
+					menos risco.
+				</p>
+			</div>
+		</div>
+	</section>
+
+	<section class="section" data-liquid="right">
+		<div class="container">
+			<div class="mission card" data-reveal>
+				<p class="eyebrow">Nossa missão</p>
+				<p class="mission-text">
+					Democratizar a criação de novos negócios e a geração de empregos por meio de{' '}
+					<em>tecnologias ágeis.</em>
+				</p>
+			</div>
+			<dl class="stats">
+				{
+					stats.map((stat, index) => (
+						<div class="stat" data-reveal style={`--delay: ${index * 0.08}s`}>
+							<dt>{stat.label}</dt>
+							<dd>{stat.value}</dd>
+						</div>
+					))
+				}
+			</dl>
+		</div>
+	</section>
+
+	<section class="section" data-liquid="scatter">
+		<div class="container">
+			<SectionHead eyebrow="No que acreditamos" title="Cinco ideias que guiam <em>cada projeto.</em>" />
+			<ol role="list" class="values">
+				{
+					values.map((value, index) => (
+						<li class="value" data-reveal style={`--delay: ${(index % 3) * 0.06}s`}>
+							<span class="value-num mono">0{index + 1}</span>
+							<h3 class="h3">{value.title}</h3>
+							<p>{value.description}</p>
+						</li>
+					))
+				}
+			</ol>
+		</div>
+	</section>
+
+	<section class="section" data-liquid="left">
+		<div class="container">
+			<SectionHead eyebrow="Por que a Kafé" title="O que você ganha <em>trabalhando com a gente.</em>" />
+			<ul role="list" class="diffs">
+				{
+					differentials.map((item, index) => (
+						<li class="card diff" data-reveal style={`--delay: ${(index % 3) * 0.08}s`}>
+							<Icon name="check" size={22} class="diff-icon" />
+							<h3>{item.title}</h3>
+							<p>{item.description}</p>
+						</li>
+					))
+				}
+			</ul>
+		</div>
+	</section>
+
+	{
+		(testimonials.length > 0 || clients.length > 0) && (
+			<section class="section" data-liquid="scatter">
+				<div class="container">
+					<SectionHead eyebrow="Quem confia" title="Quem já tomou um café <em>com a gente.</em>" />
+					<Testimonials />
+					{clients.length > 0 && (
+						<div class="clients-wrap">
+							<Clients />
+						</div>
+					)}
+				</div>
+			</section>
+		)
+	}
+
+	{
+		youtube && (
+			<section class="section" data-liquid="right">
+				<div class="container">
+					<a class="card podcast" href={youtube.href} target="_blank" rel="noopener" data-reveal>
+						<span class="podcast-icon">
+							<Icon name="youtube" size={34} />
+						</span>
+						<div>
+							<p class="eyebrow">PodKafé</p>
+							<h2 class="h2">
+								A gente também fala de produto <em>em voz alta.</em>
+							</h2>
+							<p class="podcast-text">
+								No PodKafé, nosso podcast no YouTube, conversamos sobre startups, UX, tecnologia e o
+								dia a dia de quem constrói produtos digitais.
+							</p>
+							<span class="link-arrow">
+								Assistir no YouTube <Icon name="arrow-up-right" />
+							</span>
+						</div>
+					</a>
+				</div>
+			</section>
+		)
+	}
+
+	<CtaSection />
+</Base>
+
+<style>
+	.manifesto {
+		padding-top: clamp(40px, 5vw, 80px);
+	}
+
+	.manifesto-grid {
+		display: grid;
+		gap: 40px;
+	}
+
+	.manifesto-title {
+		margin-top: 22px;
+		max-width: 9ch;
+		font-size: clamp(3rem, 1.4rem + 5.4vw, 6.25rem);
+	}
+
+	.manifesto-copy {
+		display: grid;
+		gap: 22px;
+		align-content: end;
+		color: var(--text-muted);
+		font-size: 1.12rem;
+	}
+
+	.mission {
+		display: grid;
+		gap: 22px;
+		padding: clamp(32px, 6vw, 80px);
+	}
+
+	.mission-text {
+		max-width: 22ch;
+		font-size: clamp(1.9rem, 1.2rem + 2.8vw, 3.75rem);
+		font-weight: 500;
+		line-height: 1.08;
+		letter-spacing: -0.04em;
+	}
+
+	.mission-text em {
+		font-family: var(--font-serif);
+		font-weight: 400;
+		letter-spacing: -0.01em;
+		background: var(--gradient-crema);
+		-webkit-background-clip: text;
+		background-clip: text;
+		color: transparent;
+		padding-right: 0.06em;
+	}
+
+	.stats {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		margin-top: 16px;
+		border-top: 1px solid var(--line);
+		border-left: 1px solid var(--line);
+	}
+
+	.stat {
+		display: flex;
+		flex-direction: column-reverse;
+		justify-content: flex-end;
+		gap: 10px;
+		padding: clamp(20px, 3vw, 32px);
+		border-right: 1px solid var(--line);
+		border-bottom: 1px solid var(--line);
+		background: rgb(11 8 6 / 0.35);
+	}
+
+	.stat dd {
+		font-size: clamp(2.2rem, 1.6rem + 2vw, 3.6rem);
+		font-weight: 500;
+		line-height: 1;
+		letter-spacing: -0.05em;
+	}
+
+	.stat dt {
+		font-size: var(--fs-small);
+		color: var(--text-muted);
+	}
+
+	.values {
+		display: grid;
+		border-top: 1px solid var(--line);
+	}
+
+	.value {
+		display: grid;
+		gap: 10px 32px;
+		padding: 32px 0;
+		border-bottom: 1px solid var(--line);
+	}
+
+	.value-num {
+		font-size: var(--fs-xs);
+		color: var(--caramel);
+	}
+
+	.value p {
+		max-width: 560px;
+		color: var(--text-muted);
+	}
+
+	.diffs {
+		display: grid;
+		gap: 16px;
+	}
+
+	.diff {
+		display: grid;
+		gap: 12px;
+		align-content: start;
+		padding: clamp(24px, 3vw, 34px);
+	}
+
+	.diff :global(.diff-icon) {
+		color: var(--caramel);
+	}
+
+	.diff h3 {
+		font-size: 1.15rem;
+		font-weight: 550;
+		letter-spacing: -0.02em;
+	}
+
+	.diff p {
+		font-size: var(--fs-small);
+		color: var(--text-muted);
+	}
+
+	.clients-wrap {
+		margin-top: 48px;
+	}
+
+	.podcast {
+		display: grid;
+		gap: 28px;
+		padding: clamp(28px, 5vw, 64px);
+	}
+
+	.podcast:hover {
+		border-color: var(--line-strong);
+	}
+
+	.podcast > div {
+		display: grid;
+		gap: 18px;
+		justify-items: start;
+	}
+
+	.podcast-icon {
+		display: grid;
+		place-items: center;
+		width: 76px;
+		height: 76px;
+		border-radius: 22px;
+		color: var(--bg);
+		background: var(--gradient-crema);
+	}
+
+	.podcast-text {
+		max-width: 560px;
+		color: var(--text-muted);
+	}
+
+	@media (min-width: 720px) {
+		.stats {
+			grid-template-columns: repeat(4, 1fr);
+		}
+
+		.diffs {
+			grid-template-columns: repeat(2, 1fr);
+		}
+
+		.value {
+			grid-template-columns: 80px 1fr 1.2fr;
+			align-items: baseline;
+		}
+	}
+
+	@media (min-width: 960px) {
+		.manifesto-grid {
+			grid-template-columns: 1.1fr 1fr;
+			gap: 64px;
+		}
+
+		.diffs {
+			grid-template-columns: repeat(3, 1fr);
+		}
+
+		.podcast {
+			grid-template-columns: auto 1fr;
+			align-items: start;
+		}
+	}
+</style>

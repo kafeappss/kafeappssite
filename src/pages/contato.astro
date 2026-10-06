@@ -1,0 +1,235 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHero from '../components/PageHero.astro';
+import ContactForm from '../components/ContactForm.astro';
+import Faq from '../components/Faq.astro';
+import SectionHead from '../components/SectionHead.astro';
+import Icon from '../components/Icon.astro';
+import { site, whatsappLink } from '../data/site';
+import { faq } from '../data/method';
+
+const whatsapp = whatsappLink();
+const nextSteps = [
+	{ title: 'Conversa inicial', description: 'Entendemos o seu negócio, a ideia e o que você espera do projeto.' },
+	{ title: 'Proposta clara', description: 'Você recebe escopo, etapas, prazos e investimento, divididos por sprints.' },
+	{ title: 'Mão na massa', description: 'Aprovada a proposta, começamos pela etapa Descobrir do Método Sprint.' },
+];
+---
+
+<Base
+	title="Contato: vamos falar do seu projeto"
+	description="Fale com a Kafé Apps sobre o seu aplicativo, MVP, plataforma ou sistema. Conte sua ideia e receba os próximos passos, sem compromisso."
+>
+	<PageHero
+		eyebrow="Contato"
+		title="Vamos tomar um café? <em>Conte sua ideia.</em>"
+		lead="Preencha o formulário ou fale direto com a gente. Respondemos com os próximos passos — sem compromisso e sem “tecniquês”."
+		breadcrumbs={[{ label: 'Contato' }]}
+	/>
+
+	<section class="section contact-section" data-liquid="right">
+		<div class="container contact-grid">
+			<div data-reveal>
+				<ContactForm />
+			</div>
+
+			<aside class="contact-side">
+				<div class="channels" data-reveal style="--delay: 0.1s">
+					<h2 class="side-title mono">Fale direto</h2>
+					<ul role="list">
+						{
+							whatsapp && (
+								<li>
+									<a href={whatsapp} target="_blank" rel="noopener" class="channel">
+										<Icon name="whatsapp" size={22} />
+										<span>
+											<strong>WhatsApp</strong>
+											<small>{site.contact.phoneDisplay || 'Resposta rápida em horário comercial'}</small>
+										</span>
+									</a>
+								</li>
+							)
+						}
+						{
+							site.contact.email && (
+								<li>
+									<a href={`mailto:${site.contact.email}`} class="channel">
+										<Icon name="mail" size={22} />
+										<span>
+											<strong>E-mail</strong>
+											<small>{site.contact.email}</small>
+										</span>
+									</a>
+								</li>
+							)
+						}
+						<li>
+							<span class="channel">
+								<Icon name="pin" size={22} />
+								<span>
+									<strong>{site.location.city}, {site.location.state}</strong>
+									<small>Atendimento remoto para todo o Brasil</small>
+								</span>
+							</span>
+						</li>
+					</ul>
+					<ul role="list" class="side-social">
+						{
+							site.social.map((social) => (
+								<li>
+									<a href={social.href} target="_blank" rel="noopener">
+										{social.label}
+										<Icon name="arrow-up-right" size={16} />
+									</a>
+								</li>
+							))
+						}
+					</ul>
+				</div>
+
+				<div class="next" data-reveal style="--delay: 0.2s">
+					<h2 class="side-title mono">O que acontece depois</h2>
+					<ol role="list">
+						{
+							nextSteps.map((step, index) => (
+								<li>
+									<span class="next-num mono">0{index + 1}</span>
+									<span>
+										<strong>{step.title}</strong>
+										<small>{step.description}</small>
+									</span>
+								</li>
+							))
+						}
+					</ol>
+				</div>
+			</aside>
+		</div>
+	</section>
+
+	<section class="section" data-liquid="rest">
+		<div class="container faq-layout">
+			<SectionHead eyebrow="Perguntas frequentes" title="Antes de <em>você perguntar.</em>" />
+			<Faq items={faq} />
+		</div>
+	</section>
+</Base>
+
+<style>
+	.contact-section {
+		padding-top: 0;
+	}
+
+	.contact-grid {
+		display: grid;
+		gap: 48px;
+	}
+
+	.contact-side {
+		display: grid;
+		gap: 48px;
+		align-content: start;
+	}
+
+	.side-title {
+		margin-bottom: 18px;
+		font-size: 0.72rem;
+		font-weight: 500;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: var(--text-dim);
+	}
+
+	.channels > ul:first-of-type {
+		display: grid;
+		gap: 10px;
+	}
+
+	.channel {
+		display: flex;
+		align-items: center;
+		gap: 16px;
+		padding: 18px 20px;
+		border-radius: var(--radius-sm);
+		border: 1px solid var(--line);
+		background: rgb(23 17 13 / 0.6);
+		transition: border-color 0.25s ease;
+	}
+
+	a.channel:hover {
+		border-color: var(--caramel);
+	}
+
+	.channel :global(svg) {
+		flex: none;
+		color: var(--caramel);
+	}
+
+	.channel strong,
+	.next strong {
+		display: block;
+		font-weight: 550;
+	}
+
+	.channel small,
+	.next small {
+		display: block;
+		margin-top: 2px;
+		font-size: var(--fs-small);
+		color: var(--text-muted);
+		overflow-wrap: anywhere;
+	}
+
+	.side-social {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 10px 22px;
+		margin-top: 22px;
+		font-size: var(--fs-small);
+	}
+
+	.side-social a {
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+		color: var(--text-muted);
+		transition: color 0.25s ease;
+	}
+
+	.side-social a:hover {
+		color: var(--crema);
+	}
+
+	.next ol {
+		display: grid;
+		gap: 22px;
+	}
+
+	.next li {
+		display: flex;
+		gap: 16px;
+	}
+
+	.next-num {
+		flex: none;
+		font-size: var(--fs-xs);
+		color: var(--caramel);
+		padding-top: 4px;
+	}
+
+	.faq-layout {
+		display: grid;
+		gap: 0 64px;
+	}
+
+	@media (min-width: 1024px) {
+		.contact-grid {
+			grid-template-columns: 1.5fr 1fr;
+			gap: 56px;
+		}
+
+		.faq-layout {
+			grid-template-columns: 0.9fr 1.1fr;
+		}
+	}
+</style>

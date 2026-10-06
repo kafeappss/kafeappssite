@@ -1,0 +1,64 @@
+---
+import { uid } from '../scripts/uid';
+
+interface Props {
+	class?: string;
+}
+
+const gradientId = uid('kafe-bean');
+---
+
+<span class:list={['logo', Astro.props.class]}>
+	<svg class="logo-mark" viewBox="0 0 32 32" aria-hidden="true">
+		<defs>
+			<linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="1">
+				<stop offset="0" stop-color="#f6dcb6"></stop>
+				<stop offset="0.5" stop-color="#d6995c"></stop>
+				<stop offset="1" stop-color="#a4552d"></stop>
+			</linearGradient>
+		</defs>
+		<g transform="rotate(-32 16 16)">
+			<ellipse cx="16" cy="16" rx="9.6" ry="13.4" fill={`url(#${gradientId})`}></ellipse>
+			<path
+				d="M16.6 3.2c-3.6 4.2-3.6 8.6-.4 12.8s3.2 8.6-.4 12.8"
+				fill="none"
+				stroke="#0b0806"
+				stroke-width="2.3"
+				stroke-linecap="round"></path>
+		</g>
+	</svg>
+	<span class="logo-word">Kafé<span class="logo-apps">Apps</span></span>
+</span>
+
+<style>
+	.logo {
+		display: inline-flex;
+		align-items: center;
+		gap: 10px;
+		line-height: 1;
+	}
+
+	.logo-mark {
+		width: 30px;
+		height: 30px;
+		flex: none;
+		transition: transform 0.8s var(--ease-out);
+	}
+
+	:global(a:hover) > .logo .logo-mark {
+		transform: rotate(-18deg) scale(1.06);
+	}
+
+	.logo-word {
+		font-size: 1.28rem;
+		font-weight: 650;
+		letter-spacing: -0.045em;
+		color: var(--text);
+	}
+
+	.logo-apps {
+		margin-left: 0.22em;
+		font-weight: 400;
+		color: var(--text-muted);
+	}
+</style>

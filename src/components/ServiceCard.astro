@@ -1,0 +1,95 @@
+---
+import Icon from './Icon.astro';
+import type { Service } from '../data/services';
+
+interface Props {
+	service: Service;
+	index: number;
+}
+
+const { service, index } = Astro.props;
+---
+
+<a href={`/servicos/${service.slug}`} class="card service-card" data-reveal style={`--delay: ${(index % 3) * 0.08}s`}>
+	<div class="service-top">
+		<span class="service-icon"><Icon name={service.icon} size={26} /></span>
+		<span class="service-num mono">{String(index + 1).padStart(2, '0')}</span>
+	</div>
+	<h3 class="h3">{service.title}</h3>
+	<p>{service.short}</p>
+	<ul role="list" class="service-tags">
+		{service.keywords.map((keyword) => <li class="tag">{keyword}</li>)}
+	</ul>
+	<span class="service-more">
+		Saiba mais <Icon name="arrow-up-right" size={18} />
+	</span>
+</a>
+
+<style>
+	.service-card {
+		display: flex;
+		flex-direction: column;
+		gap: 16px;
+		min-height: 100%;
+		padding: clamp(24px, 3vw, 36px);
+	}
+
+	.service-card:hover {
+		border-color: var(--line-strong);
+		transform: translateY(-4px);
+	}
+
+	.service-top {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		margin-bottom: 12px;
+	}
+
+	.service-icon {
+		display: grid;
+		place-items: center;
+		width: 56px;
+		height: 56px;
+		border-radius: 16px;
+		color: var(--crema);
+		background: radial-gradient(circle at 30% 20%, rgb(214 153 92 / 0.22), rgb(214 153 92 / 0.06));
+		border: 1px solid rgb(214 153 92 / 0.22);
+	}
+
+	.service-num {
+		font-size: var(--fs-xs);
+		color: var(--text-dim);
+	}
+
+	.service-card p {
+		color: var(--text-muted);
+		font-size: var(--fs-small);
+	}
+
+	.service-tags {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 6px;
+		margin-top: auto;
+		padding-top: 8px;
+	}
+
+	.service-more {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		margin-top: 6px;
+		font-size: var(--fs-small);
+		font-weight: 500;
+		color: var(--crema);
+	}
+
+	.service-more :global(svg) {
+		transition: transform 0.5s var(--ease-out);
+	}
+
+	.service-card:hover .service-more :global(svg) {
+		transform: translate(3px, -3px);
+	}
+</style>

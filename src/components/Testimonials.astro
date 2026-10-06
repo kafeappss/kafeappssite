@@ -1,0 +1,62 @@
+---
+import { testimonials } from '../data/site';
+---
+
+{
+	testimonials.length > 0 && (
+		<div class="quotes">
+			{testimonials.map((item, index) => (
+				<figure class="card quote" data-reveal style={`--delay: ${(index % 3) * 0.08}s`}>
+					<blockquote>
+						<p>“{item.quote}”</p>
+					</blockquote>
+					<figcaption>
+						<strong>{item.name}</strong>
+						<span>
+							{item.role}
+							{item.company && ` · ${item.company}`}
+						</span>
+					</figcaption>
+				</figure>
+			))}
+		</div>
+	)
+}
+
+<style>
+	.quotes {
+		display: grid;
+		gap: 16px;
+	}
+
+	.quote {
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+		gap: 28px;
+		padding: clamp(26px, 3vw, 38px);
+	}
+
+	blockquote p {
+		font-family: var(--font-serif);
+		font-size: clamp(1.35rem, 1.1rem + 0.8vw, 1.75rem);
+		line-height: 1.35;
+		color: var(--text);
+	}
+
+	figcaption {
+		display: grid;
+		gap: 2px;
+		font-size: var(--fs-small);
+	}
+
+	figcaption span {
+		color: var(--text-dim);
+	}
+
+	@media (min-width: 900px) {
+		.quotes {
+			grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+		}
+	}
+</style>

@@ -1,0 +1,139 @@
+---
+import { buildModes } from '../data/method';
+---
+
+<div class="modes">
+	{
+		buildModes.map((mode, index) => (
+			<article class:list={['card', 'mode', { featured: index === 1 }]} data-reveal style={`--delay: ${index * 0.1}s`}>
+				{index === 1 && <span class="mode-badge mono">Equilíbrio</span>}
+				<h3 class="h3">{mode.name}</h3>
+				<p class="mode-summary">{mode.summary}</p>
+				<dl class="mode-scores">
+					{Object.entries(mode.scores).map(([label, score]) => (
+						<div class="mode-score">
+							<dt>{label}</dt>
+							<dd>
+								<span class="visually-hidden">{score} de 5</span>
+								<span class="mode-bars" aria-hidden="true">
+									{[1, 2, 3, 4, 5].map((n) => (
+										<span class:list={{ on: n <= score }} />
+									))}
+								</span>
+							</dd>
+						</div>
+					))}
+				</dl>
+				<p class="mode-best">
+					<span class="mono">Ideal para</span>
+					{mode.bestFor}
+				</p>
+			</article>
+		))
+	}
+</div>
+<p class="modes-note" data-reveal>
+	Comparativo geral: cada projeto é avaliado individualmente — e muitos combinam as três abordagens.
+</p>
+
+<style>
+	.modes {
+		display: grid;
+		gap: 16px;
+	}
+
+	.mode {
+		position: relative;
+		display: grid;
+		gap: 14px;
+		align-content: start;
+		padding: clamp(26px, 3vw, 38px);
+	}
+
+	.mode.featured {
+		border-color: rgb(214 153 92 / 0.35);
+		background:
+			radial-gradient(420px circle at var(--mx) var(--my), rgb(214 153 92 / 0.12), transparent 60%),
+			linear-gradient(180deg, rgb(52 34 22 / 0.8), rgb(23 16 12 / 0.8));
+	}
+
+	.mode-badge {
+		position: absolute;
+		top: 22px;
+		right: 22px;
+		padding: 6px 10px;
+		border-radius: 999px;
+		font-size: 0.7rem;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: var(--bg);
+		background: var(--gradient-crema);
+	}
+
+	.mode-summary {
+		color: var(--text-muted);
+		font-size: var(--fs-small);
+	}
+
+	.mode-scores {
+		display: grid;
+		gap: 12px;
+		margin: 10px 0 6px;
+		padding-block: 18px;
+		border-block: 1px solid var(--line);
+	}
+
+	.mode-score {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 16px;
+		font-size: var(--fs-small);
+	}
+
+	.mode-score dt {
+		color: var(--text-muted);
+	}
+
+	.mode-bars {
+		display: flex;
+		gap: 4px;
+	}
+
+	.mode-bars span {
+		width: 22px;
+		height: 6px;
+		border-radius: 3px;
+		background: var(--surface-3);
+	}
+
+	.mode-bars span.on {
+		background: var(--gradient-crema);
+	}
+
+	.mode-best {
+		display: grid;
+		gap: 4px;
+		font-size: var(--fs-small);
+		color: var(--text);
+	}
+
+	.mode-best .mono {
+		font-size: 0.7rem;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		color: var(--text-dim);
+	}
+
+	.modes-note {
+		margin-top: 22px;
+		font-size: var(--fs-xs);
+		color: var(--text-dim);
+	}
+
+	@media (min-width: 900px) {
+		.modes {
+			grid-template-columns: repeat(3, 1fr);
+		}
+	}
+</style>

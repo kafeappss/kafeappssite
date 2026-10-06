@@ -1,0 +1,117 @@
+---
+interface Props {
+	items: { q: string; a: string }[];
+}
+
+const { items } = Astro.props;
+---
+
+<div class="faq">
+	{
+		items.map((item, index) => (
+			<details class="faq-item" data-reveal style={`--delay: ${Math.min(index, 4) * 0.05}s`}>
+				<summary>
+					<span>{item.q}</span>
+					<span class="faq-sign" aria-hidden="true" />
+				</summary>
+				<div class="faq-answer">
+					<p>{item.a}</p>
+				</div>
+			</details>
+		))
+	}
+</div>
+
+<style>
+	.faq {
+		display: grid;
+		border-top: 1px solid var(--line);
+	}
+
+	.faq-item {
+		border-bottom: 1px solid var(--line);
+		interpolate-size: allow-keywords;
+	}
+
+	.faq-item::details-content {
+		block-size: 0;
+		overflow: hidden;
+		transition:
+			block-size 0.5s var(--ease-out),
+			content-visibility 0.5s allow-discrete;
+	}
+
+	.faq-item[open]::details-content {
+		block-size: auto;
+	}
+
+	summary {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 24px;
+		padding: 26px 0;
+		cursor: pointer;
+		list-style: none;
+		font-size: clamp(1.08rem, 1rem + 0.4vw, 1.3rem);
+		font-weight: 500;
+		letter-spacing: -0.02em;
+		transition: color 0.25s ease;
+	}
+
+	summary::-webkit-details-marker {
+		display: none;
+	}
+
+	summary:hover {
+		color: var(--crema);
+	}
+
+	.faq-sign {
+		position: relative;
+		width: 36px;
+		height: 36px;
+		flex: none;
+		border-radius: 50%;
+		border: 1px solid var(--line-strong);
+		transition:
+			background-color 0.3s ease,
+			border-color 0.3s ease,
+			transform 0.5s var(--ease-out);
+	}
+
+	.faq-sign::before,
+	.faq-sign::after {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		width: 12px;
+		height: 1.5px;
+		border-radius: 2px;
+		background: currentColor;
+		transform: translate(-50%, -50%);
+	}
+
+	.faq-sign::after {
+		transform: translate(-50%, -50%) rotate(90deg);
+		transition: transform 0.4s var(--ease-out);
+	}
+
+	.faq-item[open] .faq-sign {
+		background: var(--milk);
+		border-color: var(--milk);
+		color: var(--bg);
+		transform: rotate(180deg);
+	}
+
+	.faq-item[open] .faq-sign::after {
+		transform: translate(-50%, -50%) rotate(0deg);
+	}
+
+	.faq-answer {
+		padding: 0 56px 28px 0;
+		color: var(--text-muted);
+		max-width: 760px;
+	}
+</style>

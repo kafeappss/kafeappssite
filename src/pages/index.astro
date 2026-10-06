@@ -1,0 +1,737 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import SectionHead from '../components/SectionHead.astro';
+import ServiceCard from '../components/ServiceCard.astro';
+import MethodSteps from '../components/MethodSteps.astro';
+import BuildModes from '../components/BuildModes.astro';
+import Marquee from '../components/Marquee.astro';
+import Testimonials from '../components/Testimonials.astro';
+import Clients from '../components/Clients.astro';
+import BlogCard from '../components/BlogCard.astro';
+import Faq from '../components/Faq.astro';
+import CtaSection from '../components/CtaSection.astro';
+import Icon from '../components/Icon.astro';
+import { services } from '../data/services';
+import { faq } from '../data/method';
+import { clients, differentials, productTypes, site, stats, testimonials } from '../data/site';
+
+const posts = (await getCollection('blog', ({ data }) => !data.draft))
+	.sort((a, b) => b.data.date.getTime() - a.data.date.getTime() || a.data.title.localeCompare(b.data.title))
+	.slice(0, 3);
+
+const pains = [
+	{
+		title: 'Meses até o primeiro feedback',
+		description:
+			'Projetos longos demais adiam a única coisa que importa no começo: descobrir se alguém quer o que você está construindo.',
+	},
+	{
+		title: 'Orçamento no lugar errado',
+		description:
+			'Funcionalidades “essenciais” que ninguém usa consomem o dinheiro que deveria financiar o crescimento.',
+	},
+	{
+		title: 'Time caro, cedo demais',
+		description:
+			'Montar uma equipe técnica completa antes de validar o negócio aumenta o risco e o custo fixo.',
+	},
+];
+
+const stages = [
+	{
+		name: 'Validar',
+		from: 'Do guardanapo ao MVP',
+		description: 'Descobrimos o que precisa ser provado e colocamos no ar a menor versão capaz de provar.',
+	},
+	{
+		name: 'Lançar',
+		from: 'Do MVP ao mercado',
+		description: 'Produto publicado, métricas configuradas e usuários reais gerando aprendizado todos os dias.',
+	},
+	{
+		name: 'Escalar',
+		from: 'Do mercado ao crescimento',
+		description: 'Evolução contínua, novas funcionalidades e arquitetura preparada para crescer com você.',
+	},
+];
+
+const capabilities = [
+	'Aplicativos iOS e Android',
+	'MVPs para startups',
+	'No-code',
+	'Low-code',
+	'Plataformas SaaS',
+	'Marketplaces',
+	'Sistemas internos',
+	'Automação',
+	'UX Research',
+	'UI Design',
+	'Integrações',
+	'Painéis de dados',
+];
+---
+
+<Base
+	description="A Kafé Apps transforma ideias em aplicativos, MVPs, plataformas e sistemas — com código, low-code ou no-code. Estúdio de produto digital em Niterói (RJ) que atende todo o Brasil."
+>
+	<!-- Hero -->
+	<section class="hero" data-liquid="hero">
+		<div class="container hero-inner">
+			<p class="eyebrow" data-reveal>Estúdio de produto digital · {site.location.city}, {site.location.state}</p>
+			<h1 class="display hero-title" data-split>Mais negócio, <em>menos software.</em></h1>
+			<p class="lead hero-lead" data-reveal style="--delay: 0.35s">
+				A Kafé Apps transforma ideias em aplicativos, MVPs, plataformas e sistemas que geram resultado — com
+				código, low-code ou no-code: a tecnologia certa para o momento do seu negócio.
+			</p>
+			<div class="btn-row" data-reveal style="--delay: 0.5s">
+				<a class="btn" href="/contato">Tirar minha ideia do papel <Icon name="arrow" class="arrow" /></a>
+				<a class="btn btn-ghost" href="#metodo">Conhecer o método</a>
+			</div>
+			<ul role="list" class="hero-proof" data-reveal style="--delay: 0.65s">
+				<li><Icon name="bean" size={18} /> Desde {site.foundingYear}</li>
+				<li><Icon name="rocket" size={18} /> Especialistas em MVP</li>
+				<li><Icon name="blocks" size={18} /> No-code, low-code e código</li>
+			</ul>
+		</div>
+		<a class="scroll-cue" href="#problema" aria-label="Role para a próxima seção">
+			<span class="scroll-line" aria-hidden="true"></span>
+			<span class="mono">Role</span>
+		</a>
+	</section>
+
+	<Marquee items={capabilities} />
+
+	<!-- 01 · O problema -->
+	<section class="section" id="problema" data-liquid="right">
+		<div class="container">
+			<SectionHead
+				num="01"
+				eyebrow="O problema"
+				title="Boas ideias raramente morrem por serem ruins. <em>Morrem por demorar.</em>"
+				lead="Meses de desenvolvimento antes do primeiro usuário, orçamento consumido por funcionalidades que ninguém pediu e um time caro antes de o negócio provar que funciona. A gente conhece bem essa história — e existe outro caminho."
+			/>
+			<ol role="list" class="pains">
+				{
+					pains.map((pain, index) => (
+						<li class="card pain" data-reveal style={`--delay: ${index * 0.1}s`}>
+							<span class="pain-num mono">0{index + 1}</span>
+							<h3 class="h3">{pain.title}</h3>
+							<p>{pain.description}</p>
+						</li>
+					))
+				}
+			</ol>
+		</div>
+	</section>
+
+	<!-- 02 · A virada -->
+	<section class="section" data-liquid="left">
+		<div class="container">
+			<div class="turn">
+				<SectionHead
+					num="02"
+					eyebrow="A virada"
+					title="Primeiro o negócio. <em>Depois o software.</em>"
+					lead="Invertemos a ordem: entendemos o negócio antes de escolher a tecnologia. Cada linha de código — ou cada bloco no-code — precisa ter um motivo para existir."
+				/>
+				<ol role="list" class="stages">
+					{
+						stages.map((stage, index) => (
+							<li class="stage" data-reveal style={`--delay: ${index * 0.12}s`}>
+								<span class="stage-from mono">{stage.from}</span>
+								<p class="stage-name">{stage.name}</p>
+								<p class="stage-desc">{stage.description}</p>
+								{index < stages.length - 1 && (
+									<span class="stage-arrow" aria-hidden="true">
+										<Icon name="arrow" size={22} />
+									</span>
+								)}
+							</li>
+						))
+					}
+				</ol>
+			</div>
+		</div>
+	</section>
+
+	<!-- 03 · Serviços -->
+	<section class="section" id="servicos" data-liquid="scatter">
+		<div class="container">
+			<SectionHead
+				num="03"
+				eyebrow="O que fazemos"
+				title="Tudo o que o seu produto digital precisa, <em>na mesma mesa.</em>"
+				lead="Estratégia, design e desenvolvimento trabalhando juntos — do primeiro rascunho à evolução contínua do produto."
+			/>
+			<div class="services-grid">
+				{services.map((service, index) => <ServiceCard service={service} index={index} />)}
+			</div>
+		</div>
+	</section>
+
+	<!-- 04 · Método -->
+	<section class="section" id="metodo" data-liquid="stream">
+		<div class="container">
+			<SectionHead
+				num="04"
+				eyebrow="Método Sprint"
+				title="Do grão à xícara, <em>sem surpresas no caminho.</em>"
+				lead="Nossa Metodologia 4D organiza cada projeto em quatro etapas claras, com entregas em sprints curtas e acompanhamento em tempo real."
+			/>
+			<MethodSteps />
+			<p class="section-link" data-reveal>
+				<a class="link-arrow" href="/metodo">Ver o método completo e os formatos de trabalho <Icon name="arrow" /></a>
+			</p>
+		</div>
+	</section>
+
+	<!-- 05 · Tecnologia na medida -->
+	<section class="section" data-liquid="right">
+		<div class="container">
+			<SectionHead
+				num="05"
+				eyebrow="Tecnologia na medida"
+				title="No-code, low-code ou código? <em>O que for melhor para o seu momento.</em>"
+				lead="Não temos apego a ferramenta. Recomendamos a tecnologia pelo que ela entrega ao seu negócio: velocidade, custo, flexibilidade e capacidade de escalar."
+			/>
+			<BuildModes />
+		</div>
+	</section>
+
+	<!-- 06 · O que dá para construir -->
+	<section class="section" data-liquid="left">
+		<div class="container">
+			<SectionHead
+				num="06"
+				eyebrow="O que dá para construir"
+				title="Do delivery ao SaaS, <em>sua ideia tem lugar aqui.</em>"
+			/>
+			<ul role="list" class="types" data-reveal>
+				{
+					productTypes.map((type) => (
+						<li>
+							<span>{type}</span>
+							<Icon name="bean" size={20} class="types-bean" />
+						</li>
+					))
+				}
+			</ul>
+		</div>
+	</section>
+
+	{
+		(testimonials.length > 0 || clients.length > 0) && (
+			<section class="section" data-liquid="scatter">
+				<div class="container">
+					<SectionHead
+						eyebrow="Quem confia"
+						title="Quem já tomou um café <em>com a gente.</em>"
+					/>
+					<Testimonials />
+					{clients.length > 0 && (
+						<div class="clients-wrap">
+							<Clients />
+						</div>
+					)}
+				</div>
+			</section>
+		)
+	}
+
+	<!-- 07 · Quem somos -->
+	<section class="section" id="sobre" data-liquid="left">
+		<div class="container">
+			<div class="soul">
+				<div class="soul-text">
+					<SectionHead
+						num="07"
+						eyebrow="Quem somos"
+						title="Nascemos em Niterói para <em>tirar ideias do papel.</em>"
+					/>
+					<div class="soul-copy" data-reveal>
+						<p>
+							A Kafé Apps nasceu em {site.foundingYear} com a missão de democratizar a criação de novos negócios
+							e a geração de empregos por meio de tecnologias ágeis. Desde então, ajudamos startups e empresas
+							a validar ideias, lançar produtos e crescer com tecnologia — sem precisar investir uma fortuna em
+							um time tradicional de desenvolvimento.
+						</p>
+						<p class="soul-quote">
+							Toda boa ideia já começou numa conversa de café. Nosso trabalho é garantir que ela não termine
+							ali.
+						</p>
+						<a class="link-arrow" href="/sobre">Conheça a Kafé <Icon name="arrow" /></a>
+					</div>
+				</div>
+				<dl class="stats">
+					{
+						stats.map((stat, index) => (
+							<div class="stat" data-reveal style={`--delay: ${index * 0.08}s`}>
+								<dt>{stat.label}</dt>
+								<dd>{stat.value}</dd>
+							</div>
+						))
+					}
+				</dl>
+			</div>
+
+			<ul role="list" class="diffs">
+				{
+					differentials.map((item, index) => (
+						<li class="diff" data-reveal style={`--delay: ${(index % 3) * 0.08}s`}>
+							<Icon name="check" size={20} class="diff-icon" />
+							<div>
+								<h3>{item.title}</h3>
+								<p>{item.description}</p>
+							</div>
+						</li>
+					))
+				}
+			</ul>
+		</div>
+	</section>
+
+	<!-- Conteúdo -->
+	{
+		posts.length > 0 && (
+			<section class="section" data-liquid="rest">
+				<div class="container">
+					<div class="head-row">
+						<SectionHead
+							eyebrow="Conteúdo"
+							title="Ideias para quem <em>constrói produtos.</em>"
+							lead="Artigos sobre produto, tecnologia e negócios digitais — e o PodKafé, nosso podcast no YouTube."
+						/>
+						<div class="head-actions" data-reveal>
+							<a class="btn btn-ghost btn-sm" href="/blog">Ver todos os artigos</a>
+						</div>
+					</div>
+					<div class="posts-grid">
+						{posts.map((post, index) => <BlogCard post={post} index={index} />)}
+					</div>
+				</div>
+			</section>
+		)
+	}
+
+	<!-- Perguntas frequentes -->
+	<section class="section" data-liquid="rest">
+		<div class="container faq-layout">
+			<SectionHead
+				eyebrow="Perguntas frequentes"
+				title="O que sempre aparece <em>no primeiro café.</em>"
+				lead="Não achou sua dúvida? Mande uma mensagem — a gente responde rapidinho."
+			>
+				<div data-reveal style="--delay: 0.25s">
+					<a class="link-arrow" href="/contato">Falar com a Kafé <Icon name="arrow" /></a>
+				</div>
+			</SectionHead>
+			<Faq items={faq} />
+		</div>
+	</section>
+
+	<CtaSection />
+</Base>
+
+<style>
+	/* Hero ------------------------------------------------------------------ */
+	.hero {
+		position: relative;
+		display: flex;
+		align-items: center;
+		min-height: 100vh;
+		min-height: 100svh;
+		padding-top: calc(var(--header-h) + 40px);
+		padding-bottom: 120px;
+	}
+
+	.hero-inner {
+		display: grid;
+		gap: 28px;
+		justify-items: start;
+	}
+
+	.hero-title {
+		max-width: 10.5ch;
+	}
+
+	.hero-lead {
+		max-width: 560px;
+	}
+
+	.hero .btn-row {
+		margin-top: 8px;
+	}
+
+	.hero-proof {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 10px 26px;
+		margin-top: 18px;
+		font-size: var(--fs-small);
+		color: var(--text-muted);
+	}
+
+	.hero-proof li {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+	}
+
+	.hero-proof :global(svg) {
+		color: var(--caramel);
+	}
+
+	.scroll-cue {
+		position: absolute;
+		left: 50%;
+		bottom: 28px;
+		display: grid;
+		justify-items: center;
+		gap: 10px;
+		font-size: 0.68rem;
+		letter-spacing: 0.2em;
+		text-transform: uppercase;
+		color: var(--text-dim);
+		transform: translateX(-50%);
+	}
+
+	.scroll-line {
+		position: relative;
+		width: 1px;
+		height: 46px;
+		overflow: hidden;
+		background: var(--line-strong);
+	}
+
+	.scroll-line::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(180deg, transparent, var(--crema));
+		animation: drip 2.2s var(--ease-in-out) infinite;
+	}
+
+	@keyframes drip {
+		0% { transform: translateY(-100%); }
+		100% { transform: translateY(100%); }
+	}
+
+	/* 01 · Dores -------------------------------------------------------------- */
+	.pains {
+		display: grid;
+		gap: 16px;
+	}
+
+	.pain {
+		display: grid;
+		gap: 14px;
+		align-content: start;
+		padding: clamp(26px, 3vw, 38px);
+	}
+
+	.pain-num {
+		font-size: var(--fs-xs);
+		color: var(--caramel);
+	}
+
+	.pain p {
+		color: var(--text-muted);
+		font-size: var(--fs-small);
+	}
+
+	/* 02 · Virada ------------------------------------------------------------- */
+	.turn {
+		display: grid;
+		justify-items: end;
+	}
+
+	.turn :global(.section-head) {
+		justify-self: end;
+		max-width: 760px;
+	}
+
+	.stages {
+		display: grid;
+		gap: 16px;
+		width: 100%;
+	}
+
+	.stage {
+		position: relative;
+		display: grid;
+		gap: 10px;
+		padding: 30px 0 26px;
+		border-top: 1px solid var(--line-strong);
+	}
+
+	.stage-from {
+		font-size: 0.72rem;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		color: var(--text-dim);
+	}
+
+	.stage-name {
+		font-family: var(--font-serif);
+		font-style: italic;
+		font-size: clamp(3rem, 2rem + 4vw, 5.5rem);
+		line-height: 0.95;
+		letter-spacing: -0.02em;
+		background: var(--gradient-crema);
+		-webkit-background-clip: text;
+		background-clip: text;
+		color: transparent;
+		padding-right: 0.06em;
+		justify-self: start;
+	}
+
+	.stage-desc {
+		max-width: 340px;
+		color: var(--text-muted);
+	}
+
+	.stage-arrow {
+		display: none;
+	}
+
+	/* 03 · Serviços ---------------------------------------------------------- */
+	.services-grid {
+		display: grid;
+		gap: 16px;
+	}
+
+	.section-link {
+		margin-top: 48px;
+	}
+
+	/* 06 · Tipos de produto ------------------------------------------------ */
+	.types {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 6px 0;
+	}
+
+	.types li {
+		display: inline-flex;
+		align-items: center;
+		gap: 22px;
+		padding-right: 22px;
+		font-size: clamp(1.5rem, 1rem + 2.2vw, 3rem);
+		font-weight: 450;
+		letter-spacing: -0.04em;
+		line-height: 1.25;
+		color: var(--text-muted);
+		transition: color 0.3s ease;
+	}
+
+	.types li:hover {
+		color: var(--text);
+	}
+
+	.types li:nth-child(3n + 2) span {
+		font-family: var(--font-serif);
+		font-style: italic;
+		letter-spacing: -0.01em;
+		color: var(--crema);
+	}
+
+	.types :global(.types-bean) {
+		color: var(--caramel);
+		opacity: 0.55;
+	}
+
+	.types li:last-child :global(.types-bean) {
+		display: none;
+	}
+
+	.clients-wrap {
+		margin-top: 48px;
+	}
+
+	/* 07 · Quem somos -------------------------------------------------------- */
+	.soul {
+		display: grid;
+		gap: 56px;
+	}
+
+	.soul-copy {
+		display: grid;
+		gap: 22px;
+		justify-items: start;
+		max-width: 620px;
+		margin-top: calc(-1 * clamp(20px, 3vw, 48px));
+		color: var(--text-muted);
+		font-size: 1.1rem;
+	}
+
+	.soul-quote {
+		font-family: var(--font-serif);
+		font-style: italic;
+		font-size: clamp(1.5rem, 1.2rem + 1vw, 2rem);
+		line-height: 1.3;
+		color: var(--text);
+	}
+
+	.stats {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		align-content: start;
+		border-top: 1px solid var(--line);
+		border-left: 1px solid var(--line);
+	}
+
+	.stat {
+		display: flex;
+		flex-direction: column-reverse;
+		justify-content: flex-end;
+		gap: 10px;
+		padding: clamp(20px, 3vw, 32px);
+		border-right: 1px solid var(--line);
+		border-bottom: 1px solid var(--line);
+		background: rgb(11 8 6 / 0.35);
+	}
+
+	.stat dd {
+		font-size: clamp(2.2rem, 1.6rem + 2vw, 3.6rem);
+		font-weight: 500;
+		line-height: 1;
+		letter-spacing: -0.05em;
+		color: var(--text);
+	}
+
+	.stat dt {
+		font-size: var(--fs-small);
+		color: var(--text-muted);
+	}
+
+	.diffs {
+		display: grid;
+		gap: 4px 40px;
+		margin-top: clamp(64px, 8vw, 110px);
+	}
+
+	.diff {
+		display: flex;
+		gap: 16px;
+		padding: 26px 0;
+		border-top: 1px solid var(--line);
+	}
+
+	.diff :global(.diff-icon) {
+		flex: none;
+		margin-top: 3px;
+		color: var(--caramel);
+	}
+
+	.diff h3 {
+		font-size: 1.12rem;
+		font-weight: 550;
+		letter-spacing: -0.015em;
+	}
+
+	.diff p {
+		margin-top: 6px;
+		font-size: var(--fs-small);
+		color: var(--text-muted);
+	}
+
+	/* Conteúdo ---------------------------------------------------------------- */
+	.head-row {
+		display: grid;
+		gap: 0 32px;
+		align-items: end;
+	}
+
+	.head-actions {
+		margin-bottom: clamp(48px, 6vw, 88px);
+		margin-top: -32px;
+	}
+
+	.posts-grid {
+		display: grid;
+		gap: 16px;
+	}
+
+	/* FAQ --------------------------------------------------------------------- */
+	.faq-layout {
+		display: grid;
+		gap: 0 64px;
+	}
+
+	.faq-layout :global(.section-head) {
+		align-self: start;
+	}
+
+	/* Responsivo -------------------------------------------------------------- */
+	@media (min-width: 720px) {
+		.services-grid,
+		.posts-grid {
+			grid-template-columns: repeat(2, 1fr);
+		}
+
+		.pains {
+			grid-template-columns: repeat(3, 1fr);
+		}
+
+		.diffs {
+			grid-template-columns: repeat(2, 1fr);
+		}
+	}
+
+	@media (min-width: 960px) {
+		.stages {
+			grid-template-columns: repeat(3, 1fr);
+			gap: 40px;
+		}
+
+		.stage-arrow {
+			position: absolute;
+			top: -12px;
+			right: -32px;
+			display: grid;
+			place-items: center;
+			width: 24px;
+			height: 24px;
+			color: var(--caramel);
+			background: var(--bg);
+		}
+
+		.soul {
+			grid-template-columns: 1.15fr 1fr;
+			align-items: start;
+		}
+
+		.stats {
+			margin-top: 34px;
+		}
+
+		.head-row {
+			grid-template-columns: 1fr auto;
+		}
+
+		.head-actions {
+			margin-top: 0;
+		}
+
+		.faq-layout {
+			grid-template-columns: 0.9fr 1.1fr;
+		}
+
+		.faq-layout :global(.section-head) {
+			position: sticky;
+			top: calc(var(--header-h) + 40px);
+		}
+	}
+
+	@media (min-width: 1080px) {
+		.services-grid,
+		.posts-grid {
+			grid-template-columns: repeat(3, 1fr);
+		}
+
+		.diffs {
+			grid-template-columns: repeat(3, 1fr);
+		}
+	}
+</style>

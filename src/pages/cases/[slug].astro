@@ -1,0 +1,111 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { getCollection, render, type CollectionEntry } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import PageHero from '../../components/PageHero.astro';
+import CtaSection from '../../components/CtaSection.astro';
+import { hasCases } from '../../scripts/cases';
+
+export const getStaticPaths = (async () => {
+	if (!hasCases) return [];
+	const cases = await getCollection('cases', ({ data }) => !data.draft);
+	return cases.map((item) => ({ params: { slug: item.id }, props: { item } }));
+}) satisfies GetStaticPaths;
+
+interface Props {
+	item: CollectionEntry<'cases'>;
+}
+
+const { item } = Astro.props;
+const { Content } = await render(item);
+---
+
+<Base title={`${item.data.title} — Case`} description={item.data.summary} image={item.data.cover}>
+	<PageHero
+		eyebrow={`${item.data.client} · ${item.data.segment}`}
+		title={item.data.title}
+		lead={item.data.summary}
+		breadcrumbs={[{ label: 'Cases', href: '/cases' }, { label: item.data.title }]}
+	>
+		{
+			item.data.services.length > 0 && (
+				<ul role="list" class="case-services" data-reveal>
+					{item.data.services.map((service) => (
+						<li class="tag">{service}</li>
+					))}
+				</ul>
+			)
+		}
+	</PageHero>
+
+	<section class="section case-content" data-liquid="rest">
+		<div class="container-narrow">
+			{item.data.cover && <img src={item.data.cover} alt="" class="case-cover" />}
+			{
+				item.data.results.length > 0 && (
+					<dl class="case-results">
+						{item.data.results.map((result) => (
+							<div>
+								<dt>{result.label}</dt>
+								<dd>{result.value}</dd>
+							</div>
+						))}
+					</dl>
+				)
+			}
+			<div class="prose">
+				<Content />
+			</div>
+		</div>
+	</section>
+
+	<CtaSection title="Quer um resultado <em>parecido?</em>" />
+</Base>
+
+<style>
+	.case-content {
+		padding-top: 0;
+	}
+
+	.case-services {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px;
+	}
+
+	.case-cover {
+		width: 100%;
+		margin-bottom: 48px;
+		border-radius: var(--radius);
+		border: 1px solid var(--line);
+	}
+
+	.case-results {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+		gap: 16px;
+		margin-bottom: 56px;
+	}
+
+	.case-results div {
+		display: flex;
+		flex-direction: column-reverse;
+		gap: 8px;
+		padding: 24px;
+		border-radius: var(--radius-sm);
+		border: 1px solid var(--line);
+		background: rgb(23 17 13 / 0.6);
+	}
+
+	.case-results dd {
+		font-size: 2.2rem;
+		font-weight: 500;
+		letter-spacing: -0.04em;
+		line-height: 1;
+	}
+
+	.case-results dt {
+		font-size: var(--fs-small);
+		color: var(--text-muted);
+	}
+</style>

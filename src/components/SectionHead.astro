@@ -1,0 +1,28 @@
+---
+interface Props {
+	eyebrow?: string;
+	num?: string;
+	/** Aceita <em> para o destaque em itálico. */
+	title: string;
+	lead?: string;
+	center?: boolean;
+	as?: 'h1' | 'h2';
+	size?: 'h1' | 'h2';
+}
+
+const { eyebrow, num, title, lead, center = false, as: Tag = 'h2', size = 'h2' } = Astro.props;
+---
+
+<div class:list={['section-head', { center }]}>
+	{
+		eyebrow && (
+			<p class="eyebrow" data-reveal>
+				{num && <span class="num">({num})</span>}
+				{eyebrow}
+			</p>
+		)
+	}
+	<Tag class={size} data-split set:html={title} />
+	{lead && <p class="lead" data-reveal style="--delay: 0.15s">{lead}</p>}
+	<slot />
+</div>

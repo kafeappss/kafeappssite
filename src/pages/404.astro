@@ -1,0 +1,40 @@
+---
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+---
+
+<Base title="Página não encontrada" description="A página que você procura não existe ou mudou de endereço." noindex>
+	<section class="not-found" data-liquid="pool">
+		<div class="container">
+			<p class="eyebrow" data-reveal>Erro 404</p>
+			<h1 class="display" data-split>Esse café <em>esfriou.</em></h1>
+			<p class="lead" data-reveal style="--delay: 0.2s">
+				A página que você procura não existe ou mudou de endereço. Que tal recomeçar por aqui?
+			</p>
+			<div class="btn-row" data-reveal style="--delay: 0.3s">
+				<a class="btn" href="/">Voltar para o início <Icon name="arrow" class="arrow" /></a>
+				<a class="btn btn-ghost" href="/servicos">Ver serviços</a>
+			</div>
+		</div>
+	</section>
+</Base>
+
+<style>
+	.not-found {
+		display: flex;
+		align-items: center;
+		min-height: 100vh;
+		min-height: 100svh;
+		padding-block: calc(var(--header-h) + 40px) 120px;
+	}
+
+	.not-found .container {
+		display: grid;
+		gap: 24px;
+		justify-items: start;
+	}
+
+	.not-found .lead {
+		max-width: 520px;
+	}
+</style>

@@ -1,0 +1,139 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import PageHero from '../../components/PageHero.astro';
+import CtaSection from '../../components/CtaSection.astro';
+import Icon from '../../components/Icon.astro';
+import { hasCases } from '../../scripts/cases';
+
+const cases = hasCases
+	? (await getCollection('cases', ({ data }) => !data.draft)).sort((a, b) => a.data.order - b.data.order)
+	: [];
+---
+
+<Base
+	title="Cases"
+	description="Conheça projetos desenvolvidos pela Kafé Apps: aplicativos, MVPs, plataformas e sistemas que ajudaram startups e empresas a crescer."
+	noindex={cases.length === 0}
+>
+	<PageHero
+		eyebrow="Cases"
+		title="Ideias que viraram <em>produto.</em>"
+		lead="Alguns dos projetos que construímos com startups e empresas — e o que aprendemos com cada um deles."
+		breadcrumbs={[{ label: 'Cases' }]}
+	/>
+
+	<section class="section cases-section" data-liquid="scatter">
+		<div class="container">
+			{
+				cases.length > 0 ? (
+					<div class="cases-grid">
+						{cases.map((item, index) => (
+							<a href={`/cases/${item.id}`} class="card case" data-reveal style={`--delay: ${(index % 2) * 0.1}s`}>
+								{item.data.cover && (
+									<img src={item.data.cover} alt="" loading="lazy" decoding="async" class="case-cover" />
+								)}
+								<div class="case-body">
+									<p class="case-meta mono">
+										{item.data.segment}
+										{item.data.year && ` · ${item.data.year}`}
+									</p>
+									<h2 class="h3">{item.data.title}</h2>
+									<p>{item.data.summary}</p>
+									<span class="case-more">
+										Ver case <Icon name="arrow-up-right" size={18} />
+									</span>
+								</div>
+							</a>
+						))}
+					</div>
+				) : (
+					<div class="card empty" data-reveal>
+						<p class="h3">Estamos organizando nossos cases para publicação.</p>
+						<p>Enquanto isso, conte a sua ideia — mostramos projetos parecidos em uma conversa.</p>
+						<a class="btn" href="/contato">
+							Falar com a Kafé <Icon name="arrow" class="arrow" />
+						</a>
+					</div>
+				)
+			}
+		</div>
+	</section>
+
+	<CtaSection />
+</Base>
+
+<style>
+	.cases-section {
+		padding-top: 0;
+	}
+
+	.cases-grid {
+		display: grid;
+		gap: 16px;
+	}
+
+	.case {
+		display: grid;
+		overflow: hidden;
+	}
+
+	.case:hover {
+		border-color: var(--line-strong);
+	}
+
+	.case-cover {
+		width: 100%;
+		aspect-ratio: 16 / 10;
+		object-fit: cover;
+		transition: transform 0.8s var(--ease-out);
+	}
+
+	.case:hover .case-cover {
+		transform: scale(1.03);
+	}
+
+	.case-body {
+		display: grid;
+		gap: 12px;
+		padding: clamp(24px, 3vw, 34px);
+	}
+
+	.case-meta {
+		font-size: 0.72rem;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: var(--caramel);
+	}
+
+	.case-body p:not(.case-meta) {
+		color: var(--text-muted);
+		font-size: var(--fs-small);
+	}
+
+	.case-more {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		font-size: var(--fs-small);
+		color: var(--crema);
+	}
+
+	.empty {
+		display: grid;
+		gap: 16px;
+		justify-items: start;
+		max-width: 720px;
+		padding: clamp(28px, 4vw, 48px);
+	}
+
+	.empty p:not(.h3) {
+		color: var(--text-muted);
+	}
+
+	@media (min-width: 860px) {
+		.cases-grid {
+			grid-template-columns: repeat(2, 1fr);
+		}
+	}
+</style>

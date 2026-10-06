@@ -1,0 +1,94 @@
+---
+import { site } from '../data/site';
+
+interface Props {
+	eyebrow: string;
+	/** Aceita <em> para o destaque em itálico. */
+	title: string;
+	lead?: string;
+	breadcrumbs?: { label: string; href?: string }[];
+	liquid?: string;
+}
+
+const { eyebrow, title, lead, breadcrumbs = [], liquid = 'page' } = Astro.props;
+
+const trail = [{ label: 'Início', href: '/' }, ...breadcrumbs];
+const breadcrumbSchema = {
+	'@context': 'https://schema.org',
+	'@type': 'BreadcrumbList',
+	itemListElement: trail.map((item, index) => ({
+		'@type': 'ListItem',
+		position: index + 1,
+		name: item.label,
+		item: item.href ? new URL(item.href, site.url).href : new URL(Astro.url.pathname, site.url).href,
+	})),
+};
+---
+
+<section class="page-hero" data-liquid={liquid}>
+	<div class="container">
+		{
+			breadcrumbs.length > 0 && (
+				<nav class="breadcrumbs" aria-label="Você está em" data-reveal>
+					<ol role="list">
+						{trail.map((item) => (
+							<li>{item.href ? <a href={item.href}>{item.label}</a> : <span aria-current="page">{item.label}</span>}</li>
+						))}
+					</ol>
+				</nav>
+			)
+		}
+		<p class="eyebrow" data-reveal>{eyebrow}</p>
+		<h1 class="h1" data-split set:html={title} />
+		{lead && <p class="lead" data-reveal style="--delay: 0.2s">{lead}</p>}
+		<slot />
+	</div>
+	<script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
+</section>
+
+<style>
+	.page-hero {
+		padding-top: calc(var(--header-h) + clamp(64px, 10vw, 150px));
+		padding-bottom: clamp(56px, 7vw, 110px);
+	}
+
+	.page-hero .container {
+		display: grid;
+		gap: 24px;
+		justify-items: start;
+	}
+
+	.page-hero h1 {
+		max-width: 15ch;
+	}
+
+	.page-hero .lead {
+		max-width: 680px;
+	}
+
+	.breadcrumbs ol {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 6px;
+		font-size: var(--fs-xs);
+		color: var(--text-dim);
+	}
+
+	.breadcrumbs li + li::before {
+		content: '/';
+		margin-right: 6px;
+		opacity: 0.6;
+	}
+
+	.breadcrumbs a {
+		transition: color 0.25s ease;
+	}
+
+	.breadcrumbs a:hover {
+		color: var(--text);
+	}
+
+	.breadcrumbs [aria-current] {
+		color: var(--text-muted);
+	}
+</style>

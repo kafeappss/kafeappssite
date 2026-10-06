@@ -1,0 +1,262 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHero from '../components/PageHero.astro';
+import SectionHead from '../components/SectionHead.astro';
+import MethodSteps from '../components/MethodSteps.astro';
+import BuildModes from '../components/BuildModes.astro';
+import Marquee from '../components/Marquee.astro';
+import Faq from '../components/Faq.astro';
+import CtaSection from '../components/CtaSection.astro';
+import Icon from '../components/Icon.astro';
+import { engagementModels, faq } from '../data/method';
+import { technologies } from '../data/site';
+
+const rituals = [
+	{
+		icon: 'chat',
+		title: 'Kickoff com quem decide',
+		description: 'Alinhamos objetivos, prazos, riscos e o que significa sucesso antes de qualquer entrega.',
+	},
+	{
+		icon: 'clock',
+		title: 'Sprints curtas',
+		description: 'Ciclos de trabalho com escopo fechado e uma entrega testável ao final de cada um.',
+	},
+	{
+		icon: 'browser',
+		title: 'Acompanhamento em tempo real',
+		description: 'Um sistema de acompanhamento mostra o andamento de cada tarefa, sem precisar pedir relatório.',
+	},
+	{
+		icon: 'check',
+		title: 'Revisão a cada entrega',
+		description: 'Você testa, comenta e aprova. Ajustes entram na próxima sprint, com prioridades claras.',
+	},
+	{
+		icon: 'pen',
+		title: 'Decisões documentadas',
+		description: 'Escopo, fluxos e decisões técnicas registrados, para ninguém depender da memória de ninguém.',
+	},
+	{
+		icon: 'rocket',
+		title: 'Lançamento acompanhado',
+		description: 'Estamos juntos na publicação e nos primeiros dias de uso, ajustando o que for preciso.',
+	},
+] as const;
+
+const methodFaq = faq.filter((item) => /MVP|No-code|lançamento/.test(item.q));
+---
+
+<Base
+	title="Método Sprint e Metodologia 4D"
+	description="Conheça o Método Sprint da Kafé Apps: Descobrir, Definir, Desenvolver e Decolar. Entregas em sprints curtas, acompanhamento em tempo real e formatos de trabalho para cada fase."
+>
+	<PageHero
+		eyebrow="Método Sprint · Metodologia 4D"
+		title="Um jeito de construir <em>sem surpresas.</em>"
+		lead="Projetos de software costumam atrasar por falta de clareza, não de talento. Nosso método existe para que você saiba, a cada semana, o que está sendo feito, por que e o que vem depois."
+		breadcrumbs={[{ label: 'Método' }]}
+	/>
+
+	<section class="section method-section" data-liquid="stream">
+		<div class="container">
+			<SectionHead
+				eyebrow="As quatro etapas"
+				title="Do grão à xícara, <em>etapa por etapa.</em>"
+				lead="Cada etapa tem objetivos e entregáveis claros. Você só avança quando está seguro do que foi feito."
+			/>
+			<MethodSteps />
+		</div>
+	</section>
+
+	<section class="section" data-liquid="scatter">
+		<div class="container">
+			<SectionHead
+				eyebrow="Durante o projeto"
+				title="Transparência <em>em cada sprint.</em>"
+				lead="Nada de sumir por meses e reaparecer com um sistema pronto. Você participa das decisões e vê o produto ganhar forma."
+			/>
+			<ul role="list" class="rituals">
+				{
+					rituals.map((ritual, index) => (
+						<li class="card ritual" data-reveal style={`--delay: ${(index % 3) * 0.08}s`}>
+							<span class="ritual-icon">
+								<Icon name={ritual.icon} size={24} />
+							</span>
+							<h3>{ritual.title}</h3>
+							<p>{ritual.description}</p>
+						</li>
+					))
+				}
+			</ul>
+		</div>
+	</section>
+
+	<section class="section" data-liquid="left">
+		<div class="container">
+			<SectionHead
+				eyebrow="Formatos de trabalho"
+				title="Escolha o formato <em>do seu momento.</em>"
+			/>
+			<div class="models">
+				{
+					engagementModels.map((model, index) => (
+						<article class="card model" data-reveal style={`--delay: ${index * 0.1}s`}>
+							<span class="tag">{model.badge}</span>
+							<h3 class="h3">{model.name}</h3>
+							<p>{model.description}</p>
+							<ul role="list">
+								{model.items.map((item) => (
+									<li>
+										<Icon name="check" size={18} />
+										{item}
+									</li>
+								))}
+							</ul>
+						</article>
+					))
+				}
+			</div>
+		</div>
+	</section>
+
+	<section class="section" data-liquid="right">
+		<div class="container">
+			<SectionHead
+				eyebrow="Tecnologia na medida"
+				title="A ferramenta certa <em>para cada fase.</em>"
+				lead="Definimos a tecnologia na etapa Definir, considerando prazo, orçamento, regras de negócio e planos de crescimento."
+			/>
+			<BuildModes />
+		</div>
+	</section>
+
+	{
+		technologies.length > 0 && (
+			<section class="tech" data-liquid="right">
+				<p class="eyebrow container" data-reveal>
+					Ferramentas que usamos
+				</p>
+				<Marquee items={technologies} reverse />
+			</section>
+		)
+	}
+
+	<section class="section" data-liquid="rest">
+		<div class="container faq-layout">
+			<SectionHead eyebrow="Perguntas frequentes" title="Ainda com <em>dúvidas?</em>" />
+			<Faq items={methodFaq} />
+		</div>
+	</section>
+
+	<CtaSection
+		title="Pronto para a <em>primeira sprint?</em>"
+		lead="Começamos com uma conversa para entender o seu negócio. Depois, você recebe um plano claro, com etapas, prazos e investimento."
+	/>
+</Base>
+
+<style>
+	.method-section {
+		padding-top: clamp(40px, 5vw, 80px);
+	}
+
+	.rituals,
+	.models {
+		display: grid;
+		gap: 16px;
+	}
+
+	.ritual {
+		display: grid;
+		gap: 12px;
+		align-content: start;
+		padding: clamp(24px, 3vw, 34px);
+	}
+
+	.ritual-icon {
+		display: grid;
+		place-items: center;
+		width: 50px;
+		height: 50px;
+		margin-bottom: 6px;
+		border-radius: 14px;
+		color: var(--crema);
+		background: rgb(214 153 92 / 0.1);
+		border: 1px solid rgb(214 153 92 / 0.22);
+	}
+
+	.ritual h3 {
+		font-size: 1.15rem;
+		font-weight: 550;
+		letter-spacing: -0.02em;
+	}
+
+	.ritual p {
+		font-size: var(--fs-small);
+		color: var(--text-muted);
+	}
+
+	.model {
+		display: grid;
+		gap: 16px;
+		align-content: start;
+		padding: clamp(26px, 3vw, 38px);
+	}
+
+	.model .tag {
+		justify-self: start;
+		color: var(--crema);
+		border-color: rgb(214 153 92 / 0.3);
+	}
+
+	.model p {
+		color: var(--text-muted);
+		font-size: var(--fs-small);
+	}
+
+	.model ul {
+		display: grid;
+		gap: 10px;
+		padding-top: 18px;
+		border-top: 1px solid var(--line);
+	}
+
+	.model li {
+		display: flex;
+		gap: 10px;
+		font-size: var(--fs-small);
+	}
+
+	.model li :global(svg) {
+		flex: none;
+		margin-top: 2px;
+		color: var(--caramel);
+	}
+
+	.tech {
+		display: grid;
+		gap: 24px;
+	}
+
+	.faq-layout {
+		display: grid;
+		gap: 0 64px;
+	}
+
+	@media (min-width: 720px) {
+		.rituals {
+			grid-template-columns: repeat(2, 1fr);
+		}
+	}
+
+	@media (min-width: 960px) {
+		.rituals,
+		.models {
+			grid-template-columns: repeat(3, 1fr);
+		}
+
+		.faq-layout {
+			grid-template-columns: 0.9fr 1.1fr;
+		}
+	}
+</style>

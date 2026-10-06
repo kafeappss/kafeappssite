@@ -1,0 +1,140 @@
+---
+import Base from '../../layouts/Base.astro';
+import PageHero from '../../components/PageHero.astro';
+import SectionHead from '../../components/SectionHead.astro';
+import ServiceCard from '../../components/ServiceCard.astro';
+import CtaSection from '../../components/CtaSection.astro';
+import Icon from '../../components/Icon.astro';
+import { services } from '../../data/services';
+import { engagementModels } from '../../data/method';
+---
+
+<Base
+	title="Serviços: aplicativos, MVPs, no-code, plataformas e sistemas"
+	description="Desenvolvimento de aplicativos, MVPs para startups, no-code e low-code, plataformas web e SaaS, sistemas internos, automação e UX/UI design. Conheça os serviços da Kafé Apps."
+>
+	<PageHero
+		eyebrow="Serviços"
+		title="Do primeiro rascunho <em>ao produto em escala.</em>"
+		lead="Estratégia, design e desenvolvimento em um só time. Escolha por onde começar — ou deixe que a gente ajude a desenhar o caminho completo."
+		breadcrumbs={[{ label: 'Serviços' }]}
+	>
+		<div class="btn-row" data-reveal style="--delay: 0.3s">
+			<a class="btn" href="/contato">Falar sobre meu projeto <Icon name="arrow" class="arrow" /></a>
+		</div>
+	</PageHero>
+
+	<section class="section services-section" data-liquid="scatter">
+		<div class="container">
+			<h2 class="visually-hidden">Todos os serviços</h2>
+			<div class="services-grid">
+				{services.map((service, index) => <ServiceCard service={service} index={index} />)}
+			</div>
+		</div>
+	</section>
+
+	<section class="section" data-liquid="left">
+		<div class="container">
+			<SectionHead
+				eyebrow="Formatos de trabalho"
+				title="Do MVP à evolução contínua, <em>no ritmo do seu negócio.</em>"
+				lead="Cada fase pede um formato. Combinamos escopo, prazo e investimento de acordo com o momento da sua empresa."
+			/>
+			<div class="models">
+				{
+					engagementModels.map((model, index) => (
+						<article class="card model" data-reveal style={`--delay: ${index * 0.1}s`}>
+							<span class="tag">{model.badge}</span>
+							<h3 class="h3">{model.name}</h3>
+							<p>{model.description}</p>
+							<ul role="list">
+								{model.items.map((item) => (
+									<li>
+										<Icon name="check" size={18} />
+										{item}
+									</li>
+								))}
+							</ul>
+						</article>
+					))
+				}
+			</div>
+			<p class="models-link" data-reveal>
+				<a class="link-arrow" href="/metodo">Entenda como funciona o Método Sprint <Icon name="arrow" /></a>
+			</p>
+		</div>
+	</section>
+
+	<CtaSection />
+</Base>
+
+<style>
+	.services-section {
+		padding-top: 0;
+	}
+
+	.services-grid,
+	.models {
+		display: grid;
+		gap: 16px;
+	}
+
+	.model {
+		display: grid;
+		gap: 16px;
+		align-content: start;
+		padding: clamp(26px, 3vw, 38px);
+	}
+
+	.model .tag {
+		justify-self: start;
+		color: var(--crema);
+		border-color: rgb(214 153 92 / 0.3);
+	}
+
+	.model p {
+		color: var(--text-muted);
+		font-size: var(--fs-small);
+	}
+
+	.model ul {
+		display: grid;
+		gap: 10px;
+		padding-top: 18px;
+		border-top: 1px solid var(--line);
+	}
+
+	.model li {
+		display: flex;
+		gap: 10px;
+		font-size: var(--fs-small);
+	}
+
+	.model li :global(svg) {
+		flex: none;
+		margin-top: 2px;
+		color: var(--caramel);
+	}
+
+	.models-link {
+		margin-top: 40px;
+	}
+
+	@media (min-width: 720px) {
+		.services-grid {
+			grid-template-columns: repeat(2, 1fr);
+		}
+	}
+
+	@media (min-width: 960px) {
+		.models {
+			grid-template-columns: repeat(3, 1fr);
+		}
+	}
+
+	@media (min-width: 1080px) {
+		.services-grid {
+			grid-template-columns: repeat(3, 1fr);
+		}
+	}
+</style>

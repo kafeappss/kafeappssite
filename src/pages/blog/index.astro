@@ -1,0 +1,57 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import PageHero from '../../components/PageHero.astro';
+import BlogCard from '../../components/BlogCard.astro';
+import CtaSection from '../../components/CtaSection.astro';
+
+const posts = (await getCollection('blog', ({ data }) => !data.draft)).sort(
+	(a, b) => b.data.date.getTime() - a.data.date.getTime() || a.data.title.localeCompare(b.data.title),
+);
+---
+
+<Base
+	title="Blog: produto, tecnologia e negócios digitais"
+	description="Artigos da Kafé Apps sobre desenvolvimento de aplicativos, MVP, no-code, low-code, UX e como tirar ideias do papel."
+>
+	<PageHero
+		eyebrow="Blog"
+		title="Ideias para quem <em>constrói produtos.</em>"
+		lead="Guias práticos sobre aplicativos, MVPs, no-code, low-code e tudo o que envolve transformar uma ideia em negócio digital."
+		breadcrumbs={[{ label: 'Blog' }]}
+	/>
+
+	<section class="section blog-section" data-liquid="rest">
+		<div class="container">
+			<h2 class="visually-hidden">Artigos</h2>
+			<div class="posts-grid">
+				{posts.map((post, index) => <BlogCard post={post} index={index} />)}
+			</div>
+		</div>
+	</section>
+
+	<CtaSection />
+</Base>
+
+<style>
+	.blog-section {
+		padding-top: 0;
+	}
+
+	.posts-grid {
+		display: grid;
+		gap: 16px;
+	}
+
+	@media (min-width: 720px) {
+		.posts-grid {
+			grid-template-columns: repeat(2, 1fr);
+		}
+	}
+
+	@media (min-width: 1080px) {
+		.posts-grid {
+			grid-template-columns: repeat(3, 1fr);
+		}
+	}
+</style>

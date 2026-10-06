@@ -1,0 +1,213 @@
+---
+import Icon from './Icon.astro';
+import { methodSteps } from '../data/method';
+
+interface Props {
+	showOngoing?: boolean;
+}
+
+const { showOngoing = true } = Astro.props;
+---
+
+<div class="method">
+	<ol role="list" class="method-steps" data-reveal>
+		{
+			methodSteps.map((step, index) => (
+				<li class="method-step" style={`--i: ${index}`}>
+					<span class="method-node mono">{String(index + 1).padStart(2, '0')}</span>
+					<p class="method-name">{step.name}</p>
+					<p class="method-coffee">{step.coffee}</p>
+					<h3 class="method-title">{step.title}</h3>
+					<p class="method-desc">{step.description}</p>
+					<p class="method-output">
+						<Icon name="check" size={16} />
+						{step.output}
+					</p>
+				</li>
+			))
+		}
+	</ol>
+	{
+		showOngoing && (
+			<div class="method-ongoing card" data-reveal>
+				<span class="method-loop" aria-hidden="true">
+					<Icon name="plus" size={20} />
+				</span>
+				<p>
+					<strong>Evoluir com o Kafé Ongoing™.</strong> Depois do lançamento, o produto segue em ciclos
+					contínuos de melhoria, guiados por dados reais de uso.
+				</p>
+			</div>
+		)
+	}
+</div>
+
+<style>
+	.method {
+		display: grid;
+		gap: 32px;
+	}
+
+	.method-steps {
+		position: relative;
+		display: grid;
+		gap: 40px;
+		padding-left: 64px;
+	}
+
+	/* Linha que "escorre" ligando as etapas. */
+	.method-steps::before,
+	.method-steps::after {
+		content: '';
+		position: absolute;
+		left: 21px;
+		top: 22px;
+		bottom: 22px;
+		width: 1.5px;
+		background: var(--line-strong);
+	}
+
+	.method-steps::after {
+		background: linear-gradient(180deg, var(--crema), var(--caramel), var(--roast));
+		transform-origin: top;
+		transform: scaleY(0);
+		transition: transform 1.8s var(--ease-in-out) 0.2s;
+	}
+
+	.method-steps.is-in::after {
+		transform: scaleY(1);
+	}
+
+	:global(html:not(.js)) .method-steps::after {
+		transform: none;
+	}
+
+	.method-step {
+		position: relative;
+		display: grid;
+		gap: 8px;
+		align-content: start;
+	}
+
+	.method-node {
+		position: absolute;
+		left: -64px;
+		top: 0;
+		z-index: 1;
+		display: grid;
+		place-items: center;
+		width: 44px;
+		height: 44px;
+		border-radius: 50%;
+		font-size: 0.8rem;
+		color: var(--crema);
+		background: var(--bg-2);
+		border: 1px solid rgb(214 153 92 / 0.45);
+		box-shadow: 0 0 0 6px rgb(11 8 6 / 0.8);
+	}
+
+	.method-name {
+		font-size: clamp(1.9rem, 1.3rem + 1.3vw, 2.6rem);
+		font-weight: 500;
+		line-height: 1;
+		letter-spacing: -0.045em;
+	}
+
+	.method-coffee {
+		font-family: var(--font-serif);
+		font-style: italic;
+		font-size: 1.2rem;
+		color: var(--caramel);
+	}
+
+	.method-title {
+		margin-top: 10px;
+		font-size: 1.1rem;
+		font-weight: 550;
+		letter-spacing: -0.015em;
+	}
+
+	.method-desc {
+		color: var(--text-muted);
+		font-size: var(--fs-small);
+	}
+
+	.method-output {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		justify-self: start;
+		margin-top: 8px;
+		padding: 8px 14px;
+		border-radius: 999px;
+		font-size: var(--fs-xs);
+		color: var(--crema);
+		background: rgb(214 153 92 / 0.08);
+		border: 1px solid rgb(214 153 92 / 0.2);
+	}
+
+	.method-ongoing {
+		display: flex;
+		align-items: center;
+		gap: 20px;
+		padding: 22px 26px;
+	}
+
+	.method-ongoing p {
+		color: var(--text-muted);
+	}
+
+	.method-ongoing strong {
+		color: var(--text);
+		font-weight: 550;
+	}
+
+	.method-loop {
+		display: grid;
+		place-items: center;
+		width: 44px;
+		height: 44px;
+		flex: none;
+		border-radius: 50%;
+		color: var(--bg);
+		background: var(--gradient-crema);
+	}
+
+	@media (min-width: 960px) {
+		.method-steps {
+			grid-template-columns: repeat(4, 1fr);
+			gap: 36px;
+			padding-left: 0;
+			padding-top: 76px;
+		}
+
+		.method-steps::before,
+		.method-steps::after {
+			left: 22px;
+			right: 22px;
+			top: 21px;
+			bottom: auto;
+			width: auto;
+			height: 1.5px;
+		}
+
+		.method-steps::after {
+			background: linear-gradient(90deg, var(--crema), var(--caramel), var(--roast));
+			transform-origin: left;
+			transform: scaleX(0);
+		}
+
+		.method-steps.is-in::after {
+			transform: scaleX(1);
+		}
+
+		:global(html:not(.js)) .method-steps::after {
+			transform: none;
+		}
+
+		.method-node {
+			left: 0;
+			top: -76px;
+		}
+	}
+</style>

@@ -1,0 +1,257 @@
+---
+import Logo from './Logo.astro';
+import Icon from './Icon.astro';
+import { site, whatsappLink } from '../data/site';
+import { services } from '../data/services';
+import { hasCases } from '../scripts/cases';
+
+const year = new Date().getFullYear();
+const whatsapp = whatsappLink();
+
+const company = [
+	{ label: 'Método', href: '/metodo' },
+	...(hasCases ? [{ label: 'Cases', href: '/cases' }] : []),
+	{ label: 'Sobre a Kafé', href: '/sobre' },
+	{ label: 'Blog', href: '/blog' },
+	{ label: 'Contato', href: '/contato' },
+];
+
+const socialIcons = {
+	Instagram: 'instagram',
+	LinkedIn: 'linkedin',
+	YouTube: 'youtube',
+	Facebook: 'facebook',
+} as const;
+---
+
+<footer class="site-footer" data-liquid="pool">
+	<div class="container">
+		<div class="footer-grid">
+			<div class="footer-brand">
+				<a href="/" aria-label={`${site.name} — página inicial`}><Logo /></a>
+				<p class="footer-tagline">{site.tagline}</p>
+				<p class="footer-desc">
+					Estúdio de produto digital que transforma ideias em aplicativos, MVPs, plataformas e
+					sistemas.
+				</p>
+				<p class="footer-location"><Icon name="pin" size={18} /> {site.location.label}</p>
+			</div>
+
+			<nav class="footer-col" aria-label="Serviços">
+				<h2 class="footer-title">Serviços</h2>
+				<ul role="list">
+					{
+						services.map((service) => (
+							<li>
+								<a href={`/servicos/${service.slug}`}>{service.title}</a>
+							</li>
+						))
+					}
+				</ul>
+			</nav>
+
+			<nav class="footer-col" aria-label="Empresa">
+				<h2 class="footer-title">Empresa</h2>
+				<ul role="list">
+					{
+						company.map((item) => (
+							<li>
+								<a href={item.href}>{item.label}</a>
+							</li>
+						))
+					}
+				</ul>
+			</nav>
+
+			<div class="footer-col">
+				<h2 class="footer-title">Contato</h2>
+				<ul role="list">
+					{
+						site.contact.email && (
+							<li>
+								<a href={`mailto:${site.contact.email}`}>{site.contact.email}</a>
+							</li>
+						)
+					}
+					{
+						whatsapp && (
+							<li>
+								<a href={whatsapp} target="_blank" rel="noopener">
+									{site.contact.phoneDisplay || 'WhatsApp'}
+								</a>
+							</li>
+						)
+					}
+					<li><a href="/contato">Formulário de contato</a></li>
+				</ul>
+				<ul role="list" class="footer-social">
+					{
+						site.social.map((social) => (
+							<li>
+								<a href={social.href} target="_blank" rel="noopener" aria-label={social.label}>
+									<Icon name={socialIcons[social.label]} size={20} />
+								</a>
+							</li>
+						))
+					}
+				</ul>
+			</div>
+		</div>
+	</div>
+
+	<div class="footer-word" aria-hidden="true">Kafé</div>
+
+	<div class="container footer-bottom">
+		<p>
+			{[`© ${year} ${site.name}`, site.legalName, site.cnpj && `CNPJ ${site.cnpj}`].filter(Boolean).join(' · ')}
+		</p>
+		<p class="footer-bottom-links">
+			<a href="/privacidade">Política de privacidade</a>
+			<span class="footer-made">Feito com café em {site.location.city}</span>
+		</p>
+	</div>
+</footer>
+
+<style>
+	.site-footer {
+		position: relative;
+		padding-top: clamp(72px, 9vw, 120px);
+		border-top: 1px solid var(--line);
+		background: linear-gradient(180deg, rgb(11 8 6 / 0.55), rgb(11 8 6 / 0.2) 70%, transparent);
+		overflow: hidden;
+	}
+
+	.footer-grid {
+		display: grid;
+		gap: 48px 32px;
+		grid-template-columns: 1fr 1fr;
+	}
+
+	.footer-brand {
+		grid-column: 1 / -1;
+		display: grid;
+		gap: 14px;
+		max-width: 380px;
+		align-content: start;
+	}
+
+	.footer-tagline {
+		font-family: var(--font-serif);
+		font-style: italic;
+		font-size: 1.6rem;
+		line-height: 1.2;
+		color: var(--crema);
+	}
+
+	.footer-desc {
+		color: var(--text-muted);
+		font-size: var(--fs-small);
+	}
+
+	.footer-location {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		font-size: var(--fs-small);
+		color: var(--text-muted);
+	}
+
+	.footer-title {
+		margin-bottom: 18px;
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		font-weight: 500;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: var(--text-dim);
+	}
+
+	.footer-col ul:not(.footer-social) {
+		display: grid;
+		gap: 10px;
+	}
+
+	.footer-col a {
+		font-size: var(--fs-small);
+		color: var(--text-muted);
+		transition: color 0.25s ease;
+		overflow-wrap: anywhere;
+	}
+
+	.footer-col a:hover {
+		color: var(--text);
+	}
+
+	.footer-social {
+		display: flex;
+		gap: 8px;
+		margin-top: 22px;
+	}
+
+	.footer-social a {
+		display: grid;
+		place-items: center;
+		width: 42px;
+		height: 42px;
+		border-radius: 50%;
+		border: 1px solid var(--line-strong);
+		color: var(--text-muted);
+		transition:
+			color 0.25s ease,
+			border-color 0.25s ease,
+			transform 0.4s var(--ease-out);
+	}
+
+	.footer-social a:hover {
+		color: var(--crema);
+		border-color: var(--caramel);
+		transform: translateY(-2px);
+	}
+
+	.footer-word {
+		margin: clamp(48px, 7vw, 96px) 0 -0.24em;
+		font-size: clamp(7rem, 31vw, 30rem);
+		font-weight: 600;
+		line-height: 0.82;
+		letter-spacing: -0.075em;
+		text-align: center;
+		background: linear-gradient(180deg, rgb(236 201 160 / 0.22), rgb(236 201 160 / 0.02) 78%);
+		-webkit-background-clip: text;
+		background-clip: text;
+		color: transparent;
+		user-select: none;
+		pointer-events: none;
+	}
+
+	.footer-bottom {
+		position: relative;
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: space-between;
+		gap: 12px 24px;
+		padding-block: 24px 32px;
+		border-top: 1px solid var(--line);
+		font-size: var(--fs-xs);
+		color: var(--text-dim);
+	}
+
+	.footer-bottom-links {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px 24px;
+	}
+
+	.footer-bottom a:hover {
+		color: var(--text);
+	}
+
+	@media (min-width: 768px) {
+		.footer-grid {
+			grid-template-columns: 1.6fr 1fr 1fr 1fr;
+		}
+
+		.footer-brand {
+			grid-column: auto;
+		}
+	}
+</style>

@@ -1,0 +1,139 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHero from '../components/PageHero.astro';
+import { site } from '../data/site';
+
+// TODO: revisar este texto com o jurídico antes de publicar.
+const updatedAt = '6 de outubro de 2026';
+const controller = [site.name, site.legalName, site.cnpj && `CNPJ ${site.cnpj}`].filter(Boolean).join(' · ');
+---
+
+<Base
+	title="Política de privacidade"
+	description="Saiba como a Kafé Apps coleta, usa e protege os seus dados pessoais, de acordo com a Lei Geral de Proteção de Dados (LGPD)."
+>
+	<PageHero
+		eyebrow="Privacidade"
+		title="Política de <em>privacidade.</em>"
+		lead={`Como tratamos os seus dados pessoais, em linguagem clara. Última atualização: ${updatedAt}.`}
+		breadcrumbs={[{ label: 'Política de privacidade' }]}
+		liquid="rest"
+	/>
+
+	<section class="section policy" data-liquid="rest">
+		<div class="container-narrow">
+			<div class="prose policy-body">
+				<p>
+					Esta política explica como a {site.name} trata os dados pessoais de quem visita este site ou entra
+					em contato conosco, em conformidade com a Lei Geral de Proteção de Dados Pessoais (Lei nº
+					13.709/2018 — LGPD).
+				</p>
+
+				<h2>1. Quem é o controlador dos dados</h2>
+				<p>
+					O controlador é {controller}, com base em {site.location.city} ({site.location.state}). Dúvidas e
+					solicitações sobre privacidade podem ser enviadas para{' '}
+					{site.contact.email ? <a href={`mailto:${site.contact.email}`}>{site.contact.email}</a> : 'os nossos canais de contato'}.
+				</p>
+
+				<h2>2. Quais dados coletamos</h2>
+				<ul>
+					<li>
+						<strong>Dados que você nos envia:</strong> nome, e-mail, telefone/WhatsApp, empresa e as
+						informações sobre o projeto que você escrever no formulário de contato ou nas nossas conversas.
+					</li>
+					<li>
+						<strong>Dados técnicos de navegação:</strong> registros básicos gerados automaticamente pelo
+						servidor de hospedagem (como endereço IP, data e hora de acesso e tipo de navegador), usados para
+						segurança e funcionamento do site.
+					</li>
+					<li>
+						<strong>Armazenamento no navegador:</strong> guardamos no seu próprio navegador, de forma temporária,
+						o estado da animação de fundo entre uma página e outra. Essa informação não identifica você e não é
+						enviada para nós.
+					</li>
+				</ul>
+				<p>
+					Este site não utiliza cookies de publicidade. Se, no futuro, passarmos a usar ferramentas de medição de
+					audiência, esta política será atualizada.
+				</p>
+
+				<h2>3. Para que usamos os dados</h2>
+				<ul>
+					<li>Responder ao seu contato e entender a sua necessidade;</li>
+					<li>Preparar e enviar propostas comerciais solicitadas por você;</li>
+					<li>Manter o histórico do relacionamento e cumprir obrigações legais;</li>
+					<li>Garantir a segurança e o bom funcionamento do site.</li>
+				</ul>
+
+				<h2>4. Bases legais</h2>
+				<p>
+					Tratamos os seus dados com base no seu consentimento (art. 7º, I, da LGPD), na execução de
+					procedimentos preliminares relacionados a um contrato, a seu pedido (art. 7º, V), no cumprimento de
+					obrigações legais (art. 7º, II) e no nosso legítimo interesse em manter o site seguro (art. 7º, IX).
+				</p>
+
+				<h2>5. Com quem compartilhamos</h2>
+				<p>
+					Não vendemos os seus dados. Eles podem ser processados por fornecedores que nos ajudam a operar, como
+					serviços de hospedagem, de recebimento de formulários, de e-mail e de mensagens, sempre na medida
+					necessária para essas finalidades. Também podemos compartilhá-los quando exigido por lei ou por
+					autoridade competente.
+				</p>
+
+				<h2>6. Por quanto tempo guardamos</h2>
+				<p>
+					Mantemos os dados pelo tempo necessário para atender à finalidade para a qual foram coletados e para
+					cumprir obrigações legais. Depois disso, eles são eliminados ou anonimizados.
+				</p>
+
+				<h2>7. Seus direitos</h2>
+				<p>Nos termos do art. 18 da LGPD, você pode, a qualquer momento:</p>
+				<ul>
+					<li>Confirmar se tratamos os seus dados e acessá-los;</li>
+					<li>Corrigir dados incompletos, inexatos ou desatualizados;</li>
+					<li>Pedir a anonimização, o bloqueio ou a eliminação de dados desnecessários;</li>
+					<li>Solicitar a portabilidade dos dados;</li>
+					<li>Saber com quem os seus dados foram compartilhados;</li>
+					<li>Revogar o seu consentimento.</li>
+				</ul>
+				<p>
+					Para exercer esses direitos, fale com a gente pelo e-mail informado acima. Você também pode apresentar
+					reclamação à Autoridade Nacional de Proteção de Dados (ANPD).
+				</p>
+
+				<h2>8. Segurança</h2>
+				<p>
+					Adotamos medidas técnicas e administrativas razoáveis para proteger os dados contra acessos não
+					autorizados, perda ou alteração, como conexões criptografadas e controle de acesso às ferramentas que
+					usamos.
+				</p>
+
+				<h2>9. Alterações nesta política</h2>
+				<p>
+					Podemos atualizar esta política para refletir mudanças no site ou na legislação. A data da última
+					atualização fica sempre indicada no topo da página.
+				</p>
+			</div>
+		</div>
+	</section>
+</Base>
+
+<style>
+	.policy {
+		padding-top: 0;
+	}
+
+	.policy-body {
+		padding: clamp(24px, 4vw, 56px);
+		border-radius: var(--radius-lg);
+		background: rgb(11 8 6 / 0.72);
+		border: 1px solid var(--line);
+		backdrop-filter: blur(20px);
+		-webkit-backdrop-filter: blur(20px);
+	}
+
+	.policy-body h2:first-of-type {
+		margin-top: 1.6em;
+	}
+</style>
