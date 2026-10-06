@@ -1,0 +1,2 @@
+# Hospedagem com Apache/LiteSpeed (ex.: Hostinger): mostra a página de erro do site.
+ErrorDocument 404 /404.html
