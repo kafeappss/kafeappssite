@@ -70,4 +70,4 @@ Existem vários caminhos para financiar os primeiros passos: recursos próprios 
 
 ## O próximo passo é seu
 
-Se você tem uma ideia rabiscada num guardanapo, a Kafé Apps pode ajudar a percorrer esse caminho com você — da descoberta ao lançamento, com o nosso Método Sprint. [Conte a sua ideia](/contato) e vamos tomar esse café.
+Se você tem uma ideia rabiscada num guardanapo, a Kafé Apps pode ajudar a percorrer esse caminho com você — da descoberta ao lançamento, com a nossa Metodologia 4Ds. [Conte a sua ideia](/contato) e vamos tomar esse café.

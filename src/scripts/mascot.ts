@@ -9,6 +9,7 @@ const LINES = [
 	'Role a página: lá embaixo eu viro outras coisas.',
 	'Engenheiros + IA: entregas em dias, não em meses.',
 	'Bora tirar a sua ideia do papel?',
+	'Quer um pré-orçamento? A Kafeína, nossa IA, faz em minutos.',
 	'Psiu… o café já está passando. ☕',
 ];
 

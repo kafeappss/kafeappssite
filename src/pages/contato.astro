@@ -9,10 +9,11 @@ import { site, whatsappLink } from '../data/site';
 import { faq } from '../data/method';
 
 const whatsapp = whatsappLink();
+const briefSteps = ['Projeto', 'Problema', 'Escopo', 'Contato', 'Estimativa'];
 const nextSteps = [
 	{ title: 'Conversa inicial', description: 'Entendemos o seu negócio, a ideia e o que você espera do projeto.' },
 	{ title: 'Proposta clara', description: 'Você recebe escopo, etapas, prazos e investimento, divididos por sprints.' },
-	{ title: 'Mão na massa', description: 'Aprovada a proposta, começamos pela etapa Descobrir do Método Sprint.' },
+	{ title: 'Mão na massa', description: 'Aprovada a proposta, começamos pela etapa Discovery da Metodologia 4Ds.' },
 ];
 ---
 
@@ -24,14 +25,36 @@ const nextSteps = [
 		liquid="cup"
 		eyebrow="Contato"
 		title="Vamos tomar um café? <em>Conte sua ideia.</em>"
-		lead="Preencha o formulário ou fale direto com a gente. Respondemos com os próximos passos — sem compromisso e sem “tecniquês”."
+		lead="Faça um pré-orçamento com a Kafeína, nossa assistente de IA, ou mande uma mensagem. Respondemos com os próximos passos — sem compromisso e sem “tecniquês”."
 		breadcrumbs={[{ label: 'Contato' }]}
 	/>
 
 	<section class="section contact-section" data-liquid="rest">
 		<div class="container contact-grid">
-			<div data-reveal>
-				<ContactForm />
+			<div class="contact-main">
+				<a class="card brief" href={site.contact.briefUrl} data-reveal>
+					<span class="brief-tag label">Recomendado · poucos minutos</span>
+					<h2 class="h3 brief-title">Pré-orçamento com a Kafeína</h2>
+					<p class="brief-text">
+						A Kafeína é a assistente de IA da Kafé. Ela pergunta sobre o seu projeto, o problema que ele resolve e o
+						escopo, e devolve uma estimativa inicial na hora.
+					</p>
+					<ol role="list" class="brief-steps">
+						{
+							briefSteps.map((step, index) => (
+								<li>
+									<span class="label">0{index + 1}</span> {step}
+								</li>
+							))
+						}
+					</ol>
+					<span class="btn brief-btn">Falar com a Kafeína <Icon name="arrow" class="arrow" /></span>
+				</a>
+
+				<div class="form-block" data-reveal style="--delay: 0.1s">
+					<h2 class="side-title label">Prefere escrever do seu jeito?</h2>
+					<ContactForm />
+				</div>
 			</div>
 
 			<aside class="contact-side">
@@ -124,6 +147,65 @@ const nextSteps = [
 	.contact-grid {
 		display: grid;
 		gap: 48px;
+	}
+
+	.contact-main {
+		display: grid;
+		gap: 40px;
+		align-content: start;
+	}
+
+	.brief {
+		display: grid;
+		gap: 16px;
+		justify-items: start;
+		padding: clamp(24px, 4vw, 40px);
+		border-color: var(--line-strong);
+		transition: border-color 0.25s ease;
+	}
+
+	.brief:hover {
+		border-color: var(--accent);
+	}
+
+	.brief-tag {
+		font-size: var(--fs-xs);
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: var(--text-dim);
+	}
+
+	.brief-text {
+		max-width: 52ch;
+		color: var(--text-muted);
+	}
+
+	.brief-steps {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px;
+	}
+
+	.brief-steps li {
+		padding: 6px 12px;
+		border: 1px solid var(--line);
+		border-radius: var(--radius-sm);
+		font-size: var(--fs-small);
+		color: var(--text-muted);
+	}
+
+	.brief-steps .label {
+		margin-right: 4px;
+		font-size: var(--fs-xs);
+		color: var(--text-dim);
+	}
+
+	.brief-btn {
+		margin-top: 8px;
+	}
+
+	.brief:hover .brief-btn :global(.arrow) {
+		transform: translateX(3px);
 	}
 
 	.contact-side {

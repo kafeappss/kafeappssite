@@ -52,7 +52,7 @@ Cada seção diz qual desenho o líquido deve formar enquanto ela está no meio 
 
 - `data-liquid="nome [lugar]"`: `nome` é uma das formas de `src/scripts/shapes.ts` (`mascot`, `clock`, `bars`, `code`, `code-ai`, `ai`, `phone`, `browser`, `rocket`, `nodes`, `layout`, `cycle-0` a `cycle-4`, `k`, `cup`, `rest`, `pool`, `page`). O `lugar` é opcional: `stage` (ao lado do texto, padrão), `bottom`, `center` ou `view` (tela toda). No celular as formas ficam menores, num canto e mais apagadas, para não competir com o texto.
 - `data-rail="Nome"`: inclui a seção no trilho da direita (aparece quando a página tem pelo menos três).
-- `data-liquid-anchor`: um elemento dentro da seção que reserva espaço para a forma (é assim que o mascote fica abaixo do texto no celular).
+- `data-liquid-anchor`: um elemento dentro da seção que reserva espaço para a forma, que passa a rolar junto com o conteúdo. É assim que o mascote fica abaixo do texto no celular e a xícara fica abaixo dos botões no convite final.
 
 Para testar uma forma, abra o console do navegador e rode `__liquid.show('rocket')`.
 
@@ -65,6 +65,7 @@ Para testar uma forma, abra o console do navegador e rode `__liquid.show('rocket
 
 Em `src/data/site.ts`, dentro de `contact`:
 
+- `briefUrl`: o pré-orçamento com a Kafeína, a assistente de IA da Kafé (hoje `https://form.kafeapps.com.br`, o mesmo do site atual). Os botões principais ("Tirar minha ideia do papel", "Começar meu projeto", "Pedir uma proposta") levam para lá, e a página de contato o destaca acima do formulário.
 - `formEndpoint`: endereço de um serviço que recebe formulários (Formspree, Web3Forms, Getform ou um endpoint próprio). Quando preenchido, as mensagens são enviadas direto do site.
 - `whatsapp`: número só com dígitos, com DDI e DDD (ex.: `5521999999999`). Ativa o botão flutuante e, se não houver `formEndpoint`, o formulário abre o WhatsApp com a mensagem pronta.
 - `email`: usado nos links de e-mail e como último recurso do formulário.

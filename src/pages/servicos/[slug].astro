@@ -42,7 +42,7 @@ const serviceSchema = {
 		breadcrumbs={[{ label: 'Serviços', href: '/servicos' }, { label: service.title }]}
 	>
 		<div class="btn-row" data-reveal style="--delay: 0.3s">
-			<a class="btn" href="/contato">Pedir uma proposta <Icon name="arrow" class="arrow" /></a>
+			<a class="btn" href={site.contact.briefUrl}>Pedir uma proposta <Icon name="arrow" class="arrow" /></a>
 			<a class="btn btn-ghost" href="#entregas">O que está incluído</a>
 		</div>
 	</PageHero>
@@ -102,11 +102,11 @@ const serviceSchema = {
 		</div>
 	</section>
 
-	<section class="section" data-liquid="rest" data-rail="Método">
+	<section class="section" data-liquid="cycle-0" data-rail="Método">
 		<div class="container">
 			<SectionHead
 				eyebrow="Como trabalhamos"
-				title="Método Sprint: <em>previsível do início ao fim.</em>"
+				title="Metodologia 4Ds: <em>previsível do início ao fim.</em>"
 				lead="Quatro etapas claras, entregas curtas e você acompanhando tudo em tempo real."
 			/>
 			<MethodSteps />

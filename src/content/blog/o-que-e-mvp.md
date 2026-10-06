@@ -73,6 +73,6 @@ Qualquer um dos três é uma vitória do método: você decidiu com base em evid
 
 ## Como a Kafé constrói MVPs
 
-Na Kafé Apps, MVPs são a nossa especialidade. Com o Método Sprint, começamos descobrindo o que precisa ser provado, desenhamos e testamos um protótipo e construímos a menor versão capaz de gerar aprendizado — com a tecnologia certa para a fase do seu negócio.
+Na Kafé Apps, MVPs são a nossa especialidade. Com a Metodologia 4Ds, começamos descobrindo o que precisa ser provado, desenhamos e testamos um protótipo e construímos a menor versão capaz de gerar aprendizado — com a tecnologia certa para a fase do seu negócio.
 
 Quer tirar a sua ideia do papel? [Conheça o nosso serviço de MVP para startups](/servicos/mvp-para-startups) ou [conte a sua ideia](/contato).

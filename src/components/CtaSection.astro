@@ -24,7 +24,7 @@ const whatsapp = whatsappLink();
 		<h2 class="h1" data-split set:html={title} />
 		<p class="lead" data-reveal style="--delay: 0.2s">{lead}</p>
 		<div class="btn-row" data-reveal style="--delay: 0.3s">
-			<a class="btn" href="/contato">Começar meu projeto <Icon name="arrow" class="arrow" /></a>
+			<a class="btn" href={site.contact.briefUrl}>Começar meu projeto <Icon name="arrow" class="arrow" /></a>
 			{
 				whatsapp ? (
 					<a class="btn btn-ghost" href={whatsapp} target="_blank" rel="noopener">
@@ -39,12 +39,17 @@ const whatsapp = whatsappLink();
 				)
 			}
 		</div>
+		<p class="cta-note" data-reveal style="--delay: 0.4s">
+			Pré-orçamento em poucos minutos com a <strong>Kafeína</strong>, a assistente de IA da Kafé.
+		</p>
+		<!-- Espaço da xícara: o líquido desenha o café aqui, sem encostar no texto. -->
+		<div class="cta-cup" data-liquid-anchor aria-hidden="true"></div>
 	</div>
 </section>
 
 <style>
 	.cta {
-		padding-block: clamp(120px, 14vw, 220px) clamp(160px, 18vw, 280px);
+		padding-block: clamp(120px, 14vw, 220px) clamp(40px, 5vw, 80px);
 	}
 
 	.cta-inner {
@@ -65,5 +70,21 @@ const whatsapp = whatsappLink();
 	.cta .btn-row {
 		justify-content: center;
 		margin-top: 10px;
+	}
+
+	.cta-cup {
+		justify-self: stretch;
+		height: clamp(150px, 18vw, 230px);
+		margin-top: 12px;
+	}
+
+	.cta-note {
+		font-size: var(--fs-small);
+		color: var(--text-dim);
+	}
+
+	.cta-note strong {
+		font-weight: 600;
+		color: var(--text-muted);
 	}
 </style>

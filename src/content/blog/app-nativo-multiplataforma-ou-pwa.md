@@ -82,4 +82,4 @@ Um PWA é um site que se comporta como aplicativo: pode ser instalado na tela in
 
 Muitas empresas começam com um PWA ou um app multiplataforma para validar o produto e, com o crescimento, investem em partes nativas onde elas fazem diferença. O importante é escolher com consciência do que se ganha e do que se abre mão em cada momento.
 
-Na Kafé Apps, essa decisão é tomada na etapa **Definir** do Método Sprint, com base no seu negócio, no seu público e nos seus planos. [Conheça o nosso serviço de desenvolvimento de aplicativos](/servicos/desenvolvimento-de-aplicativos) ou [fale com a gente](/contato) para entender qual caminho faz mais sentido para você.
+Na Kafé Apps, essa decisão é tomada na etapa **Discovery** da nossa Metodologia 4Ds, com base no seu negócio, no seu público e nos seus planos. [Conheça o nosso serviço de desenvolvimento de aplicativos](/servicos/desenvolvimento-de-aplicativos) ou [fale com a gente](/contato) para entender qual caminho faz mais sentido para você.

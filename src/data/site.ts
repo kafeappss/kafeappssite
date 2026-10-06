@@ -42,6 +42,11 @@ export const site = {
 		 * (se configurado) ou o e-mail do visitante com a mensagem pronta.
 		 */
 		formEndpoint: '',
+		/**
+		 * Pré-orçamento guiado pela Kafeína, a assistente de IA da Kafé (o mesmo
+		 * funil usado no site atual). Os botões principais levam para cá.
+		 */
+		briefUrl: 'https://form.kafeapps.com.br',
 	},
 	social: [
 		{ label: 'Instagram', handle: '@kafeapps', href: 'https://www.instagram.com/kafeapps/' },
