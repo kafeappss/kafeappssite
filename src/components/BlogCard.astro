@@ -12,7 +12,7 @@ const { post, index = 0 } = Astro.props;
 ---
 
 <a href={`/blog/${post.id}`} class="card post-card" data-reveal style={`--delay: ${(index % 3) * 0.08}s`}>
-	<p class="post-meta mono">
+	<p class="post-meta label">
 		<time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
 		<span aria-hidden="true">·</span>
 		<span>{readingTime(post.body)} min de leitura</span>

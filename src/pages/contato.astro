@@ -35,7 +35,7 @@ const nextSteps = [
 
 			<aside class="contact-side">
 				<div class="channels" data-reveal style="--delay: 0.1s">
-					<h2 class="side-title mono">Fale direto</h2>
+					<h2 class="side-title label">Fale direto</h2>
 					<ul role="list">
 						{
 							whatsapp && (
@@ -88,12 +88,12 @@ const nextSteps = [
 				</div>
 
 				<div class="next" data-reveal style="--delay: 0.2s">
-					<h2 class="side-title mono">O que acontece depois</h2>
+					<h2 class="side-title label">O que acontece depois</h2>
 					<ol role="list">
 						{
 							nextSteps.map((step, index) => (
 								<li>
-									<span class="next-num mono">0{index + 1}</span>
+									<span class="next-num label">0{index + 1}</span>
 									<span>
 										<strong>{step.title}</strong>
 										<small>{step.description}</small>

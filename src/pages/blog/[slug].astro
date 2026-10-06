@@ -75,7 +75,7 @@ const breadcrumbSchema = {
 					</nav>
 					<h1 class="h1 post-title" data-split>{post.data.title}</h1>
 					<p class="lead" data-reveal style="--delay: 0.2s">{post.data.description}</p>
-					<p class="post-meta mono" data-reveal style="--delay: 0.3s">
+					<p class="post-meta label" data-reveal style="--delay: 0.3s">
 						<span>{post.data.author}</span>
 						<span aria-hidden="true">·</span>
 						<time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
@@ -91,7 +91,7 @@ const breadcrumbSchema = {
 				{
 					toc.length > 2 && (
 						<aside class="toc" aria-label="Neste artigo">
-							<p class="mono">Neste artigo</p>
+							<p class="label">Neste artigo</p>
 							<ol role="list">
 								{toc.map((heading) => (
 									<li>
@@ -220,6 +220,7 @@ const breadcrumbSchema = {
 	}
 
 	.post-cta-title {
+		font-family: var(--font-display);
 		font-size: 1.5rem;
 		font-weight: 500;
 		line-height: 1.2;

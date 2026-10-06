@@ -16,7 +16,7 @@ const { items, reverse = false } = Astro.props;
 				{items.map((item) => (
 					<li>
 						<span>{item}</span>
-						<Icon name="square" size={10} class="marquee-star" />
+						<Icon name="k" size={16} class="marquee-star" />
 					</li>
 				))}
 			</ul>
@@ -49,6 +49,7 @@ const { items, reverse = false } = Astro.props;
 	}
 
 	.marquee-track li {
+		font-family: var(--font-display);
 		display: flex;
 		align-items: center;
 		gap: 36px;

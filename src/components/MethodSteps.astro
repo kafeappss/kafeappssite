@@ -14,7 +14,7 @@ const { showOngoing = true } = Astro.props;
 		{
 			methodSteps.map((step, index) => (
 				<li class="method-step" style={`--i: ${index}`}>
-					<span class="method-node mono">{String(index + 1).padStart(2, '0')}</span>
+					<span class="method-node label">{String(index + 1).padStart(2, '0')}</span>
 					<p class="method-name">{step.name}</p>
 					<p class="method-coffee">{step.coffee}</p>
 					<h3 class="method-title">{step.title}</h3>
@@ -31,7 +31,7 @@ const { showOngoing = true } = Astro.props;
 		showOngoing && (
 			<div class="method-ongoing card" data-reveal>
 				<span class="method-loop" aria-hidden="true">
-					<Icon name="plus" size={20} />
+					<Icon name="k" size={22} />
 				</span>
 				<p>
 					<strong>Evoluir com o Kafé Ongoing™.</strong> Depois do lançamento, o produto segue em ciclos
@@ -107,14 +107,15 @@ const { showOngoing = true } = Astro.props;
 	}
 
 	.method-name {
+		font-family: var(--font-display);
 		font-size: clamp(1.9rem, 1.3rem + 1.3vw, 2.6rem);
-		font-weight: 600;
+		font-weight: 700;
 		line-height: 1;
 		letter-spacing: -0.045em;
 	}
 
 	.method-coffee {
-		font-family: var(--font-mono);
+		font-family: var(--font-label);
 		font-size: 0.72rem;
 		letter-spacing: 0.16em;
 		text-transform: uppercase;

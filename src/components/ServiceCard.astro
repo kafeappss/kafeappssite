@@ -13,7 +13,7 @@ const { service, index } = Astro.props;
 <a href={`/servicos/${service.slug}`} class="card service-card" data-reveal style={`--delay: ${(index % 3) * 0.08}s`}>
 	<div class="service-top">
 		<span class="service-icon"><Icon name={service.icon} size={26} /></span>
-		<span class="service-num mono">{String(index + 1).padStart(2, '0')}</span>
+		<span class="service-num label">{String(index + 1).padStart(2, '0')}</span>
 	</div>
 	<h3 class="h3">{service.title}</h3>
 	<p>{service.short}</p>

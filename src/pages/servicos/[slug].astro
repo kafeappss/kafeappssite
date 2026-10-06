@@ -51,7 +51,7 @@ const serviceSchema = {
 			<div class="intro-body">
 				{service.intro.paragraphs.map((paragraph) => <p data-reveal>{paragraph}</p>)}
 				<div class="for-who card" data-reveal>
-					<h3 class="mono">Para quem é</h3>
+					<h3 class="label">Para quem é</h3>
 					<ul role="list">
 						{
 							service.forWho.map((item) => (
@@ -74,7 +74,7 @@ const serviceSchema = {
 				{
 					service.deliverables.map((item, index) => (
 						<li class="deliverable" data-reveal style={`--delay: ${(index % 3) * 0.08}s`}>
-							<span class="mono">{String(index + 1).padStart(2, '0')}</span>
+							<span class="label">{String(index + 1).padStart(2, '0')}</span>
 							<h3>{item.title}</h3>
 							<p>{item.description}</p>
 						</li>
@@ -206,7 +206,7 @@ const serviceSchema = {
 		border-top: 1px solid var(--line);
 	}
 
-	.deliverable .mono {
+	.deliverable .label {
 		grid-row: span 2;
 		font-size: var(--fs-xs);
 		color: var(--accent);
@@ -257,6 +257,7 @@ const serviceSchema = {
 	}
 
 	.others-list a {
+		font-family: var(--font-display);
 		display: flex;
 		align-items: center;
 		gap: 18px;

@@ -6,7 +6,7 @@ import { buildModes } from '../data/method';
 	{
 		buildModes.map((mode, index) => (
 			<article class:list={['card', 'mode', { featured: index === 1 }]} data-reveal style={`--delay: ${index * 0.1}s`}>
-				{index === 1 && <span class="mode-badge mono">Equilíbrio</span>}
+				{index === 1 && <span class="mode-badge label">Equilíbrio</span>}
 				<h3 class="h3">{mode.name}</h3>
 				<p class="mode-summary">{mode.summary}</p>
 				<dl class="mode-scores">
@@ -25,7 +25,7 @@ import { buildModes } from '../data/method';
 					))}
 				</dl>
 				<p class="mode-best">
-					<span class="mono">Ideal para</span>
+					<span class="label">Ideal para</span>
 					{mode.bestFor}
 				</p>
 			</article>
@@ -118,7 +118,7 @@ import { buildModes } from '../data/method';
 		color: var(--text);
 	}
 
-	.mode-best .mono {
+	.mode-best .label {
 		font-size: 0.7rem;
 		letter-spacing: 0.12em;
 		text-transform: uppercase;

@@ -99,7 +99,7 @@ const youtube = site.social.find((social) => social.label === 'YouTube');
 				{
 					values.map((value, index) => (
 						<li class="value" data-reveal style={`--delay: ${(index % 3) * 0.06}s`}>
-							<span class="value-num mono">0{index + 1}</span>
+							<span class="value-num label">0{index + 1}</span>
 							<h3 class="h3">{value.title}</h3>
 							<p>{value.description}</p>
 						</li>
@@ -203,9 +203,10 @@ const youtube = site.social.find((social) => social.label === 'YouTube');
 	}
 
 	.mission-text {
+		font-family: var(--font-display);
 		max-width: 22ch;
 		font-size: clamp(1.9rem, 1.2rem + 2.8vw, 3.75rem);
-		font-weight: 600;
+		font-weight: 700;
 		line-height: 1.08;
 		letter-spacing: -0.045em;
 	}
@@ -235,8 +236,9 @@ const youtube = site.social.find((social) => social.label === 'YouTube');
 	}
 
 	.stat dd {
+		font-family: var(--font-display);
 		font-size: clamp(2.2rem, 1.6rem + 2vw, 3.6rem);
-		font-weight: 500;
+		font-weight: 700;
 		line-height: 1;
 		letter-spacing: -0.05em;
 	}

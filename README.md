@@ -33,8 +33,14 @@ npm run check    # verificação de tipos
 | Cases | `src/content/cases/*.md` (use `_modelo-de-case.md` como base) |
 | Cores (preto, branco e cinzas), fontes e espaçamentos | `src/styles/global.css` (variáveis no topo) |
 | Logos (KAFÉ APPS e o símbolo K) | `src/assets/brand/` e `public/favicon.svg` |
+| Arquivos da marca para download (K e logo, branco e preto, sem fundo) | `public/brand/` |
 
 Seções que dependem de listas vazias (depoimentos, clientes, tecnologias, cases) **não aparecem** até receberem conteúdo. Assim nada de "exemplo" vai para o ar por engano.
+
+### Fontes
+
+- **Inter** no texto (já incluída).
+- **Gilroy** nos títulos. É uma fonte paga, então o site não a distribui: coloque os arquivos licenciados em `public/fonts/gilroy/` com o peso no nome (ex.: `Gilroy-Bold.woff2`, `Gilroy-SemiBold.woff2`). No próximo build, os títulos passam a usar a Gilroy automaticamente. Enquanto a pasta estiver vazia, os títulos usam a Figtree, gratuita e de desenho parecido.
 
 ### Formulário de contato
 
@@ -77,5 +83,6 @@ O comando `npm run build` gera a pasta `dist/`, que funciona em qualquer hospeda
 - [ ] Confirmar os quatro "D" da Metodologia 4D (`src/data/method.ts`).
 - [ ] Revisar o número "até 40% mais econômico" (veio da landing page atual).
 - [ ] Revisar as respostas das perguntas frequentes (NDA, prazos, propriedade).
+- [ ] Adicionar os arquivos da Gilroy em `public/fonts/gilroy/`.
 - [ ] Adicionar cases, depoimentos, clientes e tecnologias reais.
 - [ ] Revisar a política de privacidade com o jurídico.
