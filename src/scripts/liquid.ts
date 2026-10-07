@@ -27,33 +27,12 @@ void main() {
 }
 `;
 
-const FRAGMENT_SHADER = /* glsl */ `
+const COMMON = /* glsl */ `
 #ifdef GL_FRAGMENT_PRECISION_HIGH
 precision highp float;
 #else
 precision mediump float;
 #endif
-
-#define SLOTS ${SLOTS}
-
-uniform vec2 uRes;
-uniform float uTime;
-uniform float uDim;
-uniform float uK;
-uniform float uBevel;
-uniform float uWob;
-uniform float uChrome;
-uniform vec2 uLight;
-uniform vec4 uA[SLOTS];
-uniform vec4 uB[SLOTS];
-uniform vec3 uCur;
-uniform vec4 uEye;     // x, y, raio do corpo, visibilidade
-uniform vec4 uEye2;    // olhar x, olhar y, abertura esquerda, abertura direita
-uniform vec4 uExpr;    // feliz, surpreso, bravo, apaixonado
-uniform vec4 uExpr2;   // tonto, giro, -, -
-uniform vec4 uGrid;    // espaçamento, raio do ponto, deslocamento da rolagem, rolagem
-uniform vec3 uPtr;     // cursor x, y, ativo
-uniform vec4 uHorizon; // centro x, centro y, raio, intensidade
 
 float hash(vec2 p) {
 	p = fract(p * vec2(123.34, 456.21));
@@ -81,6 +60,63 @@ float fbm(vec2 p) {
 	return v;
 }
 
+float dot2(vec2 v) {
+	return dot(v, v);
+}
+`;
+
+/**
+ * Fumaça e luz do fundo, desenhadas em baixa resolução (são suaves) numa
+ * textura que o desenho principal usa. Assim a tela toda pode ser desenhada
+ * na resolução real do aparelho sem pesar.
+ */
+const SMOKE_SHADER = /* glsl */ `
+${COMMON}
+uniform vec2 uRes;
+uniform float uTime;
+uniform float uScroll;
+
+void main() {
+	vec2 uv = gl_FragCoord.xy / uRes;
+	float aspect = uRes.x / uRes.y;
+	vec2 p = (uv * 2.0 - 1.0) * vec2(aspect, 1.0);
+	vec2 q = p * 1.15 - vec2(0.0, uScroll * 0.25) + vec2(0.0, -uTime * 0.04);
+	float warp = fbm(q * 0.8 + vec2(uTime * 0.02, -uTime * 0.015));
+	float m = fbm(q + vec2(warp, warp * 0.6) * 1.5);
+	float region = smoothstep(0.25, 0.75, noise(p * 0.45 - vec2(0.0, uScroll * 0.12) + uTime * 0.012));
+	float smoke = smoothstep(0.38, 0.95, m) * (0.35 + 0.65 * region);
+	vec2 lamp = vec2(sin(uTime * 0.07) * 1.1, cos(uTime * 0.05 + uScroll * 0.35) * 0.7);
+	float lampGlow = exp(-dot2((p - lamp) * vec2(0.55, 0.8)) * 1.6);
+	gl_FragColor = vec4(smoke, lampGlow, 0.0, 1.0);
+}
+`;
+
+const FRAGMENT_SHADER = /* glsl */ `
+${COMMON}
+#define SLOTS ${SLOTS}
+
+uniform vec2 uRes;
+uniform float uTime;
+uniform float uDim;
+uniform float uK;
+uniform float uWob;
+uniform float uCss;     // unidades do WebGL por pixel CSS
+uniform vec2 uLight;
+uniform vec4 uA[SLOTS];
+uniform vec4 uB[SLOTS];
+uniform vec3 uCur;
+uniform vec4 uEye;     // x, y, raio do corpo, visibilidade
+uniform vec4 uEye2;    // olhar x, olhar y, abertura esquerda, abertura direita
+uniform vec4 uExpr;    // feliz, surpreso, bravo, apaixonado
+uniform vec4 uExpr2;   // tonto, giro, brilho "de gota", -
+uniform vec4 uGrid;    // espaçamento, raio do ponto, deslocamento da rolagem, rolagem
+uniform vec3 uPtr;     // cursor x, y, ativo
+uniform vec4 uHorizon; // centro x, centro y, raio, intensidade
+uniform vec4 uBox;     // caixa que contém o líquido (min x, min y, max x, max y)
+uniform vec3 uTint;    // cor do líquido
+uniform vec3 uInk;     // cor dos olhos
+uniform sampler2D uSmoke;
+
 float smin(float a, float b, float k) {
 	float h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0);
 	return mix(b, a, h) - k * h * (1.0 - h);
@@ -88,10 +124,6 @@ float smin(float a, float b, float k) {
 
 float smax(float a, float b, float k) {
 	return -smin(-a, -b, k);
-}
-
-float dot2(vec2 v) {
-	return dot(v, v);
 }
 
 float sdRBox(vec2 p, vec2 b, float r) {
@@ -128,6 +160,14 @@ float prim(vec2 p, vec4 a, vec4 b) {
 	return d;
 }
 
+// Distância até a caixa do líquido (para pular o cálculo longe dele).
+float boxDistance(vec2 p) {
+	vec2 c = (uBox.xy + uBox.zw) * 0.5;
+	vec2 h = (uBox.zw - uBox.xy) * 0.5;
+	vec2 q = abs(p - c) - h;
+	return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0);
+}
+
 // Combina as peças em ordem: união suave ou buraco suave.
 float field(vec2 p) {
 	p += uWob * vec2(sin(p.y * 7.0 + uTime * 0.9), cos(p.x * 6.0 - uTime * 0.7));
@@ -136,16 +176,18 @@ float field(vec2 p) {
 		vec4 a = uA[i];
 		if (max(a.z, a.w) < 0.002) continue;
 		vec4 b = uB[i];
-		float di = prim(p, a, b);
-		d = b.w > 0.0 ? smin(d, di, uK) : smax(d, -di, uK * 0.6);
+		// Peças longe deste ponto não mudam o resultado: pula.
+		float bound = length(p - a.xy) - length(a.zw) - b.z;
+		if (b.w > 0.0) {
+			if (bound > d + uK) continue;
+			d = smin(d, prim(p, a, b), uK);
+		} else {
+			if (bound > uK * 0.6 - d) continue;
+			d = smax(d, -prim(p, a, b), uK * 0.6);
+		}
 	}
 	if (uCur.z > 0.002) d = smin(d, length(p - uCur.xy) - uCur.z, 0.18);
 	return d;
-}
-
-float bevel(float d) {
-	float t = clamp(-d / uBevel, 0.0, 1.0);
-	return sqrt(1.0 - (1.0 - t) * (1.0 - t));
 }
 
 /*
@@ -180,19 +222,10 @@ float eyes(vec2 p) {
 
 // Fundo: fumaça que flui, grade de pontos que reage ao cursor e o horizonte do início.
 vec3 background(vec2 p, vec2 uv, float aura, float px) {
-	vec3 col = vec3(0.0);
-
-	vec2 q = p * 1.15 - vec2(0.0, uGrid.w * 0.25) + vec2(0.0, -uTime * 0.04);
-	float warp = fbm(q * 0.8 + vec2(uTime * 0.02, -uTime * 0.015));
-	float m = fbm(q + vec2(warp, warp * 0.6) * 1.5);
-	float region = smoothstep(0.25, 0.75, noise(p * 0.45 - vec2(0.0, uGrid.w * 0.12) + uTime * 0.012));
-	float smoke = smoothstep(0.38, 0.95, m) * (0.35 + 0.65 * region);
-	col += vec3(0.95) * smoke * (0.075 + 0.05 * aura);
-
-	// Uma luz suave que passeia devagar pela tela (e acompanha a rolagem).
-	vec2 lamp = vec2(sin(uTime * 0.07) * 1.1, cos(uTime * 0.05 + uGrid.w * 0.35) * 0.7);
-	float lampGlow = exp(-dot2((p - lamp) * vec2(0.55, 0.8)) * 1.6);
-	col += vec3(0.05) * lampGlow;
+	vec2 sm = texture2D(uSmoke, uv).rg;
+	float smoke = sm.r;
+	float lampGlow = sm.g;
+	vec3 col = vec3(0.95) * smoke * (0.075 + 0.04 * aura) + vec3(0.05) * lampGlow;
 
 	vec2 g = vec2(p.x, p.y - uGrid.z);
 	vec2 cell = floor(g / uGrid.x);
@@ -202,9 +235,9 @@ vec3 background(vec2 p, vec2 uv, float aura, float px) {
 	float twinkle = 0.5 + 0.5 * sin(uTime * (0.6 + seed * 1.4) + seed * 6.283);
 	float nearCursor = exp(-dot2(p - uPtr.xy) * 7.0) * uPtr.z;
 	float sweep = smoothstep(0.75, 1.0, sin((p.x * 0.55 + p.y) * 1.6 - uTime * 0.5 - uGrid.w * 0.6));
-	float glow = 0.055 + 0.025 * twinkle + 0.34 * nearCursor + 0.2 * aura + 0.06 * sweep + 0.08 * smoke + 0.08 * lampGlow;
+	float glow = 0.055 + 0.025 * twinkle + 0.34 * nearCursor + 0.22 * aura + 0.06 * sweep + 0.08 * smoke + 0.08 * lampGlow;
 	vec2 edge = uv - 0.5;
-	col += vec3(glow * dotMask * (1.0 - dot(edge, edge) * 1.4));
+	col += mix(vec3(1.0), uTint, aura) * glow * dotMask * (1.0 - dot(edge, edge) * 1.4);
 
 	if (uHorizon.w > 0.001) {
 		vec2 hp = p - uHorizon.xy;
@@ -228,51 +261,45 @@ void main() {
 	vec2 p = (uv * 2.0 - 1.0) * vec2(aspect, 1.0);
 	float px = 2.0 / uRes.y;
 
-	float d = field(p);
-	float aura = exp(-max(d, 0.0) * 3.6);
+	// Longe do líquido, nem calcula a forma.
+	float near = boxDistance(p);
+	float d = near < 0.45 ? field(p) : 8.0;
+	float aura = exp(-max(d, 0.0) * 6.0) * (1.0 - smoothstep(0.25, 0.45, near));
 	vec3 col = background(p, uv, aura, px);
-	col += vec3(0.22) * aura * 0.05;
+	float opacity = 0.2 + 0.8 * uDim * uDim;
+	// Brilho suave em volta (2D, como uma luz que vaza da forma).
+	col += uTint * aura * 0.09 * opacity;
 
 	if (d < px * 2.0) {
-		float e = px * 1.5;
-		float h = bevel(d);
-		float hx = bevel(field(p + vec2(e, 0.0)));
-		float hy = bevel(field(p + vec2(0.0, e)));
-		float slope = uBevel * 0.5;
-		vec3 n = normalize(vec3((h - hx) / e * slope, (h - hy) / e * slope, 1.0));
-
-		vec3 V = vec3(0.0, 0.0, 1.0);
-		vec3 L = normalize(vec3(-0.45 + uLight.x * 0.35, 0.6 + uLight.y * 0.25, 0.66));
-		vec3 L2 = normalize(vec3(0.7, -0.35, 0.6));
-		float diff = max(dot(n, L), 0.0);
-		float spec = pow(max(dot(n, normalize(L + V)), 0.0), 140.0);
-		float spec2 = pow(max(dot(n, normalize(L2 + V)), 0.0), 36.0);
-		float fres = pow(1.0 - max(n.z, 0.0), 2.2);
-
-		// Metal escuro: o corpo é quase preto, a cor vem dos reflexos.
-		vec3 liquid = mix(vec3(0.22), mix(vec3(0.045 + 0.05 * uChrome), vec3(0.01), smoothstep(0.35, 1.0, h)), smoothstep(0.0, 0.42, h));
-		float swirl = fbm(p * 2.1 + vec2(uTime * 0.05, -uTime * 0.03));
-		liquid += vec3(0.05) * smoothstep(0.55, 0.92, swirl) * h;
-		liquid *= 0.6 + 0.5 * diff;
-
-		vec3 r = reflect(-V, n);
-		float sky = smoothstep(0.15, 0.85, r.y);
-		float horizon = exp(-pow((r.y + 0.08) * 9.0, 2.0));
-		float side = smoothstep(0.35, 0.95, r.x) * smoothstep(-0.5, 0.3, r.y);
-		vec3 env = vec3(0.015) + vec3(1.0) * sky * 0.95 + vec3(0.5) * horizon + vec3(0.3) * side;
-		env *= smoothstep(0.98, 0.3, r.z);
-		liquid = mix(liquid, env, clamp(mix(0.1, 0.4, uChrome) + fres * 0.9, 0.0, 1.0));
-		liquid += vec3(1.0) * spec * (1.0 + 0.6 * uChrome);
-		liquid += vec3(0.7) * spec2 * 0.3;
-
-		liquid = mix(col, liquid, 0.35 + 0.65 * uDim);
-		col = mix(col, liquid, 1.0 - smoothstep(-px, px, d));
+		// 2D bem acabado: cor chapada, um degradê de cima para baixo e uma
+		// borda de luz do lado de cima (e sombra leve embaixo). Sem volume 3D.
+		float edgeW = uCss * 5.0;
+		float boxH = max(uBox.w - uBox.y, 0.001);
+		float top = clamp((p.y - uBox.y) / boxH, 0.0, 1.0);
+		vec3 fill = uTint * (0.84 + 0.16 * top);
+		float reach = uExpr2.z > 0.01 ? 4.0 : 1.5;
+		if (d > -edgeW * reach) {
+			float e = px;
+			vec2 grad = vec2(field(p + vec2(e, 0.0)) - d, field(p + vec2(0.0, e)) - d);
+			vec2 n = grad / max(length(grad), 1e-5);
+			float facing = dot(n, normalize(vec2(-0.45 + uLight.x * 0.3, 0.9)));
+			float band = 1.0 - smoothstep(0.0, edgeW, -d);
+			fill += vec3(0.16) * max(facing, 0.0) * band;
+			fill *= 1.0 - 0.16 * max(-facing, 0.0) * band;
+			// Gotas e mascote ganham o reflexo curvo de desenho animado, rente à borda de cima.
+			if (uExpr2.z > 0.01) {
+				float inside = -d;
+				float shine = smoothstep(edgeW * 1.2, edgeW * 1.8, inside) * (1.0 - smoothstep(edgeW * 2.4, edgeW * 3.4, inside));
+				fill = mix(fill, vec3(1.0), shine * smoothstep(0.6, 0.95, facing) * 0.6 * uExpr2.z);
+			}
+		}
+		float alpha = (1.0 - smoothstep(-px, px, d)) * opacity;
+		col = mix(col, fill, alpha);
 	}
 
-	if (uEye.w > 0.01) {
+	if (uEye.w > 0.01 && length(p - uEye.xy) < uEye.z * 1.4) {
 		float ed = eyes(p);
-		col = mix(col, vec3(1.0), (1.0 - smoothstep(-px, px, ed)) * uEye.w);
-		col += vec3(1.0) * exp(-max(ed, 0.0) * 55.0) * 0.18 * uEye.w;
+		col = mix(col, uInk, (1.0 - smoothstep(-px, px, ed)) * uEye.w);
 	}
 
 	vec2 vv = uv - 0.5;
@@ -341,9 +368,9 @@ function createShader(gl: WebGLRenderingContext, type: number, source: string) {
 	return shader;
 }
 
-function createProgram(gl: WebGLRenderingContext) {
+function createProgram(gl: WebGLRenderingContext, fragmentSource: string) {
 	const vertex = createShader(gl, gl.VERTEX_SHADER, VERTEX_SHADER);
-	const fragment = createShader(gl, gl.FRAGMENT_SHADER, FRAGMENT_SHADER);
+	const fragment = createShader(gl, gl.FRAGMENT_SHADER, fragmentSource);
 	if (!vertex || !fragment) return null;
 	const program = gl.createProgram();
 	if (!program) return null;
@@ -355,6 +382,15 @@ function createProgram(gl: WebGLRenderingContext) {
 		return null;
 	}
 	return program;
+}
+
+/** Lê uma cor do CSS (ex.: --liquid: #ffffff) e devolve RGB de 0 a 1. */
+function cssColor(name: string, fallback: [number, number, number]): [number, number, number] {
+	const raw = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+	const match = raw.match(/^#?([0-9a-f]{6})$/i);
+	if (!match) return fallback;
+	const n = parseInt(match[1], 16);
+	return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255];
 }
 
 function parseFormation(value: string | undefined): Formation {
@@ -399,16 +435,43 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 	});
 	if (!gl) return;
 
-	const program = createProgram(gl);
-	if (!program) return;
-	gl.useProgram(program);
+	const program = createProgram(gl, FRAGMENT_SHADER);
+	const smokeProgram = createProgram(gl, SMOKE_SHADER);
+	if (!program || !smokeProgram) return;
 
 	const buffer = gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
 	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
-	const aPos = gl.getAttribLocation(program, 'aPos');
-	gl.enableVertexAttribArray(aPos);
-	gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+	const drawWith = (target: WebGLProgram) => {
+		gl.useProgram(target);
+		const aPos = gl.getAttribLocation(target, 'aPos');
+		gl.enableVertexAttribArray(aPos);
+		gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+	};
+
+	// Textura (em baixa resolução) onde a fumaça do fundo é desenhada.
+	const smokeTexture = gl.createTexture();
+	const smokeBuffer = gl.createFramebuffer();
+	let smokeW = 1;
+	let smokeH = 1;
+	function sizeSmoke(w: number, h: number) {
+		smokeW = Math.max(1, Math.round(w / 4));
+		smokeH = Math.max(1, Math.round(h / 4));
+		gl!.bindTexture(gl!.TEXTURE_2D, smokeTexture);
+		gl!.texImage2D(gl!.TEXTURE_2D, 0, gl!.RGBA, smokeW, smokeH, 0, gl!.RGBA, gl!.UNSIGNED_BYTE, null);
+		gl!.texParameteri(gl!.TEXTURE_2D, gl!.TEXTURE_MIN_FILTER, gl!.LINEAR);
+		gl!.texParameteri(gl!.TEXTURE_2D, gl!.TEXTURE_MAG_FILTER, gl!.LINEAR);
+		gl!.texParameteri(gl!.TEXTURE_2D, gl!.TEXTURE_WRAP_S, gl!.CLAMP_TO_EDGE);
+		gl!.texParameteri(gl!.TEXTURE_2D, gl!.TEXTURE_WRAP_T, gl!.CLAMP_TO_EDGE);
+		gl!.bindFramebuffer(gl!.FRAMEBUFFER, smokeBuffer);
+		gl!.framebufferTexture2D(gl!.FRAMEBUFFER, gl!.COLOR_ATTACHMENT0, gl!.TEXTURE_2D, smokeTexture, 0);
+		gl!.bindFramebuffer(gl!.FRAMEBUFFER, null);
+	}
+	const smokeUniforms = {
+		res: gl.getUniformLocation(smokeProgram, 'uRes'),
+		time: gl.getUniformLocation(smokeProgram, 'uTime'),
+		scroll: gl.getUniformLocation(smokeProgram, 'uScroll'),
+	};
 
 	const u = (name: string) => gl.getUniformLocation(program, name);
 	const uniforms = {
@@ -416,9 +479,12 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 		time: u('uTime'),
 		dim: u('uDim'),
 		k: u('uK'),
-		bevel: u('uBevel'),
 		wob: u('uWob'),
-		chrome: u('uChrome'),
+		css: u('uCss'),
+		box: u('uBox'),
+		tint: u('uTint'),
+		ink: u('uInk'),
+		smoke: u('uSmoke'),
 		light: u('uLight'),
 		a: u('uA[0]'),
 		b: u('uB[0]'),
@@ -440,7 +506,10 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 	let cssW = 1;
 	let cssH = 1;
 	let aspect = 1;
-	let quality = window.innerWidth < 768 ? 0.7 : 0.72;
+	// Resolução real do aparelho (até 2x): as bordas ficam nítidas como o texto.
+	let quality = 1;
+	let tint = cssColor('--liquid', [1, 1, 1]);
+	let ink = cssColor('--liquid-ink', [0.02, 0.02, 0.02]);
 	let time = 0;
 	let running = false;
 	let frame = 0;
@@ -448,7 +517,7 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 	let skipFrame = false;
 	let lastInteraction = performance.now();
 
-	const globals = { dim: 1, k: 0.2, bevel: 0.15, wob: 0.011, chrome: 0 };
+	const globals = { dim: 1, k: 0.2, wob: 0.011, shine: 1, settle: 0 };
 	const eye = { alpha: 0, gx: 0, gy: 0, openL: 1, openR: 1, nextBlink: 2, blinkUntil: 0, spin: 0 };
 	const expr: Expression = { happy: 0, surprise: 0, angry: 0, love: 0, dizzy: 0 };
 	const mascot = {
@@ -577,6 +646,9 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 		const prims: Prim[] = def.prims.map((prim) => [...prim] as Prim);
 		def.anim?.(def.eyes ? t + mascot.boost : t, prims);
 		const drift = (def.drift ?? 1) * (place.view ? 1 : place.s * 2.2);
+		// Formas nítidas flutuam inteiras (as peças não se desalinham).
+		const rigid = (def.chrome ?? 0) > 0.5;
+		const lead = slots[0];
 		const out: { v: number[]; op: number }[] = [];
 		let sumX = 0;
 		let sumY = 0;
@@ -590,8 +662,9 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 			const [x, y, w, h, r, rot, shell, op] = prim;
 			const wx = place.view ? x * place.sx : place.cx + x * place.s;
 			const wy = place.view ? y : place.cy + y * place.s;
-			const dx = slot.ampX * drift * Math.sin(t * slot.freqX + slot.phase);
-			const dy = slot.ampY * drift * Math.cos(t * slot.freqY + slot.phase * 1.3);
+			const src = rigid ? lead : slot;
+			const dx = src.ampX * drift * Math.sin(t * src.freqX + src.phase);
+			const dy = src.ampY * drift * Math.cos(t * src.freqY + src.phase * 1.3);
 			const v = [wx + dx, wy + dy, w * place.s, h * place.s, r * place.s, rot, shell * place.s];
 			sumX += v[0];
 			sumY += v[1];
@@ -607,20 +680,38 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 		return out;
 	}
 
+	/**
+	 * Enquanto a forma se transforma, as peças se fundem como líquido; quando ela
+	 * assenta, as junções ficam firmes e a superfície para de ondular.
+	 */
 	function applyGlobals(place: Place, ease: number) {
 		const def = formation.def;
 		const detail = detailScale(place);
-		const minBevel = (5 / cssH) * 2;
+		const crisp = (def.chrome ?? 0) > 0.5;
+		const loose = 1 - globals.settle;
 		const goal = {
 			dim: (def.dim ?? 0.95) * place.dim,
-			k: (def.k ?? 0.2) * detail,
-			bevel: Math.max((def.bevel ?? 0.15) * detail, minBevel),
-			wob: (def.wob ?? 0.011) * detail,
-			chrome: def.chrome ?? 0,
+			k: (def.k ?? 0.2) * detail * (crisp ? 1 + 2.2 * loose : 1),
+			wob: (def.wob ?? 0.011) * detail * (crisp ? loose : 1),
+			shine: crisp ? 0 : 1,
 		};
 		for (const key of Object.keys(goal) as (keyof typeof goal)[]) {
 			globals[key] += (goal[key] - globals[key]) * ease;
 		}
+	}
+
+	/** 0 = peças em movimento (transformando), 1 = forma assentada. */
+	function measureSettle(dt: number) {
+		let motion = 0;
+		let count = 0;
+		for (const slot of slots) {
+			if (Math.max(slot.v[2], slot.v[3]) < 0.004) continue;
+			motion += Math.abs(slot.vel[0]) + Math.abs(slot.vel[1]) + Math.abs(slot.vel[2]) + Math.abs(slot.vel[3]);
+			count++;
+		}
+		motion /= Math.max(count, 1) * Math.max(lastPlace.s, 0.12);
+		const goal = 1 - smooth(0.12, 0.6, motion);
+		globals.settle += (goal - globals.settle) * Math.min(1, dt * (goal > globals.settle ? 2.5 : 8));
 	}
 
 	function settle() {
@@ -632,6 +723,7 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 			slots[i].vel = [0, 0, 0, 0, 0, 0, 0];
 			slots[i].op = op || slots[i].op;
 		});
+		globals.settle = 1;
 		applyGlobals(place, 1);
 		eye.alpha = formation.def.eyes ? 1 : 0;
 	}
@@ -640,14 +732,14 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 		const rect = canvas.getBoundingClientRect();
 		cssW = Math.max(rect.width, 1);
 		cssH = Math.max(rect.height, 1);
-		const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+		const dpr = Math.min(window.devicePixelRatio || 1, 2);
 		const nextWidth = Math.max(1, Math.round(cssW * dpr * quality));
 		const nextHeight = Math.max(1, Math.round(cssH * dpr * quality));
 		aspect = cssW / cssH;
 		if (nextWidth === width && nextHeight === height) return;
 		width = canvas.width = nextWidth;
 		height = canvas.height = nextHeight;
-		gl!.viewport(0, 0, width, height);
+		sizeSmoke(width, height);
 		if (reducedMotion) settle();
 	}
 
@@ -1075,6 +1167,7 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 		pointer.lightY += ((pointer.active ? pointer.y : 0) - pointer.lightY) * Math.min(1, dt * 2);
 		pointer.glow += ((pointer.active ? 1 : 0) - pointer.glow) * Math.min(1, dt * 3);
 
+		measureSettle(dt);
 		applyGlobals(place, Math.min(1, dt * 2));
 	}
 
@@ -1112,6 +1205,32 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 		return [portrait ? 0 : aspect * 0.2, top - radius, radius, smooth(0.08, 0.85, r.bottom / cssH)];
 	}
 
+	/** Caixa que contém todas as peças (com folga), para o shader pular o resto da tela. */
+	function liquidBox(): [number, number, number, number] {
+		let minX = 9;
+		let minY = 9;
+		let maxX = -9;
+		let maxY = -9;
+		for (const slot of slots) {
+			const v = slot.v;
+			if (Math.max(v[2], v[3]) < 0.002) continue;
+			const r = Math.hypot(v[2], v[3]) + v[6];
+			minX = Math.min(minX, v[0] - r);
+			maxX = Math.max(maxX, v[0] + r);
+			minY = Math.min(minY, v[1] - r);
+			maxY = Math.max(maxY, v[1] + r);
+		}
+		if (cursor.r > 0.002) {
+			minX = Math.min(minX, cursor.x - cursor.r - 0.2);
+			maxX = Math.max(maxX, cursor.x + cursor.r + 0.2);
+			minY = Math.min(minY, cursor.y - cursor.r - 0.2);
+			maxY = Math.max(maxY, cursor.y + cursor.r + 0.2);
+		}
+		if (minX > maxX) return [0, 0, 0, 0];
+		const pad = globals.k + 0.02;
+		return [minX - pad, minY - pad, maxX + pad, maxY + pad];
+	}
+
 	function render() {
 		for (let i = 0; i < SLOTS; i++) {
 			const v = slots[i].v;
@@ -1121,13 +1240,32 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 		const body = slots[0].v;
 		const scrollWorld = (window.scrollY / cssH) * 2;
 		const spacing = (30 / cssH) * 2;
+
+		// 1) Fumaça do fundo, em baixa resolução.
+		gl!.bindFramebuffer(gl!.FRAMEBUFFER, smokeBuffer);
+		gl!.viewport(0, 0, smokeW, smokeH);
+		drawWith(smokeProgram!);
+		gl!.uniform2f(smokeUniforms.res, smokeW, smokeH);
+		gl!.uniform1f(smokeUniforms.time, time);
+		gl!.uniform1f(smokeUniforms.scroll, scrollWorld);
+		gl!.drawArrays(gl!.TRIANGLES, 0, 3);
+
+		// 2) Tudo o mais, na resolução da tela.
+		gl!.bindFramebuffer(gl!.FRAMEBUFFER, null);
+		gl!.viewport(0, 0, width, height);
+		drawWith(program!);
+		gl!.activeTexture(gl!.TEXTURE0);
+		gl!.bindTexture(gl!.TEXTURE_2D, smokeTexture);
+		gl!.uniform1i(uniforms.smoke, 0);
 		gl!.uniform2f(uniforms.res, width, height);
 		gl!.uniform1f(uniforms.time, time);
 		gl!.uniform1f(uniforms.dim, globals.dim);
 		gl!.uniform1f(uniforms.k, globals.k);
-		gl!.uniform1f(uniforms.bevel, globals.bevel);
 		gl!.uniform1f(uniforms.wob, globals.wob);
-		gl!.uniform1f(uniforms.chrome, globals.chrome);
+		gl!.uniform1f(uniforms.css, 2 / cssH);
+		gl!.uniform4f(uniforms.box, ...liquidBox());
+		gl!.uniform3f(uniforms.tint, ...tint);
+		gl!.uniform3f(uniforms.ink, ...ink);
 		gl!.uniform2f(uniforms.light, pointer.lightX, pointer.lightY);
 		gl!.uniform4fv(uniforms.a, dataA);
 		gl!.uniform4fv(uniforms.b, dataB);
@@ -1135,7 +1273,7 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 		gl!.uniform4f(uniforms.eye, body[0], body[1], Math.max(Math.min(body[2], body[3]), 0.001), eye.alpha);
 		gl!.uniform4f(uniforms.eye2, eye.gx, eye.gy, eye.openL, eye.openR);
 		gl!.uniform4f(uniforms.expr, expr.happy, expr.surprise, expr.angry, expr.love);
-		gl!.uniform4f(uniforms.expr2, expr.dizzy, eye.spin, 0, 0);
+		gl!.uniform4f(uniforms.expr2, expr.dizzy, eye.spin, globals.shine, 0);
 		gl!.uniform4f(uniforms.grid, spacing, (1.15 / cssH) * 2, (scrollWorld * 0.35) % spacing, scrollWorld);
 		gl!.uniform3f(uniforms.ptr, pointer.x, pointer.y, pointer.glow);
 		gl!.uniform4f(uniforms.horizon, ...horizon());
@@ -1147,13 +1285,14 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 	const frameTimes: number[] = [];
 	function adapt(delta: number) {
 		frameTimes.push(delta);
-		if (frameTimes.length < 90) return;
+		if (frameTimes.length < 40) return;
 		const sorted = [...frameTimes].sort((a, b) => a - b);
 		const median = sorted[Math.floor(sorted.length / 2)];
 		frameTimes.length = 0;
-		if (median > 24) {
-			if (quality > 0.36) {
-				quality = Math.max(0.35, quality * 0.75);
+		// Aparelho sofrendo: reduz a resolução aos poucos (e, no limite, o ritmo).
+		if (median > 22) {
+			if (quality > 0.51) {
+				quality = Math.max(0.5, quality * 0.85);
 				resize();
 			} else {
 				skipFrame = true;
@@ -1244,11 +1383,24 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 			lastInteraction = performance.now();
 		},
 		react,
+		/** Pausa e retoma a animação (testes e capturas de tela). */
+		pause: stop,
+		resume: start,
 		/** Adianta a simulação (útil em testes e capturas de tela). */
 		advance: (seconds: number) => {
 			for (let i = 0; i < Math.round(seconds * 60); i++) step(1 / 60);
 			render();
 		},
-		state: () => ({ name: formation.name, place: lastPlace, el: formationEl?.id || formationEl?.className }),
+		state: () => ({ name: formation.name, place: lastPlace, el: formationEl?.id || formationEl?.className, quality }),
+		/** Testa outra cor para o líquido, ex.: __liquid.tint('#3b6ef0'). */
+		tint: (hex: string, inkHex?: string) => {
+			const parse = (value: string) => {
+				const n = parseInt(value.replace('#', ''), 16);
+				return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255] as [number, number, number];
+			};
+			tint = parse(hex);
+			if (inkHex) ink = parse(inkHex);
+			render();
+		},
 	};
 }

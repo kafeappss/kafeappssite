@@ -8,6 +8,9 @@
 	/* Cores */
 	--black: #000;
 	--white: #fff;
+	/* Cor do líquido (formas e mascote) e dos olhos do mascote. Use hex de 6 dígitos. */
+	--liquid: #f4f4f4;
+	--liquid-ink: #060606;
 	--gray-100: #f2f2f2;
 	--gray-200: #d9d9d9;
 	--gray-300: #b3b3b3;
@@ -27,10 +30,10 @@
 	--line-strong: rgb(255 255 255 / 0.17);
 
 	--text: var(--white);
-	--text-muted: #a8a8a8;
-	--text-dim: #8a8a8a;
+	--text-muted: #b8b8b8;
+	--text-dim: #999999;
 	/* Segunda cor das manchetes (o trecho entre <em>). */
-	--text-quiet: #7a7a7a;
+	--text-quiet: #8e8e8e;
 	--accent: var(--white);
 
 	--gradient-metal: linear-gradient(100deg, #ffffff 0%, #cfcfcf 45%, #7d7d7d 100%);

@@ -154,13 +154,13 @@ const crisp = { k: 0.035, bevel: 0.06, wob: 0.003, drift: 0.25, inertia: 0.35, m
 
 const cycle = (active: number): ShapeDef => ({
 	...crisp,
-	k: 0.03,
+	k: 0.012,
 	prims: [
-		ring(0, 0, 0.68, 0.06),
+		ring(0, 0, 0.68, 0.045),
 		...[90, 0, -90, 180].map((deg, i) =>
-			circle(Math.cos(deg * DEG) * 0.68, Math.sin(deg * DEG) * 0.68, i + 1 === active ? 0.26 : 0.1),
+			circle(Math.cos(deg * DEG) * 0.68, Math.sin(deg * DEG) * 0.68, i + 1 === active ? 0.24 : 0.13),
 		),
-		circle(0, 0.68, 0.07),
+		circle(0, 0.68, 0.075),
 	],
 	anim: (t, p) => {
 		const angle = Math.PI / 2 - t * 0.9;
@@ -213,11 +213,12 @@ export const shapes = {
 	/* --- Conceitos ------------------------------------------------------- */
 	clock: {
 		...crisp,
+		k: 0.015,
 		prims: [
 			ring(0, 0, 0.78, 0.085),
-			circle(0, 0, 0.1),
-			capsule(0, 0, 0, 0.52, 0.06),
-			capsule(0, 0, 0.32, 0, 0.075),
+			circle(0, 0, 0.09),
+			capsule(0, 0, 0, 0.52, 0.045),
+			capsule(0, 0, 0.32, 0, 0.06),
 			box(0, 0.55, 0.04, 0.08, 0.03),
 			box(0.55, 0, 0.08, 0.04, 0.03),
 			box(0, -0.55, 0.04, 0.08, 0.03),
@@ -363,7 +364,7 @@ export const shapes = {
 	'cycle-4': cycle(4),
 	k: {
 		...crisp,
-		k: 0.025,
+		k: 0.006,
 		bevel: 0.07,
 		prims: kShape(),
 	},

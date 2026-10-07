@@ -6,7 +6,7 @@ Feito com [Astro](https://astro.build), gera um site 100% estático (HTML, CSS e
 
 ## Destaques
 
-- **Líquido que explica o conteúdo (WebGL)**: um único corpo de metal líquido acompanha a navegação e vira o desenho do que está escrito: um relógio no problema do tempo, barras de crescimento na virada, um ciclo na metodologia, o K da Kafé no "Sobre" e uma xícara no convite final. Cada forma tem um espaço reservado no layout, rola junto com o conteúdo e nunca fica por cima do texto. Nos cartões de serviço, basta passar o mouse para o líquido virar celular, navegador, IA, foguete, rede ou layout. Veja "Formas do líquido" abaixo.
+- **Líquido que explica o conteúdo (WebGL)**: um único corpo de líquido, em estilo 2D bem acabado (cor chapada, bordas nítidas, brilho suave), acompanha a navegação e vira o desenho do que está escrito: um relógio no problema do tempo, barras de crescimento na virada, um ciclo na metodologia, o K da Kafé no "Sobre" e uma xícara no convite final. Cada forma tem um espaço reservado no layout, rola junto com o conteúdo e nunca fica por cima do texto. Nos cartões de serviço, basta passar o mouse para o líquido virar celular, navegador, IA, foguete, rede ou layout. Veja "Formas do líquido" abaixo.
 - **Mascote com personalidade**: no início da home, uma gota com os olhos inspirados no logo, em pé sobre o horizonte. Ele acompanha o cursor, pisca e muda de expressão: cada clique traz uma reação (feliz, piscadinha, surpreso, apaixonado), cliques demais o deixam tonto (e depois bravo), dá para arrastá-lo como goma (com mouse), ele sente cócegas, se apaixona quando o cursor passa no botão principal e cochila se ninguém mexer na página. Falas em `src/scripts/mascot.ts`.
 - **Fundo vivo**: horizonte de planeta no início, grade de pontos que acende perto do cursor e do líquido, fumaça que flui e uma luz que passeia devagar, tudo em preto, branco e cinza.
 - **Trilho de seções**: à direita (telas largas), mostra em que parte da página a pessoa está e permite pular entre as seções.
@@ -34,6 +34,7 @@ npm run check    # verificação de tipos
 | Desenhos do líquido (relógio, celular, foguete…) | `src/scripts/shapes.ts` |
 | Falas e reações do mascote | `src/scripts/mascot.ts` |
 | Expressões do mascote, fundo e física do líquido | `src/scripts/liquid.ts` |
+| Cor do líquido e dos olhos do mascote | `--liquid` e `--liquid-ink` em `src/styles/global.css` |
 | Serviços (cards e páginas `/servicos/...`) | `src/data/services.ts` |
 | Método, formatos de trabalho, comparativo e perguntas frequentes | `src/data/method.ts` |
 | Artigos do blog | `src/content/blog/*.md` |
@@ -58,7 +59,7 @@ Cada seção diz qual desenho o líquido deve formar enquanto ela está no meio 
 - `data-liquid-hover="phone"`: num cartão, o líquido vira essa forma ao passar o mouse (no celular, vale o cartão que estiver no meio da tela). O cartão pode ter o próprio `data-liquid-anchor`; se não tiver, usa o espaço da seção.
 - `data-horizon`: desenha a borda do planeta no fim da seção (`data-horizon="0.1"` ajusta a altura).
 
-Para testar no console do navegador: `__liquid.show('rocket')` mostra uma forma, `__liquid.react('love')` faz o mascote reagir (`happy`, `wink`, `surprise`, `love`, `dizzy`, `angry`, `giggle`) e `__liquid.advance(3)` adianta a animação em 3 segundos.
+Para testar no console do navegador: `__liquid.show('rocket')` mostra uma forma, `__liquid.react('love')` faz o mascote reagir (`happy`, `wink`, `surprise`, `love`, `dizzy`, `angry`, `giggle`) `__liquid.advance(3)` adianta a animação em 3 segundos e `__liquid.tint('#3b6ef0', '#ffffff')` testa outra cor para o líquido e os olhos.
 
 ### Fontes
 
