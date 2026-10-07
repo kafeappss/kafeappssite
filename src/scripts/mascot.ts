@@ -42,6 +42,14 @@ const SEQUENCE_404: { reaction: Reaction; line: string }[] = [
 	{ reaction: 'love', line: 'Me conta o que você procurava? O botão ali leva pro início.' },
 ];
 
+/** No pré-orçamento (/orcamento) ele é o anfitrião e incentiva a pessoa. */
+const SEQUENCE_HELPER: { reaction: Reaction; line: string }[] = [
+	{ reaction: 'happy', line: 'Pode responder do seu jeito, sem tecniquês. ☕' },
+	{ reaction: 'wink', line: 'Leva uns 2 minutinhos, prometo.' },
+	{ reaction: 'love', line: 'Seus dados ficam só com a gente. 🔒' },
+	{ reaction: 'happy', line: 'Na dúvida, escolhe "Ainda não sei" que tá tudo bem.' },
+];
+
 const EVENTS: Record<string, string[]> = {
 	dragged: ['Boing! Sou elástico, viu?', 'Ei, me devolve pro lugar! 😄', 'Estica, mas não quebra.'],
 	tickle: ['Hahaha, cócegas não!', 'Hihi, para com isso! 😆'],
@@ -65,9 +73,10 @@ const text = document.querySelector<HTMLElement>('[data-mascot-text]');
 
 if (hit && bubble && text) {
 	const sad = document.querySelector('[data-mascot-mood="sad"]') !== null;
+	const helper = document.querySelector('[data-mascot-mood="helper"]') !== null;
 	const canDrag = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 	// Sem mouse e teclado, as dicas de arrastar, clique duplo e palavra secreta saem da lista.
-	const sequence = (sad ? SEQUENCE_404 : SEQUENCE).filter((step) => canDrag || !/arrastar|duas vezes|digita/.test(step.line));
+	const sequence = (sad ? SEQUENCE_404 : helper ? SEQUENCE_HELPER : SEQUENCE).filter((step) => canDrag || !/arrastar|duas vezes|digita/.test(step.line));
 	let index = 0;
 	let hideTimer = 0;
 	let clicks: number[] = [];
@@ -172,6 +181,15 @@ if (hit && bubble && text) {
 		if (EVENTS[kind]) say(pick(kind), kind === 'wake' || kind === 'return' ? 2600 : 3400);
 	});
 
+	// Outras partes do site podem fazer o mascote falar (ex.: o pré-orçamento):
+	// window.dispatchEvent(new CustomEvent('kafe:mascot-say', { detail: { line, reaction, duration } })).
+	window.addEventListener('kafe:mascot-say', (event) => {
+		const { line, reaction, duration } = (event as CustomEvent).detail ?? {};
+		if (!line || !visible()) return;
+		if (reaction) react(String(reaction));
+		say(String(line), typeof duration === 'number' ? duration : 4200);
+	});
+
 	// Palavra secreta: digitar "café" ou "kafe" em qualquer lugar (fora de campos de texto).
 	let typed = '';
 	window.addEventListener('keydown', (event) => {
@@ -200,6 +218,8 @@ if (hit && bubble && text) {
 			window.setTimeout(() => {
 				if (visible()) say('Ops… essa página esfriou. 😢 Me clica que eu te animo.');
 			}, 1600);
+		} else if (helper) {
+			// No pré-orçamento, quem cumprimenta é o próprio formulário (evento kafe:mascot-say).
 		} else if (!sessionStorage.getItem('kafe:hello')) {
 			const hour = new Date().getHours();
 			const hello = hour < 5 ? 'Boa madrugada, coruja! 🦉' : hour < 12 ? 'Bom dia! ☕' : hour < 18 ? 'Boa tarde! 👋' : 'Boa noite! 🌙';

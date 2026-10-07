@@ -1,0 +1,948 @@
+---
+/**
+ * Pré-orçamento com a Kafeína: cinco etapas (projeto, problema, escopo, contato
+ * e estimativa), com o mascote como anfitrião. A lógica fica em
+ * src/scripts/kafeina.ts e as perguntas, falas e preços em src/data/kafeina.ts.
+ */
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+import Mascot from '../components/Mascot.astro';
+import { budgetDefault, budgetSteps, contexts, deadlines, projects, scopes, states } from '../data/kafeina';
+
+const money = (k: number) => (k >= 300 ? 'R$ 300 mil ou mais' : `R$ ${k} mil`);
+const steps = ['Projeto', 'Problema', 'Escopo', 'Contato', 'Estimativa'];
+---
+
+<Base
+	title="Pré-orçamento com a Kafeína"
+	description="Responda algumas perguntas rápidas e receba na hora uma estimativa de investimento, prazo e escopo para o seu aplicativo, plataforma, sistema ou solução de IA."
+>
+	<section class="kf" data-liquid="mascot" data-mascot-mood="helper">
+		<div class="container kf-inner">
+			<div class="kf-main">
+				<p class="eyebrow">Kafeína · pré-orçamento</p>
+				<h1 class="h2 kf-title">Vamos tirar sua ideia <em>do papel?</em></h1>
+
+				<ol class="kf-steps" role="list" aria-label="Etapas do pré-orçamento">
+					{
+						steps.map((label, index) => (
+							<li data-kf-dot={index + 1} aria-current={index === 0 ? 'step' : undefined}>
+								<span class="kf-dot-num">{String(index + 1).padStart(2, '0')}</span>
+								<span class="kf-dot-label">{label}</span>
+							</li>
+						))
+					}
+				</ol>
+
+				<form class="kf-card" data-kf-form novalidate>
+					<fieldset class="kf-step" data-step="1">
+						<legend class="kf-q">
+							<span class="kf-who" aria-hidden="true"><i></i><i></i></span>
+							<span>Oi! Eu sou a Kafeína, da Kafé. Que tipo de projeto você quer lançar?</span>
+						</legend>
+						<div class="kf-options kf-cards">
+							{
+								projects.map((project) => (
+									<label class="kf-option kf-option-card">
+										<input
+											type="radio"
+											name="projeto"
+											value={project.id}
+											data-label={project.label}
+											data-noun={project.noun}
+											data-reply={project.reply}
+											data-reaction={project.reaction}
+										/>
+										<span class="kf-option-icon" aria-hidden="true">
+											<Icon name={project.icon as 'phone'} size={24} />
+										</span>
+										<span class="kf-option-label">{project.label}</span>
+										<span class="kf-option-hint">{project.hint}</span>
+									</label>
+								))
+							}
+						</div>
+					</fieldset>
+
+					<fieldset class="kf-step" data-step="2" hidden>
+						<legend class="kf-q">
+							<span class="kf-who" aria-hidden="true"><i></i><i></i></span>
+							<span><span data-kf-reply></span> Me conta: qual problema esse projeto vai resolver?</span>
+						</legend>
+						<label class="kf-field">
+							<span class="kf-label">O problema ou a oportunidade</span>
+							<textarea
+								name="problema"
+								rows="5"
+								maxlength="1500"
+								placeholder="Ex.: meus clientes precisam agendar pelo celular, e hoje tudo é feito por telefone e WhatsApp."
+								data-mascot-look="look"></textarea>
+							<span class="kf-count" data-kf-count aria-hidden="true">0/1500</span>
+						</label>
+						<p class="kf-label" id="kf-contexto">Contexto de mercado <span class="kf-optional">(opcional)</span></p>
+						<div class="kf-options kf-chips" role="radiogroup" aria-labelledby="kf-contexto">
+							{
+								contexts.map((context) => (
+									<label class="kf-option kf-chip">
+										<input type="radio" name="contexto" value={context.id} data-label={context.label} />
+										<span>{context.label}</span>
+									</label>
+								))
+							}
+						</div>
+					</fieldset>
+
+					<fieldset class="kf-step" data-step="3" hidden>
+						<legend class="kf-q">
+							<span class="kf-who" aria-hidden="true"><i></i><i></i></span>
+							<span>Agora vamos calibrar sua estimativa: escopo, prazo e investimento.</span>
+						</legend>
+						<p class="kf-label" id="kf-escopo">Escopo inicial</p>
+						<div class="kf-options kf-chips kf-chips-hint" role="radiogroup" aria-labelledby="kf-escopo">
+							{
+								scopes.map((scope) => (
+									<label class="kf-option kf-chip">
+										<input type="radio" name="escopo" value={scope.id} data-label={scope.label} data-reaction={scope.reaction} />
+										<span>
+											<strong>{scope.label}</strong>
+											{scope.hint && <small>{scope.hint}</small>}
+										</span>
+									</label>
+								))
+							}
+						</div>
+						<p class="kf-label" id="kf-prazo">Prazo desejado</p>
+						<div class="kf-options kf-chips kf-chips-hint" role="radiogroup" aria-labelledby="kf-prazo">
+							{
+								deadlines.map((deadline) => (
+									<label class="kf-option kf-chip">
+										<input
+											type="radio"
+											name="prazo"
+											value={deadline.id}
+											data-label={deadline.hint ? `${deadline.label} (${deadline.hint.toLowerCase()})` : deadline.label}
+											data-reply={deadline.reply}
+											data-reaction={deadline.reaction}
+										/>
+										<span>
+											<strong>{deadline.label}</strong>
+											{deadline.hint && <small>{deadline.hint}</small>}
+										</span>
+									</label>
+								))
+							}
+						</div>
+						<label class="kf-field kf-range">
+							<span class="kf-label">Quanto você imagina investir</span>
+							<output class="kf-budget" data-kf-budget>{money(budgetSteps[budgetDefault])}</output>
+							<input
+								type="range"
+								name="investimento"
+								min="0"
+								max={budgetSteps.length - 1}
+								step="1"
+								value={budgetDefault}
+								aria-valuetext={money(budgetSteps[budgetDefault])}
+							/>
+							<span class="kf-range-ends" aria-hidden="true"><span>{money(budgetSteps[0])}</span><span>{money(300)}</span></span>
+						</label>
+					</fieldset>
+
+					<fieldset class="kf-step" data-step="4" hidden>
+						<legend class="kf-q">
+							<span class="kf-who" aria-hidden="true"><i></i><i></i></span>
+							<span>Quase lá! Para onde a gente manda seu pré-orçamento?</span>
+						</legend>
+						<div class="kf-grid">
+							<label class="kf-field">
+								<span class="kf-label">Nome</span>
+								<input name="nome" autocomplete="name" required placeholder="Seu nome" data-mascot-look="look" />
+							</label>
+							<label class="kf-field">
+								<span class="kf-label">Empresa <span class="kf-optional">(opcional)</span></span>
+								<input name="empresa" autocomplete="organization" placeholder="Sua empresa" />
+							</label>
+							<label class="kf-field">
+								<span class="kf-label">E-mail</span>
+								<input type="email" name="email" autocomplete="email" required placeholder="voce@empresa.com.br" />
+							</label>
+							<label class="kf-field">
+								<span class="kf-label">WhatsApp</span>
+								<input
+									type="tel"
+									name="whatsapp"
+									autocomplete="tel"
+									inputmode="tel"
+									required
+									placeholder="(47) 90000-0000"
+								/>
+							</label>
+							<label class="kf-field">
+								<span class="kf-label">Estado <span class="kf-optional">(opcional)</span></span>
+								<select name="uf" autocomplete="address-level1">
+									<option value="">Selecione</option>
+									{states.map((uf) => <option value={uf}>{uf}</option>)}
+								</select>
+							</label>
+							<label class="kf-field">
+								<span class="kf-label">Cidade <span class="kf-optional">(opcional)</span></span>
+								<input name="cidade" autocomplete="address-level2" placeholder="Sua cidade" />
+							</label>
+						</div>
+						<label class="kf-hp" aria-hidden="true">
+							Não preencha
+							<input type="text" name="site" tabindex="-1" autocomplete="off" />
+						</label>
+						<p class="kf-consent">
+							Ao enviar, você concorda com a <a href="/privacidade">Política de Privacidade</a>. Nada de spam.
+						</p>
+					</fieldset>
+
+					<div class="kf-step kf-result" data-step="5" hidden>
+						<div class="kf-thinking" data-kf-thinking aria-live="polite">
+							<span class="kf-thinking-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+							<p>A Kafeína está montando seu pré-orçamento…</p>
+							<ul role="list" class="kf-thinking-list">
+								<li>Lendo o seu problema</li>
+								<li>Desenhando o escopo da primeira versão</li>
+								<li>Estimando prazo e investimento</li>
+							</ul>
+						</div>
+						<div class="kf-estimate" data-kf-estimate hidden tabindex="-1"></div>
+					</div>
+
+					<p class="kf-error" data-kf-error role="alert" hidden></p>
+
+					<div class="kf-nav" data-kf-nav>
+						<button type="button" class="btn btn-ghost kf-back" data-kf-back hidden>
+							<Icon name="arrow" class="arrow kf-back-arrow" /> Voltar
+						</button>
+						<button type="submit" class="btn kf-next" data-kf-next>
+							<span data-kf-next-label>Continuar</span>
+							<Icon name="arrow" class="arrow" />
+						</button>
+					</div>
+				</form>
+
+				<p class="kf-safe">
+					<Icon name="check" size={16} /> Seus dados ficam só com a Kafé e servem apenas para responder ao seu pedido.
+				</p>
+			</div>
+
+			<aside class="kf-stage" aria-hidden="true">
+				<div class="kf-mascot" data-liquid-anchor></div>
+			</aside>
+		</div>
+		<!-- No celular, as falas do mascote aparecem neste balão fixo no topo da tela. -->
+		<button class="talk-pill kf-talk" type="button" data-mascot-talk>
+			<span class="talk-eyes" aria-hidden="true"><i></i><i></i></span>
+			<span class="talk-label" data-mascot-label aria-live="polite"></span>
+		</button>
+		<Mascot />
+	</section>
+</Base>
+
+<script>
+	import '../scripts/kafeina';
+</script>
+
+<style>
+	.kf {
+		padding-block: calc(var(--header-h) + 40px) clamp(64px, 8vw, 120px);
+	}
+
+	/* Elementos escondidos pelo script somem de verdade (botões e blocos têm display próprio). */
+	.kf [hidden] {
+		display: none !important;
+	}
+
+	.kf-inner {
+		display: grid;
+		gap: 24px;
+	}
+
+	.kf-main {
+		display: grid;
+		gap: 22px;
+		align-content: start;
+		min-width: 0;
+	}
+
+	.kf-title {
+		max-width: 16ch;
+	}
+
+	/* Etapas ------------------------------------------------------------------ */
+	.kf-steps {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px;
+		margin: 6px 0 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.kf-steps li {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		padding: 7px 12px;
+		border: 1px solid var(--line);
+		border-radius: 999px;
+		color: var(--text-dim);
+		font-size: 0.78rem;
+		font-weight: 600;
+		letter-spacing: 0.04em;
+		transition:
+			color 0.3s ease,
+			border-color 0.3s ease,
+			background-color 0.3s ease;
+	}
+
+	.kf-dot-num {
+		font-variant-numeric: tabular-nums;
+	}
+
+	.kf-steps li[data-done] {
+		color: var(--text-muted);
+		border-color: var(--line-strong);
+	}
+
+	.kf-steps li[aria-current] {
+		color: var(--ink);
+		background: var(--crema);
+		border-color: var(--crema);
+	}
+
+	/* Cartão do formulário ------------------------------------------------------ */
+	.kf-card {
+		display: grid;
+		gap: 22px;
+		padding: clamp(20px, 3vw, 34px);
+		border: 1px solid var(--line);
+		border-radius: var(--radius-lg);
+		background: linear-gradient(180deg, rgb(32 26 21 / 0.82), rgb(20 16 13 / 0.82));
+		backdrop-filter: blur(18px);
+		-webkit-backdrop-filter: blur(18px);
+	}
+
+	.kf-step {
+		display: grid;
+		gap: 16px;
+		margin: 0;
+		padding: 0;
+		border: 0;
+		min-width: 0;
+		animation: kf-in 0.45s var(--ease-out);
+	}
+
+	.kf-step[hidden] {
+		display: none;
+	}
+
+	@keyframes kf-in {
+		from {
+			opacity: 0;
+			transform: translateY(10px);
+		}
+	}
+
+	/* A pergunta da Kafeína, como um balão de conversa. */
+	.kf-q {
+		display: flex;
+		align-items: flex-start;
+		gap: 12px;
+		padding: 0;
+		margin-bottom: 4px;
+		font-family: var(--font-display);
+		font-size: clamp(1.25rem, 1rem + 0.9vw, 1.6rem);
+		font-weight: 650;
+		line-height: 1.25;
+		letter-spacing: -0.02em;
+		color: var(--text);
+	}
+
+	.kf-who {
+		display: inline-flex;
+		flex: none;
+		align-items: center;
+		justify-content: center;
+		gap: 4px;
+		width: 38px;
+		height: 38px;
+		margin-top: -2px;
+		border-radius: 50%;
+		background: var(--crema);
+	}
+
+	/* Os olhinhos do mascote, inclinados como os recortes do K. */
+	.kf-who i {
+		width: 4px;
+		height: 11px;
+		border-radius: 1px;
+		background: var(--ink);
+		transform: skewX(-16deg);
+		animation: kf-blink 4s infinite;
+	}
+
+	@keyframes kf-blink {
+		0%,
+		92%,
+		100% {
+			transform: skewX(-16deg) scaleY(1);
+		}
+		95% {
+			transform: skewX(-16deg) scaleY(0.15);
+		}
+	}
+
+	.kf-label {
+		font-size: 0.8rem;
+		font-weight: 600;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--text-muted);
+	}
+
+	.kf-optional {
+		text-transform: none;
+		letter-spacing: 0;
+		font-weight: 450;
+		color: var(--text-dim);
+	}
+
+	/* Opções (cartões e chips) -------------------------------------------------- */
+	.kf-options {
+		display: grid;
+		gap: 10px;
+	}
+
+	.kf-cards {
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+	}
+
+	.kf-chips {
+		display: flex;
+		flex-wrap: wrap;
+	}
+
+	.kf-option {
+		position: relative;
+		cursor: pointer;
+	}
+
+	.kf-option input {
+		position: absolute;
+		opacity: 0;
+		pointer-events: none;
+	}
+
+	.kf-option-card {
+		display: grid;
+		grid-template-columns: auto 1fr;
+		gap: 4px 14px;
+		align-items: center;
+		padding: 16px 18px;
+		border: 1px solid var(--line-strong);
+		border-radius: var(--radius);
+		background: rgb(var(--fg-rgb) / 0.03);
+		transition:
+			border-color 0.25s ease,
+			background-color 0.25s ease,
+			transform 0.35s var(--ease-out);
+	}
+
+	.kf-option-card:hover {
+		border-color: rgb(var(--brand-rgb) / 0.6);
+		transform: translateY(-2px);
+	}
+
+	.kf-option-icon {
+		grid-row: span 2;
+		display: grid;
+		place-items: center;
+		width: 46px;
+		height: 46px;
+		border-radius: var(--radius);
+		background: rgb(var(--brand-rgb) / 0.12);
+		color: var(--crema);
+	}
+
+	.kf-option-label {
+		font-weight: 650;
+		color: var(--text);
+	}
+
+	.kf-option-hint {
+		font-size: 0.86rem;
+		line-height: 1.4;
+		color: var(--text-dim);
+	}
+
+	.kf-option-card:has(input:checked) {
+		border-color: var(--crema);
+		background: rgb(var(--brand-rgb) / 0.12);
+	}
+
+	.kf-chip span {
+		display: inline-flex;
+		flex-direction: column;
+		gap: 2px;
+		padding: 10px 16px;
+		border: 1px solid var(--line-strong);
+		border-radius: 999px;
+		font-size: 0.92rem;
+		color: var(--text-muted);
+		transition:
+			border-color 0.25s ease,
+			background-color 0.25s ease,
+			color 0.25s ease;
+	}
+
+	.kf-chips-hint .kf-chip span {
+		border-radius: var(--radius);
+	}
+
+	.kf-chip strong {
+		font-weight: 600;
+		color: var(--text);
+	}
+
+	.kf-chip small {
+		font-size: 0.78rem;
+		color: var(--text-dim);
+	}
+
+	.kf-chip:hover span {
+		border-color: rgb(var(--brand-rgb) / 0.6);
+	}
+
+	.kf-chip:has(input:checked) span {
+		border-color: var(--crema);
+		background: rgb(var(--brand-rgb) / 0.14);
+		color: var(--text);
+	}
+
+	.kf-option:has(input:focus-visible) > span:first-of-type,
+	.kf-option-card:has(input:focus-visible) {
+		outline: 2px solid var(--accent);
+		outline-offset: 3px;
+	}
+
+	/* Campos ------------------------------------------------------------------ */
+	.kf-field {
+		position: relative;
+		display: grid;
+		gap: 8px;
+	}
+
+	.kf-field input,
+	.kf-field textarea,
+	.kf-field select {
+		width: 100%;
+		padding: 13px 15px;
+		border: 1px solid var(--line-strong);
+		border-radius: var(--radius-sm);
+		background: rgb(var(--bg-rgb) / 0.55);
+		color: var(--text);
+		font: inherit;
+		font-size: 1rem;
+		transition: border-color 0.25s ease;
+	}
+
+	.kf-field textarea {
+		resize: vertical;
+		min-height: 130px;
+		line-height: 1.5;
+	}
+
+	.kf-field input:focus,
+	.kf-field textarea:focus,
+	.kf-field select:focus {
+		outline: none;
+		border-color: var(--crema);
+	}
+
+	.kf-field [aria-invalid='true'] {
+		border-color: #f2a3a3;
+	}
+
+	.kf-count {
+		justify-self: end;
+		font-size: 0.75rem;
+		color: var(--text-dim);
+		font-variant-numeric: tabular-nums;
+	}
+
+	.kf-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+		gap: 14px;
+	}
+
+	.kf-hp {
+		position: absolute;
+		left: -9999px;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+	}
+
+	.kf-consent {
+		font-size: 0.85rem;
+		color: var(--text-dim);
+	}
+
+	.kf-consent a {
+		color: var(--text);
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+
+	/* Investimento ------------------------------------------------------------- */
+	.kf-range {
+		margin-top: 6px;
+	}
+
+	.kf-budget {
+		font-family: var(--font-display);
+		font-size: clamp(1.6rem, 1.2rem + 1.2vw, 2.2rem);
+		font-weight: 700;
+		letter-spacing: -0.03em;
+		color: var(--crema);
+	}
+
+	.kf-range input[type='range'] {
+		padding: 0;
+		border: 0;
+		background: transparent;
+		accent-color: var(--crema);
+		height: 28px;
+	}
+
+	.kf-range-ends {
+		display: flex;
+		justify-content: space-between;
+		font-size: 0.78rem;
+		color: var(--text-dim);
+	}
+
+	/* Navegação e mensagens ------------------------------------------------------ */
+	.kf-nav {
+		display: flex;
+		justify-content: space-between;
+		gap: 12px;
+		flex-wrap: wrap;
+	}
+
+	.kf-next {
+		margin-left: auto;
+	}
+
+	.kf-back :global(.kf-back-arrow) {
+		transform: rotate(180deg);
+	}
+
+	.kf-error {
+		padding: 12px 14px;
+		border: 1px solid rgb(230 110 90 / 0.5);
+		border-radius: var(--radius-sm);
+		color: #f2a3a3;
+		font-size: 0.92rem;
+	}
+
+	.kf-safe {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		font-size: 0.85rem;
+		color: var(--text-dim);
+	}
+
+	/* Calculando ---------------------------------------------------------------- */
+	.kf-thinking {
+		display: grid;
+		gap: 14px;
+		justify-items: start;
+		padding: 10px 0;
+	}
+
+	.kf-thinking p {
+		font-family: var(--font-display);
+		font-size: 1.3rem;
+		font-weight: 650;
+	}
+
+	.kf-thinking-dots {
+		display: inline-flex;
+		gap: 6px;
+	}
+
+	.kf-thinking-dots i {
+		width: 10px;
+		height: 10px;
+		border-radius: 50%;
+		background: var(--crema);
+		animation: kf-dot 1s infinite ease-in-out;
+	}
+
+	.kf-thinking-dots i:nth-child(2) {
+		animation-delay: 0.15s;
+	}
+
+	.kf-thinking-dots i:nth-child(3) {
+		animation-delay: 0.3s;
+	}
+
+	@keyframes kf-dot {
+		0%,
+		100% {
+			transform: translateY(0);
+			opacity: 0.4;
+		}
+		50% {
+			transform: translateY(-6px);
+			opacity: 1;
+		}
+	}
+
+	.kf-thinking-list {
+		display: grid;
+		gap: 8px;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		color: var(--text-dim);
+	}
+
+	.kf-thinking-list li {
+		opacity: 0.35;
+		transition:
+			opacity 0.4s ease,
+			color 0.4s ease;
+	}
+
+	.kf-thinking-list li::before {
+		content: '○ ';
+	}
+
+	.kf-thinking-list :global(li[data-on]) {
+		opacity: 1;
+		color: var(--text);
+	}
+
+	.kf-thinking-list :global(li[data-on])::before {
+		content: '● ';
+		color: var(--crema);
+	}
+
+	/* Resultado ------------------------------------------------------------------ */
+	.kf-estimate {
+		display: grid;
+		gap: 22px;
+		outline: none;
+		animation: kf-in 0.6s var(--ease-out);
+	}
+
+	.kf-estimate :global(h2) {
+		font-family: var(--font-display);
+		font-size: clamp(1.6rem, 1.2rem + 1.3vw, 2.3rem);
+		line-height: 1.05;
+		letter-spacing: -0.03em;
+	}
+
+	.kf-estimate :global(h3) {
+		font-size: 0.8rem;
+		font-weight: 600;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--text-muted);
+	}
+
+	.kf-estimate :global(.kf-boxes) {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+		gap: 12px;
+	}
+
+	.kf-estimate :global(.kf-box) {
+		display: grid;
+		gap: 6px;
+		padding: 18px;
+		border: 1px solid var(--line-strong);
+		border-radius: var(--radius);
+		background: rgb(var(--fg-rgb) / 0.03);
+	}
+
+	.kf-estimate :global(.kf-box span) {
+		font-size: 0.78rem;
+		font-weight: 600;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--text-dim);
+	}
+
+	.kf-estimate :global(.kf-box strong) {
+		font-family: var(--font-display);
+		font-size: clamp(1.4rem, 1.1rem + 1vw, 1.9rem);
+		letter-spacing: -0.02em;
+		color: var(--crema);
+	}
+
+	.kf-estimate :global(.kf-note) {
+		padding: 14px 16px;
+		border-left: 2px solid var(--crema);
+		background: rgb(var(--brand-rgb) / 0.08);
+		color: var(--text-muted);
+	}
+
+	.kf-estimate :global(.kf-list) {
+		display: grid;
+		gap: 8px;
+		margin: 10px 0 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.kf-estimate :global(.kf-list li) {
+		display: flex;
+		gap: 10px;
+		color: var(--text-muted);
+	}
+
+	.kf-estimate :global(.kf-list li::before) {
+		content: '';
+		flex: none;
+		width: 6px;
+		height: 6px;
+		margin-top: 0.6em;
+		background: var(--crema);
+	}
+
+	.kf-estimate :global(.kf-4ds) {
+		display: grid;
+		gap: 8px;
+		margin: 10px 0 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.kf-estimate :global(.kf-4ds li) {
+		display: grid;
+		grid-template-columns: 96px 1fr auto;
+		align-items: center;
+		gap: 12px;
+		font-size: 0.92rem;
+		color: var(--text-muted);
+	}
+
+	.kf-estimate :global(.kf-4ds b) {
+		color: var(--text);
+		font-weight: 600;
+	}
+
+	.kf-estimate :global(.kf-bar) {
+		height: 8px;
+		border-radius: 999px;
+		background: rgb(var(--fg-rgb) / 0.08);
+		overflow: hidden;
+	}
+
+	.kf-estimate :global(.kf-bar i) {
+		display: block;
+		height: 100%;
+		border-radius: inherit;
+		background: var(--crema);
+		transform-origin: left;
+		animation: kf-grow 0.9s var(--ease-out) both;
+	}
+
+	@keyframes kf-grow {
+		from {
+			transform: scaleX(0);
+		}
+	}
+
+	.kf-estimate :global(.kf-small) {
+		font-size: 0.85rem;
+		color: var(--text-dim);
+	}
+
+	.kf-estimate :global(.kf-sent) {
+		display: flex;
+		gap: 10px;
+		align-items: flex-start;
+		color: var(--text);
+	}
+
+	.kf-estimate :global(.btn-row) {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 12px;
+	}
+
+	/* Mascote ---------------------------------------------------------------- */
+	.kf-stage {
+		order: -1;
+		position: relative;
+		height: 150px;
+		margin-inline: calc(-1 * var(--gutter));
+		pointer-events: none;
+	}
+
+	/* Balão das falas no celular: fixo logo abaixo do cabeçalho, aparece só quando ele
+	   fala e deixa os toques passarem (nunca cobre um botão). */
+	.kf-talk {
+		display: none;
+	}
+
+	@media (max-aspect-ratio: 9/10) {
+		.kf-talk {
+			position: fixed;
+			left: 50%;
+			top: calc(var(--header-h) + 8px);
+			z-index: 80;
+			display: inline-flex;
+			opacity: 0;
+			pointer-events: none;
+			transform: translate(-50%, -12px);
+			transition:
+				opacity 0.3s ease,
+				transform 0.4s var(--ease-out);
+		}
+
+		.kf-talk[data-talking] {
+			opacity: 1;
+			transform: translate(-50%, 0);
+			box-shadow: 0 12px 40px -12px rgb(0 0 0 / 0.6);
+		}
+	}
+
+	.kf-mascot {
+		position: absolute;
+		inset: 0;
+	}
+
+	@media (min-width: 960px) {
+		.kf-inner {
+			grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.65fr);
+			gap: 40px;
+			align-items: start;
+		}
+
+		.kf-stage {
+			order: 0;
+			position: sticky;
+			top: calc(var(--header-h) + 60px);
+			height: clamp(300px, 46vh, 460px);
+			margin: 120px 0 0;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.kf-step,
+		.kf-estimate {
+			animation: none;
+		}
+	}
+</style>

@@ -89,10 +89,21 @@ Para testar no console do navegador: `__liquid.show('rocket')` mostra uma forma,
 
 Em `src/data/site.ts`, dentro de `contact`:
 
-- `briefUrl`: o pré-orçamento com a Kafeína, a assistente de IA da Kafé (hoje `https://form.kafeapps.com.br`, o mesmo do site atual). Os botões principais ("Tirar minha ideia do papel", "Começar meu projeto", "Pedir uma proposta") levam para lá, e a página de contato o destaca acima do formulário.
+- `briefUrl`: o pré-orçamento com a Kafeína (`/orcamento`, veja abaixo). Os botões principais ("Tirar minha ideia do papel", "Começar meu projeto", "Pedir uma proposta") levam para lá, e a página de contato o destaca acima do formulário.
+- `kafeinaEndpoint`: endereço do serviço da Kafeína (pasta `workers/kafeina`), que escreve o resumo do projeto com IA e repassa o pedido ao CRM.
 - `formEndpoint`: endereço de um serviço que recebe formulários (Formspree, Web3Forms, Getform ou um endpoint próprio). Quando preenchido, as mensagens são enviadas direto do site.
-- `whatsapp`: número só com dígitos, com DDI e DDD (ex.: `5521999999999`). Ativa o botão flutuante e, se não houver `formEndpoint`, o formulário abre o WhatsApp com a mensagem pronta.
+- `whatsapp`: número só com dígitos, com DDI e DDD (ex.: `5547999999999`). Ativa o botão flutuante e, se não houver `formEndpoint`, o formulário abre o WhatsApp com a mensagem pronta.
 - `email`: usado nos links de e-mail e como último recurso do formulário.
+
+### Pré-orçamento com a Kafeína (`/orcamento`)
+
+Formulário em cinco etapas (projeto, problema, escopo, contato e estimativa), com o mascote como anfitrião: ele cumprimenta, acena que sim ao escolher o projeto, olha enquanto a pessoa escreve, se assusta com prazo urgente, balança a cabeça que não quando falta preencher algo, gira enquanto calcula e faz festa no resultado. No celular, as falas aparecem num balão logo abaixo do cabeçalho.
+
+O resultado mostra a faixa de investimento, o prazo, uma avaliação do investimento que a pessoa indicou, o escopo sugerido para a primeira versão (com itens tirados da descrição, como agenda, pagamentos ou chat) e a divisão nas 4Ds.
+
+- **Perguntas, falas e preços** ficam em `src/data/kafeina.ts`. A tabela `pricing` define investimento (em mil reais) e semanas por tipo de projeto e escopo; `showPrices: false` esconde os valores e mostra só prazo e escopo.
+- **Para onde vai o pedido:** com `kafeinaEndpoint`, o serviço da Kafeína escreve o resumo com IA e entrega o contato ao CRM (o site só diz "recebemos" quando a entrega é confirmada). Sem ele, tenta o `formEndpoint`. Sem nenhum dos dois, a pessoa envia o pré-orçamento por WhatsApp ou e-mail, com a mensagem pronta.
+- **Serviço de IA:** instruções em `workers/kafeina/README.md`. Para a IA vão só as respostas sobre o projeto (nunca nome, e-mail ou telefone).
 
 ### Publicar um case
 
@@ -123,7 +134,9 @@ O comando `npm run build` gera a pasta `dist/`, que funciona em qualquer hospeda
 ## Antes de publicar
 
 - [ ] Confirmar e-mail comercial, WhatsApp e, se possível, configurar `formEndpoint`.
-- [ ] Confirmar razão social e CNPJ exibidos no rodapé.
+- [ ] Preencher o CNPJ da Kafé Apps LTDA em `src/data/site.ts`.
+- [ ] Ajustar a tabela de preços e prazos do pré-orçamento (`pricing` em `src/data/kafeina.ts`; os valores atuais são provisórios).
+- [ ] Publicar o serviço da Kafeína (`workers/kafeina`) e preencher `kafeinaEndpoint`, ou definir outro destino para os pedidos.
 - [ ] Revisar os números "10x mais agilidade" e "até 40% mais econômico" (vieram do site atual).
 - [ ] Confirmar que todos os clientes em `src/assets/clients/` autorizam o uso do logo (vieram do site atual).
 - [ ] Revisar as respostas das perguntas frequentes (NDA, prazos, propriedade).

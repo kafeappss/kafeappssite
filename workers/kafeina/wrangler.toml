@@ -1,0 +1,13 @@
+# Serviço da Kafeína (pré-orçamento do site). Veja workers/kafeina/README.md.
+name = "kafeina"
+main = "src/index.ts"
+compatibility_date = "2026-09-01"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+# Endereços que podem chamar o serviço (o site e o ambiente local), separados por vírgula.
+ALLOWED_ORIGINS = "https://kafeapps.com.br,https://www.kafeapps.com.br,http://localhost:4321"
+
+# Segredos (não ficam neste arquivo):
+#   npx wrangler secret put ANTHROPIC_API_KEY
+#   npx wrangler secret put LEAD_WEBHOOK_URL   (opcional: webhook do CRM)
