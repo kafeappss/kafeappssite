@@ -244,11 +244,11 @@ float eyes(vec2 p) {
 	return min(left, right) * s;
 }
 
-// Fundo: só uma névoa suave que flui devagar e uma luz que passeia, na cor do líquido.
+// Fundo: só uma fumaça quente que flui devagar e uma luz que passeia, na cor do líquido.
 vec3 background(vec2 p, vec2 uv, float aura) {
 	vec2 sm = texture2D(uSmoke, uv).rg;
-	vec3 haze = mix(vec3(0.93, 0.95, 1.0), uTint, 0.35);
-	vec3 col = haze * sm.r * (0.07 + 0.04 * aura) + uTint * 0.07 * sm.g;
+	vec3 warm = mix(vec3(1.0, 0.94, 0.86), uTint, 0.35);
+	vec3 col = warm * sm.r * (0.07 + 0.04 * aura) + uTint * 0.07 * sm.g;
 	// Halo da cor-assinatura em volta do cursor.
 	col += uTint * exp(-dot2(p - uPtr.xy) * 5.0) * 0.035 * uPtr.z;
 	return col;
@@ -303,7 +303,7 @@ void main() {
 		float top = clamp((p.y - uBox.y) / boxH, 0.0, 1.0);
 		// Quanto do ponto é superfície (e não forma): define o degradê e o sumiço para baixo.
 		float isSurf = smoothstep(-0.03, 0.03, dShape - dSurf);
-		vec3 fill = uTint * mix(0.9 + 0.1 * top, 1.0 - 0.4 * smoothstep(0.0, band, depth), isSurf);
+		vec3 fill = uTint * mix(0.84 + 0.16 * top, 1.0 - 0.4 * smoothstep(0.0, band, depth), isSurf);
 		float reach = uExpr2.z > 0.01 ? 4.0 : 1.5;
 		if (d > -edgeW * reach) {
 			float e = px;
@@ -320,7 +320,7 @@ void main() {
 			if (glossy > 0.01) {
 				float inside = -d;
 				float shine = smoothstep(edgeW * 1.2, edgeW * 1.8, inside) * (1.0 - smoothstep(edgeW * 2.4, edgeW * 3.4, inside));
-				fill = mix(fill, vec3(1.0), shine * smoothstep(0.6, 0.95, facing) * 0.6 * glossy);
+				fill = mix(fill, vec3(1.0, 0.97, 0.92), shine * smoothstep(0.6, 0.95, facing) * 0.6 * glossy);
 			}
 		}
 		float alpha = (1.0 - smoothstep(-px, px, d)) * mix(opacity, 1.0 - smoothstep(band * 0.55, band, depth), isSurf);

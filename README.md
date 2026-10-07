@@ -4,13 +4,13 @@ Site institucional da [Kafé Apps](https://kafeapps.com.br): software house de N
 
 Feito com [Astro](https://astro.build), gera um site 100% estático (HTML, CSS e um pouco de JavaScript): rápido, bom para SEO e fácil de hospedar em qualquer lugar.
 
-## Identidade visual: "Ônix & Pérola"
+## Identidade visual: "Espresso & Crema"
 
-- Preto e branco premium, como a marca (o K branco sobre preto): **fundo ônix** (`#08080a`), **texto branco-pérola** (`#f4f4f2`) e cinzas neutros.
-- A assinatura é o próprio branco: o mascote e as ilustrações são brancos com olhos pretos, e os botões principais são brancos com texto preto. A segunda linha dos títulos fica em **prata escovado** (degradê `--gradient-silver`).
+- **Fundo espresso** (`#100c0a`), **texto cor de leite** (`#f4eee6`) e **uma única cor-assinatura, a crema** (`#f4a957`).
+- A crema é a mesma no mascote, no líquido que vira as ilustrações, na segunda linha dos títulos, nos botões e nos detalhes: é ela que amarra tudo.
 - Ilustrações em 2D sólido: cor chapada e bordas nítidas (sem "metal líquido"). Entre uma seção e outra, o desenho se recolhe numa bolinha, que salta em arco até o próximo espaço, achata ao pousar e "estoura" no novo desenho: as peças saem do centro uma a uma, passam um pouco do ponto e assentam (os recortes, como os do K, são entalhados por último). Se o desenho anterior já saiu da tela, o novo nasce direto no lugar.
 - O estilo antigo, com gotas que se fundem e a faixa de café na abertura, continua disponível: troque `data-liquid-style="solid"` por `"liquid"` na tag `<html>` em `src/layouts/Base.astro`.
-- Todas as cores ficam no topo de `src/styles/global.css`. Para trocar a cor-assinatura, mude `--signature`, `--brand-rgb` e `--liquid` (hex de 6 dígitos).
+- Todas as cores ficam no topo de `src/styles/global.css`. Para trocar a cor-assinatura, mude `--crema`, `--brand-rgb` e `--liquid` (hex de 6 dígitos).
 
 ## Destaques
 
@@ -57,7 +57,7 @@ npm run check    # verificação de tipos
 | Método, formatos de trabalho, comparativo e perguntas frequentes | `src/data/method.ts` |
 | Artigos do blog | `src/content/blog/*.md` |
 | Cases | `src/content/cases/*.md` (use `_modelo-de-case.md` como base) |
-| Cores (ônix, pérola e prata), fontes e espaçamentos | `src/styles/global.css` (variáveis no topo) |
+| Cores (espresso, leite e crema), fontes e espaçamentos | `src/styles/global.css` (variáveis no topo) |
 | Logos (KAFÉ APPS e o símbolo K) | `src/assets/brand/` e `public/favicon.svg` |
 | Arquivos da marca para download (K e logo, branco e preto, sem fundo) | `public/brand/` |
 

@@ -27,7 +27,7 @@
 	if (nav && ruler && list && tip && sections.length >= 3) {
 		const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 		/** Distância entre os tracinhos (px). */
-		const SPACING = 18;
+		const SPACING = 11;
 		/** Linha da tela (45% da altura) que define em qual seção a página está. */
 		const LINE = 0.45;
 		const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
@@ -129,26 +129,26 @@
 			ticks.forEach((tick, index) => {
 				const d = index - lens;
 				// Lupa: cresce perto do centro e encolhe num "vale" logo antes e depois.
-				const bell = Math.exp(-((d / 4.2) ** 2));
-				const dip = Math.exp(-(((Math.abs(d) - 8.5) / 2.2) ** 2));
-				let length = 12 * (1 - 0.82 * dip) + 34 * bell;
-				let thickness = 2;
-				let alpha = 0.24 + 0.5 * bell;
+				const bell = Math.exp(-((d / 3.2) ** 2));
+				const dip = Math.exp(-(((Math.abs(d) - 6.5) / 1.7) ** 2));
+				let length = 8 * (1 - 0.8 * dip) + 18 * bell;
+				let thickness = 1.5;
+				let alpha = 0.26 + 0.5 * bell;
 				const major = tick.classList.contains('is-major');
 				const dot = major && bell < 0.12;
 				if (dot) {
-					length = thickness = 5;
+					length = thickness = 4;
 					alpha = 0.7;
 				} else if (major) {
-					length += 6;
-					thickness = 3;
+					length += 4;
+					thickness = 2;
 					alpha = Math.max(alpha, 0.85);
 				}
 				if (owner[index] === active && bell > 0.05) alpha = Math.min(1, alpha + 0.25);
 				const isCurrent = index === current;
 				if (isCurrent) {
-					length = Math.max(length, 24);
-					thickness = 4;
+					length = Math.max(length, 16);
+					thickness = 3;
 					alpha = 1;
 				}
 				tick.style.width = `${length.toFixed(1)}px`;
@@ -231,20 +231,22 @@
 </script>
 
 <style>
+	/* Régua compacta, centralizada na altura da tela. */
 	.rail {
 		position: fixed;
-		top: calc(var(--header-h) + 14px);
-		bottom: 22px;
+		top: 50%;
 		right: 0;
 		z-index: 70;
 		display: none;
-		width: 84px;
+		width: 60px;
+		height: min(50vh, 440px);
+		transform: translateY(-50%);
 	}
 
 	.rail-ruler {
 		position: absolute;
-		inset: 0 22px 0 auto;
-		width: 60px;
+		inset: 0 20px 0 auto;
+		width: 36px;
 		pointer-events: none;
 	}
 
@@ -265,7 +267,7 @@
 
 	.rail-ruler :global(.tick.is-current) {
 		background: var(--accent);
-		box-shadow: 0 0 12px rgb(var(--brand-rgb) / 0.35);
+		box-shadow: 0 0 10px rgb(var(--brand-rgb) / 0.35);
 	}
 
 	.rail-links {
@@ -277,8 +279,8 @@
 	.rail-links :global(.rail-dot) {
 		position: absolute;
 		right: 12px;
-		width: 34px;
-		height: 18px;
+		width: 26px;
+		height: 12px;
 		border-radius: var(--radius-sm);
 		transform: translateY(-50%);
 	}
@@ -290,7 +292,7 @@
 
 	.rail-tip {
 		position: absolute;
-		right: 92px;
+		right: 62px;
 		padding: 6px 12px;
 		border: 1px solid var(--line-strong);
 		border-radius: 999px;

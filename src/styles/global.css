@@ -1,56 +1,53 @@
 /* ==========================================================================
    Kafé Apps — sistema visual
-   Preto e branco premium, como a marca (o K branco sobre preto).
+   Monocromático: preto, branco e uma escala de cinzas, como a marca.
    Para ajustar as cores, altere apenas os tokens abaixo.
    ========================================================================== */
 
 :root {
-	/* Identidade "Ônix & Pérola": fundo quase preto, texto branco-pérola e cinzas
-	   neutros. A assinatura é o próprio branco (mascote, ilustrações e botões),
-	   com a segunda linha dos títulos em prata. */
-	--onyx: #08080a;
-	--pearl: #f4f4f2;
-	--signature: #f4f4f2;
-	--signature-strong: #ffffff;
-	--ink: #0b0b0d;
-	--fg-rgb: 244 244 242;
-	--bg-rgb: 8 8 10;
-	--brand-rgb: 255 255 255;
+	/* Identidade "Espresso & Crema": fundo de café, texto cor de leite e uma
+	   cor-assinatura (crema) que amarra mascote, líquido, destaques e botões. */
+	--espresso: #100c0a;
+	--milk: #f4eee6;
+	--crema: #f4a957;
+	--crema-strong: #ffbd73;
+	--ink: #1b120c;
+	--fg-rgb: 244 238 230;
+	--bg-rgb: 16 12 10;
+	--brand-rgb: 244 169 87;
 
-	--black: var(--onyx);
-	--white: var(--pearl);
+	--black: var(--espresso);
+	--white: var(--milk);
 	/* Cor do líquido (formas e mascote) e dos olhos do mascote. Use hex de 6 dígitos. */
-	--liquid: #f4f4f2;
-	--liquid-ink: #0b0b0d;
-	--gray-100: #ececee;
-	--gray-200: #d3d3d7;
-	--gray-300: #a8a9ae;
-	--gray-400: #85868c;
-	--gray-500: #66676c;
-	--gray-600: #48494d;
-	--gray-700: #2b2c2f;
-	--gray-800: #1b1c1e;
-	--gray-900: #121214;
+	--liquid: #f4a957;
+	--liquid-ink: #1b120c;
+	--gray-100: #efe8de;
+	--gray-200: #d8cfc3;
+	--gray-300: #b4aa9d;
+	--gray-400: #8e8478;
+	--gray-500: #6d645a;
+	--gray-600: #4e463e;
+	--gray-700: #2f2924;
+	--gray-800: #1f1a16;
+	--gray-900: #15110e;
 
-	--bg: var(--onyx);
-	--bg-2: #0b0b0d;
-	--surface: #101012;
-	--surface-2: #161618;
-	--surface-3: #222225;
+	--bg: var(--espresso);
+	--bg-2: #140f0c;
+	--surface: #18130f;
+	--surface-2: #201a15;
+	--surface-3: #2c241e;
 	--line: rgb(var(--fg-rgb) / 0.1);
 	--line-strong: rgb(var(--fg-rgb) / 0.18);
 
-	--text: var(--pearl);
-	--text-muted: rgb(var(--fg-rgb) / 0.72);
-	--text-dim: rgb(var(--fg-rgb) / 0.54);
-	/* Segunda cor das manchetes (o trecho entre <em>): prata. */
-	--text-quiet: #9a9ca3;
-	--accent: var(--signature);
+	--text: var(--milk);
+	--text-muted: rgb(var(--fg-rgb) / 0.74);
+	--text-dim: rgb(var(--fg-rgb) / 0.56);
+	/* Segunda cor das manchetes (o trecho entre <em>): a cor-assinatura. */
+	--text-quiet: var(--crema);
+	--accent: var(--crema);
 
-	/* Prata escovado: segunda linha dos títulos e detalhes metálicos. */
-	--gradient-silver: linear-gradient(176deg, #f1f1f3 8%, #b6b8be 52%, #7f828a 96%);
-	--gradient-metal: linear-gradient(100deg, #ffffff 0%, #c4c6cc 48%, #7f828a 100%);
-	--glow: 0 0 0 1px rgb(var(--brand-rgb) / 0.3), 0 18px 50px -22px rgb(var(--brand-rgb) / 0.4);
+	--gradient-metal: linear-gradient(100deg, var(--milk) 0%, #f8d3a4 45%, var(--crema) 100%);
+	--glow: 0 0 0 1px rgb(var(--brand-rgb) / 0.4), 0 20px 60px -20px rgb(var(--brand-rgb) / 0.5);
 
 	/* Tipografia */
 	/* Inter no texto; Gilroy nos títulos (Figtree segura o lugar até os
@@ -235,16 +232,10 @@ ol[role='list'] {
 	letter-spacing: -0.02em;
 }
 
-/* Manchetes em dois tons: o trecho entre <em> fica em prata escovado. */
+/* Manchetes em dois tons: o trecho entre <em> fica em cinza. */
 :is(.display, .h1, .h2, .h3) em {
 	font-style: normal;
 	color: var(--text-quiet);
-	background: var(--gradient-silver);
-	-webkit-background-clip: text;
-	background-clip: text;
-	-webkit-text-fill-color: transparent;
-	-webkit-box-decoration-break: clone;
-	box-decoration-break: clone;
 }
 
 .lead {
@@ -414,7 +405,7 @@ ol[role='list'] {
    -------------------------------------------------------------------------- */
 
 .btn {
-	--btn-bg: var(--signature);
+	--btn-bg: var(--crema);
 	--btn-fg: var(--ink);
 	position: relative;
 	display: inline-flex;
@@ -444,7 +435,7 @@ ol[role='list'] {
 	position: absolute;
 	inset: 0;
 	z-index: -1;
-	background: var(--signature-strong);
+	background: var(--crema-strong);
 	opacity: 0;
 	transition: opacity 0.4s ease;
 }
@@ -531,7 +522,7 @@ ol[role='list'] {
 	gap: 10px;
 	padding: 11px 18px 11px 14px;
 	border-radius: 999px;
-	border: 1px solid rgb(var(--brand-rgb) / 0.28);
+	border: 1px solid rgb(var(--brand-rgb) / 0.35);
 	background: rgb(var(--bg-rgb) / 0.85);
 	color: var(--text);
 	font-size: 0.86rem;
@@ -545,7 +536,7 @@ ol[role='list'] {
 }
 
 .talk-pill:hover {
-	border-color: var(--signature);
+	border-color: var(--crema);
 	background: rgb(var(--brand-rgb) / 0.12);
 }
 
@@ -558,8 +549,8 @@ ol[role='list'] {
 	max-width: min(86vw, 360px);
 	padding: 12px 18px 12px 14px;
 	border-radius: 20px;
-	border-color: var(--signature);
-	background: var(--pearl);
+	border-color: var(--crema);
+	background: var(--milk);
 	color: var(--ink);
 	line-height: 1.35;
 	text-align: left;
@@ -579,7 +570,7 @@ ol[role='list'] {
 	width: 4px;
 	height: 11px;
 	border-radius: 1px;
-	background: var(--signature);
+	background: var(--crema);
 	transform: skewX(-16deg);
 	animation: talk-blink 4s infinite;
 }
@@ -606,7 +597,7 @@ ol[role='list'] {
 	border-radius: var(--radius);
 	background:
 		radial-gradient(420px circle at var(--mx) var(--my), rgb(var(--fg-rgb) / 0.05), transparent 60%),
-		linear-gradient(180deg, rgb(24 24 27 / 0.78), rgb(13 13 15 / 0.78));
+		linear-gradient(180deg, rgb(32 26 21 / 0.78), rgb(20 16 13 / 0.78));
 	border: 1px solid var(--line);
 	backdrop-filter: blur(18px);
 	-webkit-backdrop-filter: blur(18px);
