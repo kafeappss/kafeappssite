@@ -8,7 +8,7 @@ Feito com [Astro](https://astro.build), gera um site 100% estático (HTML, CSS e
 
 - **Fundo espresso** (`#100c0a`), **texto cor de leite** (`#f4eee6`) e **uma única cor-assinatura, a crema** (`#f4a957`).
 - A crema é a mesma no mascote, no líquido que vira as ilustrações, na segunda linha dos títulos, nos botões e nos detalhes: é ela que amarra tudo.
-- Ilustrações em 2D sólido: cor chapada e bordas nítidas. Entre uma seção e outra, as peças se desmontam e se remontam no próximo desenho (sem "metal líquido").
+- Ilustrações em 2D sólido: cor chapada e bordas nítidas (sem "metal líquido"). Entre uma seção e outra, o desenho se recolhe numa bolinha, que salta em arco até o próximo espaço, achata ao pousar e "estoura" no novo desenho: as peças saem do centro uma a uma, passam um pouco do ponto e assentam (os recortes, como os do K, são entalhados por último). Se o desenho anterior já saiu da tela, o novo nasce direto no lugar.
 - O estilo antigo, com gotas que se fundem e a faixa de café na abertura, continua disponível: troque `data-liquid-style="solid"` por `"liquid"` na tag `<html>` em `src/layouts/Base.astro`.
 - Todas as cores ficam no topo de `src/styles/global.css`. Para trocar a cor-assinatura, mude `--crema`, `--brand-rgb` e `--liquid` (hex de 6 dígitos).
 
@@ -17,7 +17,8 @@ Feito com [Astro](https://astro.build), gera um site 100% estático (HTML, CSS e
 - **Líquido que explica o conteúdo (WebGL)**: um único corpo de líquido, em estilo 2D bem acabado (cor chapada, bordas nítidas, brilho suave), acompanha a navegação e vira o desenho do que está escrito: um relógio no problema do tempo, barras de crescimento na virada, um ciclo na metodologia, o K da Kafé no "Sobre" e uma xícara no convite final. Cada forma tem um espaço reservado no layout, rola junto com o conteúdo e nunca fica por cima do texto. Nos cartões de serviço, basta passar o mouse para o líquido virar celular, navegador, IA, foguete, rede ou layout. Veja "Formas do líquido" abaixo.
 - **Mascote com personalidade**: no início da home (e tristinho na página 404), com os olhos inspirados nos recortes do K. Ele acompanha o cursor, pisca, olha para onde a pessoa clica e muda de expressão:
   - clique: uma reação diferente a cada vez (feliz, piscadinha, surpreso, apaixonado); cliques demais o deixam tonto e depois bravo;
-  - clique duplo: cambalhota; arrastar (mouse): estica e volta com um "boing"; toque longo (celular): enche de ar;
+  - clique duplo: cambalhota; toque longo (celular): enche de ar;
+  - arrastar (mouse): puxa-puxa. O corpo fica no lugar e se inclina, e o pedaço que você segura sai dele preso por um "pescoço" que afina e resiste conforme estica (perto do limite, ele treme de esforço). Ao soltar, a ponta volta num estalo e o corpo achata, balança e assenta;
   - mouse rápido por cima: cócegas; mouse devagar: carinho;
   - mouse no botão principal: apaixonado; em temas de IA: olhos de estrela;
   - cursor sai da página: fica triste e comemora quando ele volta; voltar para a aba: comemora;
@@ -77,7 +78,7 @@ Cada seção diz qual desenho o líquido deve formar enquanto ela está no meio 
 - `data-horizon`: no estilo `liquid`, desenha a faixa de café no fim da seção (`data-horizon="0.1"` ajusta a altura).
 - `data-mascot-look="love"` ou `"star"`: o mascote olha para o elemento e reage quando o mouse passa por ele.
 
-Para testar no console do navegador: `__liquid.show('rocket')` mostra uma forma, `__liquid.react('love')` faz o mascote reagir (`happy`, `wink`, `surprise`, `love`, `dizzy`, `angry`, `giggle`, `spin`, `star`, `sad`, `pet`, `yawn`, `inflate`, `party`) `__liquid.advance(3)` adianta a animação em 3 segundos e `__liquid.tint('#3b6ef0', '#ffffff')` testa outra cor para o líquido e os olhos.
+Para testar no console do navegador: `__liquid.show('rocket')` mostra uma forma, `__liquid.react('love')` faz o mascote reagir (`happy`, `wink`, `surprise`, `love`, `dizzy`, `angry`, `giggle`, `spin`, `star`, `sad`, `pet`, `yawn`, `inflate`, `party`) `__liquid.advance(3)` adianta a animação em 3 segundos, `__liquid.state()` mostra a forma atual e a fase da transformação e `__liquid.tint('#3b6ef0', '#ffffff')` testa outra cor para o líquido e os olhos.
 
 ### Fontes
 

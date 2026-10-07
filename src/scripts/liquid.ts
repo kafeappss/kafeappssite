@@ -5,7 +5,9 @@
  * - data-liquid="clock" (ou "cup bottom": forma + posicionamento) numa seção:
  *   quando ela chega ao centro da tela, o líquido escorre até virar essa forma.
  * - data-liquid-anchor num elemento dentro da seção: o espaço onde a forma mora.
- *   Ela rola junto com o conteúdo e nunca fica por cima do texto.
+ *   Ela rola grudada no conteúdo e nunca fica por cima do texto.
+ * - Ao trocar de forma (estilo sólido), a atual se recolhe numa bolinha que salta
+ *   até o novo espaço e estoura na forma nova (veja "transformações" abaixo).
  * - data-liquid-hover="phone" num cartão: ao passar o mouse, o líquido vira a
  *   forma do cartão (no celular, vale o cartão que estiver no meio da tela).
  * - data-horizon numa seção: desenha o horizonte (a borda de um planeta) no fim dela.
@@ -18,6 +20,10 @@
 import { shapes, type Placement, type Prim, type ShapeDef } from './shapes';
 
 const SLOTS = 14;
+/** Peças reservadas: a bola das transformações e o "puxa-puxa" do mascote (pescoço e ponta). */
+const BALL = 11;
+const NECK = 12;
+const BLOB = 13;
 const STORAGE_KEY = 'kafe:liquid:v3';
 
 const VERTEX_SHADER = /* glsl */ `
@@ -103,7 +109,7 @@ uniform float uWob;
 uniform float uCss;     // unidades do WebGL por pixel CSS
 uniform vec2 uLight;
 uniform vec4 uA[SLOTS];
-uniform vec4 uB[SLOTS];
+uniform vec4 uB[SLOTS];  // raio do canto, rotação, contorno, operação (+1 peça, -1 buraco; acima de 1 = fusão própria)
 uniform vec3 uCur;
 uniform vec4 uEye;     // x, y, raio do corpo, visibilidade
 uniform vec4 uEye2;    // olhar x, olhar y, abertura esquerda, abertura direita
@@ -181,8 +187,10 @@ float field(vec2 p) {
 		// Peças longe deste ponto não mudam o resultado: pula.
 		float bound = length(p - a.xy) - length(a.zw) - b.z;
 		if (b.w > 0.0) {
-			if (bound > d + uK) continue;
-			d = smin(d, prim(p, a, b), uK);
+			// Fusão própria da peça (|op| - 1): o "puxa-puxa" e as transformações ficam gotosos.
+			float k = max(uK, b.w - 1.0);
+			if (bound > d + k) continue;
+			d = smin(d, prim(p, a, b), k);
 		} else {
 			if (bound > uK * 0.6 - d) continue;
 			d = smax(d, -prim(p, a, b), uK * 0.6);
@@ -346,11 +354,13 @@ type Slot = {
 	freqX: number;
 	freqY: number;
 	drag: number;
+	/** Fusão própria da peça (0 = a da forma). */
+	goo: number;
 };
 
 type Formation = { name: string; def: ShapeDef; place: Placement };
 
-type Place = { cx: number; cy: number; s: number; sx: number; view: boolean; dim: number; anchored: boolean };
+type Place = { cx: number; cy: number; s: number; sx: number; view: boolean; dim: number; anchored: boolean; anchor?: HTMLElement };
 
 type Expression = { happy: number; surprise: number; angry: number; love: number; dizzy: number; star: number; sad: number };
 
@@ -585,6 +595,12 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 		maxScroll: 0,
 		welcomed: false,
 		shadow: [0, 0, 0, 0] as [number, number, number, number],
+		/** Puxa-puxa: direção e quanto já esticou (0 a 1); "snapping" = a ponta voltando. */
+		pullAngle: 0,
+		pull: 0,
+		snapping: false,
+		/** Até quando o corpo balança solto depois do estalo. */
+		snapUntil: -10,
 		/** Humor da página (ex.: data-mascot-mood="sad" na 404). */
 		mood: document.querySelector<HTMLElement>('[data-mascot-mood]')?.dataset.mascotMood ?? '',
 	};
@@ -599,6 +615,7 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 		freqX: 0.18 + random(i + 31) * 0.22,
 		freqY: 0.16 + random(i + 41) * 0.22,
 		drag: 0.6 + random(i + 51) * 0.8,
+		goo: 0,
 	}));
 	const cursor = { x: 0, y: 0, r: 0, vx: 0, vy: 0, vr: 0 };
 	const pointer = { x: 0, y: 0, active: false, lastMove: 0, lightX: 0, lightY: 0, speed: 0, glow: 0 };
@@ -676,6 +693,7 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 						view: false,
 						dim: 1,
 						anchored: true,
+						anchor,
 					};
 				}
 			}
@@ -832,6 +850,8 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 			const saved = JSON.parse(sessionStorage.getItem(STORAGE_KEY) ?? 'null');
 			if (!saved || Date.now() - saved.savedAt > 15 * 60 * 1000) return false;
 			time = Number(saved.time) || 0;
+			// Mesma família de forma na página nova: as peças só deslizam, sem se recolher.
+			if (typeof saved.family === 'string') morph.family = saved.family;
 			(saved.slots as { v: number[]; op: number }[]).slice(0, SLOTS).forEach((s, i) => {
 				slots[i].v = s.v.slice(0, 7);
 				slots[i].op = s.op;
@@ -846,7 +866,7 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 		try {
 			sessionStorage.setItem(
 				STORAGE_KEY,
-				JSON.stringify({ savedAt: Date.now(), time, slots: slots.map((s) => ({ v: s.v, op: s.op })) }),
+				JSON.stringify({ savedAt: Date.now(), time, family: morph.family, slots: slots.map((s) => ({ v: s.v, op: s.op })) }),
 			);
 		} catch {
 			// Armazenamento indisponível (aba anônima, por exemplo): sem problemas.
@@ -919,7 +939,8 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 		document.documentElement.addEventListener('pointerleave', () => {
 			pointer.active = false;
 			// O cursor saiu da página: ele fica tristinho.
-			if (finePointer && eye.alpha > 0.5 && time > mascot.awayReadyAt && !mascot.sleeping) {
+			// (Soltar o mascote fora da janela não conta: ele ainda está balançando.)
+			if (finePointer && eye.alpha > 0.5 && time > mascot.awayReadyAt && !mascot.sleeping && !mascot.dragging && time > mascot.snapUntil) {
 				mascot.away = true;
 				react('sad');
 				emit('away');
@@ -981,9 +1002,20 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 				body.vel[3] -= 1.0 * R;
 				burst(2.4 * R);
 				break;
+			case 'boing': {
+				// Fim do puxa-puxa: o corpo volta com tudo e passa um pouco do ponto.
+				const ux = Math.cos(mascot.pullAngle);
+				const uy = Math.sin(mascot.pullAngle);
+				const recoil = (0.6 + mascot.pull) * R;
+				body.vel[0] -= ux * recoil * 2.2;
+				body.vel[1] -= uy * recoil * 2.2;
+				body.vel[2] -= recoil * 2.4;
+				body.vel[3] += recoil * 1.6;
+				burst(3 * R);
+				break;
+			}
 			case 'surprise':
 			case 'wake':
-			case 'boing':
 				body.vel[3] += 1.2 * R;
 				body.vel[2] -= 0.7 * R;
 				body.vel[1] += 0.8 * R;
@@ -1064,7 +1096,14 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 			if (!mascot.pressed || mascot.dragging) return;
 			if (Math.hypot(event.clientX - mascot.downX, event.clientY - mascot.downY) > 8) {
 				mascot.dragging = true;
+				mascot.snapping = false;
 				hit.dataset.dragging = 'true';
+				// A ponta nasce dentro do corpo, onde a pessoa segurou.
+				const grab = toWorld(mascot.downX, mascot.downY);
+				const tip = slots[BLOB];
+				tip.v = [grab.x, grab.y, 0, 0, 0, 0, 0];
+				tip.vel = [0, 0, 0, 0, 0, 0, 0];
+				tip.op = 1;
 			}
 		});
 		const release = () => {
@@ -1072,6 +1111,8 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 			mascot.pressed = false;
 			if (!mascot.dragging) return;
 			mascot.dragging = false;
+			mascot.snapping = true;
+			mascot.snapUntil = time + 0.9;
 			delete hit.dataset.dragging;
 			hit.dataset.dragEnd = String(performance.now());
 			react('boing');
@@ -1159,21 +1200,42 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 				target[3] *= 0.95 + Math.sin(time * 1.2) * 0.015;
 			}
 			if (mascot.dragging) {
+				// Puxa-puxa: o corpo fica no lugar e só se inclina; o pedaço que a pessoa
+				// segura sai dele, preso por um "pescoço" que afina conforme estica.
 				const dx = pointer.x - target[0];
 				const dy = pointer.y - target[1];
 				const len = Math.hypot(dx, dy) || 1e-6;
-				const reach = Math.min(len, R0 * 1.8);
-				const stretch = reach / (R0 * 1.8);
-				target[0] += (dx / len) * reach * 0.5;
-				target[1] += (dy / len) * reach * 0.5;
-				target[2] = R0 * (1 + 0.6 * stretch);
-				target[3] = R0 * (1 - 0.24 * stretch);
+				const ux = dx / len;
+				const uy = dy / len;
+				const limit = R0 * 2.6;
+				// Quanto mais estica, mais resiste (e nunca passa do limite).
+				const reach = limit * Math.tanh(len / limit);
+				const pull = reach / limit;
+				mascot.pull = pull;
+				mascot.pullAngle = Math.atan2(dy, dx);
+				const tip = out[BLOB];
+				const tipR = R0 * (0.46 - 0.16 * pull);
+				tip.v = [target[0] + ux * reach, target[1] + uy * reach, tipR, tipR, tipR, 0, 0];
+				tip.op = 1;
+				target[0] += ux * reach * 0.16;
+				target[1] += uy * reach * 0.16;
+				target[2] = R0 * (1 + 0.1 * pull);
+				target[3] = R0 * (1 - 0.1 * pull);
 				target[4] = Math.min(target[2], target[3]);
-				target[5] = Math.atan2(dy, dx);
-				for (let i = 1; i < 6; i++) {
-					out[i].v[0] += (pointer.x - out[i].v[0]) * 0.25;
-					out[i].v[1] += (pointer.y - out[i].v[1]) * 0.25;
-				}
+				target[5] = mascot.pullAngle;
+				// Perto do limite, ele treme de esforço.
+				const strain = Math.max(0, pull - 0.6) * Math.sin(time * 47) * 0.05 * R0;
+				target[0] -= uy * strain;
+				target[1] += ux * strain;
+			} else if (mascot.snapping) {
+				// Soltou: a ponta volta para o corpo num estalo.
+				out[BLOB].v = [body[0], body[1], 0, 0, 0, 0, 0];
+				out[BLOB].op = 1;
+				if (slots[BLOB].v[2] < 0.003) mascot.snapping = false;
+			}
+			if (time < mascot.snapUntil) {
+				// O balanço depois do estalo acontece na direção em que ele foi puxado.
+				target[5] = mascot.pullAngle;
 			}
 
 			// Cócegas (mouse rápido por cima) e carinho (mouse devagar por cima).
@@ -1221,7 +1283,7 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 			}
 		}
 
-		mascot.boost += dt * (active === 'dizzy' ? 3.2 : active === 'giggle' || active === 'happy' || active === 'party' ? 1.2 : 0);
+		mascot.boost += dt * (active === 'dizzy' ? 3.2 : active === 'giggle' || active === 'happy' || active === 'party' || mascot.dragging ? 1.2 : 0);
 
 		// Cambalhota: os olhos dão uma volta completa (duas na festa).
 		const ease = (x: number) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
@@ -1298,7 +1360,9 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 		}
 		eye.gx += (gx - eye.gx) * Math.min(1, dt * 6);
 		eye.gy += (gy - eye.gy) * Math.min(1, dt * 6);
-		eye.alpha += ((visibleMascot ? 1 : 0) - eye.alpha) * Math.min(1, dt * 4);
+		// Os olhos só aparecem quando o corpo já "estourou" da bolinha (e somem rápido quando ele se recolhe).
+		const eyesOn = visibleMascot && morphDone(0);
+		eye.alpha += ((eyesOn ? 1 : 0) - eye.alpha) * Math.min(1, dt * (eyesOn ? 5 : 12));
 
 		// Sombra no chão (só no estilo sólido): fica no lugar e encolhe quando ele pula.
 		if (solid && visibleMascot) {
@@ -1308,6 +1372,267 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 		} else {
 			mascot.shadow[3] += (0 - mascot.shadow[3]) * Math.min(1, dt * 6);
 		}
+	}
+
+	// ------------------------------------------------------- transformações
+	/*
+	 * Estilo sólido: ao trocar de forma, a atual se recolhe numa bolinha, a bolinha
+	 * viaja até o novo lugar (achatando na direção do movimento) e "estoura" na forma
+	 * nova: as peças saem do centro uma a uma, passam um pouco do ponto e assentam.
+	 * Enquanto isso, as peças se fundem como goma; no fim, as junções voltam a ser firmes.
+	 */
+	type MorphPhase = 'idle' | 'gather' | 'travel' | 'pop' | 'vanish';
+	const morph = {
+		phase: 'idle' as MorphPhase,
+		/** Família da forma atual (cycle-1 e cycle-2 são a mesma: só trocam o destaque). */
+		family: '',
+		since: 0,
+		cx: 0,
+		cy: 0,
+		/** Escala da forma que se recolheu. */
+		size: 0.3,
+		ordered: false,
+		end: 0,
+		/** Salto da bolinha: de onde saiu, quanto dura e a velocidade no quadro anterior. */
+		fromX: 0,
+		fromY: 0,
+		dur: 0.3,
+		vx: 0,
+		vy: 0,
+		delays: new Array<number>(SLOTS).fill(-1),
+		lit: new Array<boolean>(SLOTS).fill(false),
+	};
+	const springK = new Float32Array(SLOTS);
+	const springC = new Float32Array(SLOTS);
+	const seen = (v: number[]) => Math.max(v[2], v[3]) > 0.004;
+	const familyOf = (f: Formation) => (solid && f.place === 'view' ? 'none' : f.name.replace(/-\d+$/, ''));
+
+	function setPhase(phase: MorphPhase, place?: Place) {
+		morph.phase = phase;
+		morph.since = time;
+		if (phase === 'pop') morph.ordered = false;
+		if (phase === 'travel' && place) {
+			const ball = slots[BALL].v;
+			morph.fromX = ball[0];
+			morph.fromY = ball[1];
+			morph.dur = clamp(0.2 + Math.hypot(place.cx - ball[0], place.cy - ball[1]) * 0.16, 0.22, 0.5);
+		}
+	}
+
+	/** A peça i já saiu da bolinha (ou não há transformação em andamento). */
+	function morphDone(i: number) {
+		if (morph.phase === 'idle') return true;
+		return morph.phase === 'pop' && morph.lit[i] && time - morph.since > morph.delays[i] + 0.12;
+	}
+
+	function checkMorph(previous: Place) {
+		if (!solid || reducedMotion) return;
+		const family = familyOf(formation);
+		if (family === morph.family) return;
+		morph.family = family;
+		if (mascot.dragging) {
+			mascot.dragging = false;
+			mascot.pressed = false;
+			if (hit) delete hit.dataset.dragging;
+		}
+		mascot.snapping = false;
+		// Já é uma bolinha a caminho: só muda o destino.
+		if (morph.phase === 'gather' || morph.phase === 'travel') {
+			if (family === 'none' && morph.phase === 'travel') setPhase('vanish');
+			return;
+		}
+		// Centro do que está visível agora (pesado pela área de cada peça).
+		let sx = 0;
+		let sy = 0;
+		let area = 0;
+		let onScreen = false;
+		for (const slot of slots) {
+			if (slot.op < 0 || !seen(slot.v)) continue;
+			const a = slot.v[2] * slot.v[3] + 1e-4;
+			sx += slot.v[0] * a;
+			sy += slot.v[1] * a;
+			area += a;
+			const reach = Math.hypot(slot.v[2], slot.v[3]) + slot.v[6];
+			if (Math.abs(slot.v[0]) < aspect + reach && Math.abs(slot.v[1]) < 1 + reach) onScreen = true;
+		}
+		if (area > 0 && !onScreen) {
+			// A forma antiga já saiu da tela: some de vez, e a nova nasce no lugar.
+			for (const slot of slots) {
+				slot.v[2] = slot.v[3] = slot.v[4] = slot.v[6] = 0;
+				slot.vel = [0, 0, 0, 0, 0, 0, 0];
+			}
+			area = 0;
+		}
+		if (area === 0) {
+			// Nada na tela: a forma nova já nasce (ou não há o que fazer).
+			setPhase(family === 'none' ? 'idle' : 'pop');
+			return;
+		}
+		morph.cx = sx / area;
+		morph.cy = sy / area;
+		morph.size = previous.view ? 0.3 : previous.s;
+		setPhase('gather');
+	}
+
+	/** Ajusta os alvos e as molas de cada peça conforme a fase; devolve a fusão desejada. */
+	function applyMorph(out: { v: number[]; op: number }[], place: Place, dt: number) {
+		if (morph.phase === 'idle') return 0;
+		const T = time - morph.since;
+		const ball = slots[BALL];
+		const s = place.view ? morph.size : place.s;
+		const spring = (i: number, k: number, c: number) => {
+			springK[i] = k;
+			springC[i] = c;
+		};
+		const collapse = (x: number, y: number) => {
+			for (let i = 0; i < SLOTS; i++) {
+				if (i === BALL || i === NECK) continue;
+				out[i] = { v: [x, y, 0, 0, 0, slots[i].v[5], 0], op: slots[i].op };
+				spring(i, 70, 12);
+			}
+		};
+
+		if (morph.phase === 'gather') {
+			// As peças são sugadas para o centro e viram uma bolinha.
+			const r = 0.45 * morph.size;
+			if (!seen(ball.v)) {
+				ball.v = [morph.cx, morph.cy, 0, 0, 0, 0, 0];
+				ball.vel = [0, 0, 0, 0, 0, 0, 0];
+				ball.op = 1;
+			}
+			collapse(morph.cx, morph.cy);
+			out[BALL] = { v: [morph.cx, morph.cy, r, r, r, 0, 0], op: 1 };
+			spring(BALL, 90, 13);
+			if (T > 0.18) {
+				// Destino logo ali: estoura direto, sem viagem.
+				const close = Math.hypot(ball.v[0] - place.cx, ball.v[1] - place.cy) < 0.25 * s;
+				setPhase(morph.family === 'none' ? 'vanish' : close ? 'pop' : 'travel', place);
+			}
+			return 0.32 * morph.size;
+		}
+
+		if (morph.phase === 'vanish') {
+			// Sem forma nesta seção: a bolinha some num "pop".
+			collapse(ball.v[0], ball.v[1]);
+			out[BALL] = { v: [ball.v[0], ball.v[1], 0, 0, 0, ball.v[5], 0], op: 1 };
+			spring(BALL, 120, 14);
+			if (T > 0.4) setPhase('idle');
+			return 0.3 * morph.size;
+		}
+
+		if (morph.phase === 'travel') {
+			// A bolinha salta em arco até o novo lugar (que pode estar rolando junto com
+			// a página), esticando no meio do voo e chegando redonda.
+			const r = 0.45 * s;
+			const u = clamp(T / morph.dur, 0, 1);
+			const e = u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2;
+			const dist = Math.hypot(place.cx - morph.fromX, place.cy - morph.fromY);
+			const hop = Math.sin(Math.PI * u) * Math.min(dist * 0.28, 0.3);
+			const x = morph.fromX + (place.cx - morph.fromX) * e;
+			const y = morph.fromY + (place.cy - morph.fromY) * e + hop;
+			const step = Math.max(dt, 1e-3);
+			morph.vx = (x - ball.v[0]) / step;
+			morph.vy = (y - ball.v[1]) / step;
+			const stretch = clamp(Math.hypot(morph.vx, morph.vy) / (s * 24), 0, 0.16);
+			if (stretch > 0.03) ball.v[5] = Math.atan2(morph.vy, morph.vx);
+			ball.v[0] = x;
+			ball.v[1] = y;
+			ball.vel[0] = ball.vel[1] = 0;
+			out[BALL] = { v: [x, y, r * (1 + stretch), r * (1 - 0.45 * stretch), r * (1 - 0.45 * stretch), ball.v[5], 0], op: 1 };
+			spring(BALL, 160, 20);
+			collapse(x, y);
+			if (u >= 1) setPhase('pop');
+			return 0.32 * s;
+		}
+
+		// "Pop": as peças saem do centro, das mais próximas para as mais distantes.
+		const T0 = T;
+		if (!morph.ordered) {
+			morph.ordered = true;
+			morph.delays.fill(-1);
+			morph.lit.fill(false);
+			const away = (i: number) => Math.hypot(out[i].v[0] - place.cx, out[i].v[1] - place.cy);
+			const pieces: number[] = [];
+			const holes: number[] = [];
+			for (let i = 0; i < SLOTS; i++) {
+				if (i === BALL || i === NECK || i === BLOB || !seen(out[i].v)) continue;
+				(out[i].op < 0 ? holes : pieces).push(i);
+			}
+			pieces.sort((a, b) => away(a) - away(b));
+			pieces.forEach((i, rank) => (morph.delays[i] = rank * 0.04));
+			// Os buracos vêm por último: a forma aparece inteira e depois é "entalhada".
+			const carve = pieces.length * 0.04 + 0.06;
+			holes.forEach((i, rank) => (morph.delays[i] = carve + rank * 0.04));
+			morph.end = carve + holes.length * 0.04 + 0.75;
+		}
+		const ox = seen(ball.v) ? ball.v[0] : place.cx;
+		const oy = seen(ball.v) ? ball.v[1] : place.cy;
+		// A bolinha achata ao pousar, segura um instante (a primeira peça já está
+		// crescendo) e depois some.
+		const r = 0.45 * s;
+		if (T < 0.08 && seen(ball.v)) {
+			// O eixo x da bolinha aponta para onde ela vinha: achata nessa direção.
+			out[BALL] = { v: [ball.v[0], ball.v[1], r * 0.82, r * 1.16, r * 0.82, ball.v[5], 0], op: 1 };
+			spring(BALL, 240, 22);
+		} else {
+			out[BALL] = { v: [ball.v[0], ball.v[1], 0, 0, 0, ball.v[5], 0], op: 1 };
+			spring(BALL, 70, 12);
+		}
+		const pulling = mascot.dragging || mascot.snapping;
+		for (let i = 0; i < SLOTS; i++) {
+			if (i === BALL || i === NECK || (i === BLOB && pulling)) continue;
+			const delay = morph.delays[i];
+			const slot = slots[i];
+			if (delay < 0) {
+				spring(i, 70, 12);
+			} else if (T0 < delay) {
+				// Ainda dentro da bolinha.
+				out[i] = { v: [ox, oy, 0, 0, 0, out[i].v[5], 0], op: out[i].op };
+				if (!seen(slot.v)) {
+					slot.v[0] = ox;
+					slot.v[1] = oy;
+				}
+				spring(i, 70, 12);
+			} else {
+				const hole = out[i].op < 0;
+				if (!morph.lit[i]) {
+					morph.lit[i] = true;
+					// Nasce no centro, com um leve giro, e cresce passando um pouco do ponto.
+					// Buracos já nascem no lugar e abrem sem passar do ponto.
+					const twist = hole ? 0 : i % 2 ? 0.3 : -0.3;
+					const [x, y] = hole ? out[i].v : [ox, oy];
+					slot.v = [x, y, 0, 0, 0, out[i].v[5] + twist, out[i].v[6]];
+					slot.vel = [0, 0, 0, 0, 0, 0, 0];
+					slot.op = out[i].op || slot.op;
+				}
+				if (hole) spring(i, 60, 15.5);
+				else spring(i, 85, 9);
+			}
+		}
+		if (T0 > morph.end) setPhase('idle');
+		return 0.22 * s * (1 - smooth(0, 0.4, T0));
+	}
+
+	/** O pescoço do puxa-puxa liga o corpo à ponta (calculado a cada quadro, sem mola). */
+	function updatePull() {
+		const neck = slots[NECK];
+		const tip = slots[BLOB];
+		const body = slots[0].v;
+		const pulling = (mascot.dragging || mascot.snapping) && (morph.phase === 'idle' || morph.phase === 'pop') && seen(tip.v);
+		neck.vel = [0, 0, 0, 0, 0, 0, 0];
+		neck.op = 1;
+		if (!pulling) {
+			neck.v = [body[0], body[1], 0, 0, 0, 0, 0];
+			neck.goo = 0;
+			return false;
+		}
+		const R0 = 0.82 * lastPlace.s;
+		const dx = tip.v[0] - body[0];
+		const dy = tip.v[1] - body[1];
+		const thickness = tip.v[2] * 0.62;
+		neck.v = [body[0] + dx / 2, body[1] + dy / 2, Math.hypot(dx, dy) / 2, thickness, thickness, Math.atan2(dy, dx), 0];
+		neck.goo = tip.goo = R0 * 0.5;
+		return true;
 	}
 
 	// ------------------------------------------------------------- física
@@ -1324,16 +1649,43 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 		lastScroll = scrollY;
 		const def = formation.def;
 		const place = currentPlacement();
+		checkMorph(lastPlace);
+		// Forma ancorada no mesmo lugar: rola grudada no conteúdo, sem atraso
+		// (as molas cuidam só da mudança de forma, nunca de "alcançar" a rolagem).
+		if (place.anchor && place.anchor === lastPlace.anchor) {
+			const dx = place.cx - lastPlace.cx;
+			const dy = place.cy - lastPlace.cy;
+			if (dx || dy) {
+				for (const slot of slots) {
+					slot.v[0] += dx;
+					slot.v[1] += dy;
+				}
+				morph.cx += dx;
+				morph.cy += dy;
+				morph.fromX += dx;
+				morph.fromY += dy;
+			}
+		}
 		lastPlace = place;
 		// Formas ancoradas já acompanham a rolagem; o empurrão extra seria em dobro.
 		const impulse = place.anchored ? 0 : (scrollDelta / cssH) * 2 * 2.4 * (def.inertia ?? 1);
 
 		const out = targets(time, place);
 		stepMascot(dt, out, now);
-		const stiffness = mascot.dragging ? 14 : solid ? 8.5 : 6.5;
-		const damping = mascot.dragging ? 6 : solid ? 4.4 : 3.7;
+		// Molas: o corpo segue firme quando puxado e balança solto depois do estalo.
+		const wobbling = time < mascot.snapUntil;
+		const bodyK = mascot.dragging ? 30 : wobbling ? 110 : solid ? 8.5 : 6.5;
+		const bodyC = mascot.dragging ? 8 : wobbling ? 6.5 : solid ? 4.4 : 3.7;
+		springK.fill(6.5);
+		springC.fill(3.7);
+		springK[0] = bodyK;
+		springC[0] = bodyC;
+		springK[BLOB] = mascot.dragging ? 140 : mascot.snapping ? 110 : 6.5;
+		springC[BLOB] = mascot.dragging ? 18 : mascot.snapping ? 11 : 3.7;
+		const gooGoal = applyMorph(out, place, dt);
 
 		for (let i = 0; i < SLOTS; i++) {
+			if (i === NECK) continue;
 			const slot = slots[i];
 			const target = out[i];
 			let tv = target.v;
@@ -1365,14 +1717,20 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 			const goal = [tx, ty, tv[2], tv[3], tv[4], tv[5], tv[6]];
 			// Rotação pelo caminho mais curto.
 			goal[5] = slot.v[5] + ((((goal[5] - slot.v[5] + Math.PI) % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2)) - Math.PI;
-			const k = i === 0 ? stiffness : 6.5;
-			const c = i === 0 ? damping : 3.7;
+			const k = springK[i];
+			const c = springC[i];
 			for (let j = 0; j < 7; j++) {
 				slot.vel[j] += ((goal[j] - slot.v[j]) * k - slot.vel[j] * c) * dt;
 				slot.vel[j] = clamp(slot.vel[j], -5, 5);
 				slot.v[j] += slot.vel[j] * dt;
 			}
 			for (const j of [2, 3, 4, 6]) slot.v[j] = Math.max(0, slot.v[j]);
+		}
+		const pulling = updatePull();
+		const gooEase = Math.min(1, dt * 14);
+		for (let i = 0; i < SLOTS; i++) {
+			if (i === NECK || (i === BLOB && pulling)) continue;
+			slots[i].goo += (gooGoal - slots[i].goo) * gooEase;
 		}
 
 		// Gota do cursor (só nas formações "orgânicas").
@@ -1455,7 +1813,7 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 			maxY = Math.max(maxY, cursor.y + cursor.r + 0.2);
 		}
 		if (minX > maxX) return [0, 0, 0, 0];
-		const pad = globals.k + 0.02;
+		const pad = Math.max(globals.k, ...slots.map((slot) => slot.goo * 0.5)) + 0.02;
 		return [minX - pad, minY - pad, maxX + pad, maxY + pad];
 	}
 
@@ -1463,7 +1821,8 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 		for (let i = 0; i < SLOTS; i++) {
 			const v = slots[i].v;
 			dataA.set([v[0], v[1], v[2], v[3]], i * 4);
-			dataB.set([v[4], v[5], v[6], slots[i].op], i * 4);
+			const goo = slots[i].op > 0 ? slots[i].goo : 0;
+			dataB.set([v[4], v[5], v[6], slots[i].op * (1 + goo)], i * 4);
 		}
 		const body = slots[0].v;
 		const scrollWorld = (window.scrollY / cssH) * 2;
@@ -1633,7 +1992,7 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 			for (let i = 0; i < Math.round(seconds * 60); i++) step(1 / 60);
 			render();
 		},
-		state: () => ({ name: formation.name, place: lastPlace, el: formationEl?.id || formationEl?.className, quality }),
+		state: () => ({ name: formation.name, place: lastPlace, el: formationEl?.id || formationEl?.className, quality, morph: morph.phase }),
 		/** Testa outra cor para o líquido, ex.: __liquid.tint('#3b6ef0'). */
 		tint: (hex: string, inkHex?: string) => {
 			const parse = (value: string) => {
