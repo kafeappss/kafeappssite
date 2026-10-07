@@ -92,7 +92,7 @@ export const aiPillars = [
 export const faq = [
 	{
 		q: 'Quanto custa desenvolver um aplicativo ou sistema?',
-		a: 'Depende do escopo, das plataformas e das integrações. Como nossos engenheiros trabalham acelerados por IA, o tempo de desenvolvimento cai — e isso aparece no investimento. Depois da etapa de Discovery, você recebe uma proposta clara, dividida por sprints.',
+		a: 'Depende do escopo, das plataformas e das integrações. Como nossos engenheiros trabalham acelerados por IA, o tempo de desenvolvimento cai, e isso aparece no investimento. Depois da etapa de Discovery, você recebe uma proposta clara, dividida por sprints.',
 	},
 	{
 		q: 'Como vocês usam IA no desenvolvimento?',
@@ -104,15 +104,15 @@ export const faq = [
 	},
 	{
 		q: 'O código e o produto ficam no nome da minha empresa?',
-		a: 'Recomendamos — e ajudamos a configurar — que repositórios, contas de lojas, domínios e servidores fiquem em nome da sua empresa desde o início. Assim, você tem controle total sobre o que é seu.',
+		a: 'Recomendamos (e ajudamos a configurar) que repositórios, contas de lojas, domínios e servidores fiquem em nome da sua empresa desde o início. Assim, você tem controle total sobre o que é seu.',
 	},
 	{
 		q: 'Vocês assinam acordo de confidencialidade?',
 		a: 'Sim. Se preferir, assinamos um NDA antes de você detalhar a sua ideia.',
 	},
 	{
-		q: 'Atendem empresas de fora do Rio de Janeiro?',
-		a: 'Sim. Nossa base é em Niterói (RJ), e trabalhamos de forma remota com clientes de todo o Brasil, com reuniões on-line e acompanhamento em tempo real.',
+		q: 'Atendem empresas de fora de Santa Catarina?',
+		a: 'Sim. Nossa base é em Jaraguá do Sul (SC), e trabalhamos de forma remota com clientes de todo o Brasil, com reuniões on-line e acompanhamento em tempo real.',
 	},
 	{
 		q: 'E depois do lançamento?',

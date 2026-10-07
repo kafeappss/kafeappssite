@@ -1,5 +1,5 @@
 ---
-# MODELO — este arquivo não é publicado (começa com "_").
+# MODELO: este arquivo não é publicado (começa com "_").
 # Para publicar um case, copie este arquivo, renomeie sem o "_"
 # (ex.: app-de-agendamento.md) e preencha com informações reais
 # que o cliente autorizou divulgar.

@@ -5,7 +5,7 @@ date: 2026-10-06
 tags: ['empreendedorismo', 'startups', 'produto']
 ---
 
-Muitas empresas começaram com um rabisco num guardanapo, durante um café. O difícil nunca é ter a ideia — é saber o que fazer com ela na manhã seguinte. Este roteiro reúne as oito etapas que usamos para transformar ideias em produtos digitais, na ordem em que elas costumam fazer mais sentido.
+Muitas empresas começaram com um rabisco num guardanapo, durante um café. O difícil nunca é ter a ideia. É saber o que fazer com ela na manhã seguinte. Este roteiro reúne as oito etapas que usamos para transformar ideias em produtos digitais, na ordem em que elas costumam fazer mais sentido.
 
 ## 1. Comece pelo problema, não pela solução
 
@@ -15,7 +15,7 @@ Se a frase ficar vaga ("ajudar as pessoas a se organizarem"), continue refinando
 
 ## 2. Converse com quem tem o problema
 
-Agora é hora de sair do prédio — ou, pelo menos, do WhatsApp dos amigos. Converse com pessoas que vivem o problema. Algumas dicas para as entrevistas renderem:
+Agora é hora de sair do prédio (ou, pelo menos, do WhatsApp dos amigos). Converse com pessoas que vivem o problema. Algumas dicas para as entrevistas renderem:
 
 - **Pergunte sobre o passado, não sobre o futuro.** "Como você resolveu isso da última vez?" vale muito mais do que "você usaria um app que…?".
 - **Fale menos, escute mais.** Você está ali para aprender, não para vender.
@@ -25,7 +25,7 @@ O livro *The Mom Test*, de Rob Fitzpatrick, é uma ótima leitura sobre como faz
 
 ## 3. Estude as alternativas
 
-Se o problema existe, as pessoas já estão resolvendo de algum jeito — com um concorrente, uma planilha, um caderno, um grupo de WhatsApp ou simplesmente convivendo com ele. Mapeie essas alternativas e entenda o que elas fazem bem e onde deixam a desejar. Concorrência não é sinal ruim: muitas vezes é a prova de que existe mercado.
+Se o problema existe, as pessoas já estão resolvendo de algum jeito: com um concorrente, uma planilha, um caderno, um grupo de WhatsApp ou simplesmente convivendo com ele. Mapeie essas alternativas e entenda o que elas fazem bem e onde deixam a desejar. Concorrência não é sinal ruim: muitas vezes é a prova de que existe mercado.
 
 ## 4. Defina a sua proposta de valor
 
@@ -33,7 +33,7 @@ Com problema, público e alternativas claros, escreva a sua proposta de valor. U
 
 > Para **[público]** que **[tem tal problema]**, o **[seu produto]** é **[tipo de solução]** que **[principal benefício]**. Diferente de **[alternativa atual]**, nós **[seu diferencial]**.
 
-Se você não consegue preencher essa frase com segurança, volte às etapas anteriores. Tudo bem — é para isso que elas existem.
+Se você não consegue preencher essa frase com segurança, volte às etapas anteriores. Tudo bem, é para isso que elas existem.
 
 ## 5. Desenhe a jornada e crie um protótipo
 
@@ -55,7 +55,7 @@ Uma boa pergunta para cada funcionalidade: "se isso não estiver no lançamento,
 
 ## 8. Lance, meça e aprenda
 
-Lançar não é a linha de chegada — é a largada. Defina antes quais números importam, por exemplo:
+Lançar não é a linha de chegada, é a largada. Defina antes quais números importam, por exemplo:
 
 - **Ativação:** quantas pessoas que se cadastram chegam a usar o produto de verdade?
 - **Retenção:** quantas voltam na semana seguinte? E no mês seguinte?
@@ -66,8 +66,8 @@ Acompanhe esses indicadores, converse com os usuários e use o que aprender para
 
 ## E o dinheiro para tudo isso?
 
-Existem vários caminhos para financiar os primeiros passos: recursos próprios (*bootstrapping*), clientes que pagam antecipadamente, investidores-anjo, programas de aceleração e editais de fomento à inovação. Em qualquer cenário, um MVP com usuários reais aumenta muito as suas chances — investidores e avaliadores querem ver evidências, não apenas boas intenções.
+Existem vários caminhos para financiar os primeiros passos: recursos próprios (*bootstrapping*), clientes que pagam antecipadamente, investidores-anjo, programas de aceleração e editais de fomento à inovação. Em qualquer cenário, um MVP com usuários reais aumenta muito as suas chances: investidores e avaliadores querem ver evidências, não apenas boas intenções.
 
 ## O próximo passo é seu
 
-Se você tem uma ideia rabiscada num guardanapo, a Kafé Apps pode ajudar a percorrer esse caminho com você — da descoberta ao lançamento, com a nossa Metodologia 4Ds. [Conte a sua ideia](/contato) e vamos tomar esse café.
+Se você tem uma ideia rabiscada num guardanapo, a Kafé Apps pode ajudar a percorrer esse caminho com você, da descoberta ao lançamento, com a nossa Metodologia 4Ds. [Conte a sua ideia](/contato) e vamos tomar esse café.

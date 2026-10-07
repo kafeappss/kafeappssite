@@ -39,7 +39,7 @@
 			const button = document.createElement('button');
 			button.type = 'button';
 			button.className = 'rail-dot';
-			button.setAttribute('aria-label', `${numberOf(index)} — ${section.dataset.rail}`);
+			button.setAttribute('aria-label', `${numberOf(index)}. ${section.dataset.rail}`);
 			button.addEventListener('click', () => go(index));
 			button.addEventListener('focus', () => {
 				// Só pelo teclado: com o mouse, a lupa já segue o cursor.

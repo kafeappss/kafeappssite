@@ -10,31 +10,34 @@
 export const site = {
 	name: 'Kafé Apps',
 	shortName: 'Kafé',
-	/** TODO: confirmar razão social e CNPJ antes de publicar. */
-	legalName: 'Fonseca Media LTDA',
-	cnpj: '41.770.123/0001-99',
+	legalName: 'Kafé Apps LTDA',
+	/**
+	 * TODO: CNPJ da Kafé Apps LTDA (formato 00.000.000/0000-00).
+	 * Enquanto estiver vazio, não aparece no rodapé nem na política de privacidade.
+	 */
+	cnpj: '',
 	url: 'https://kafeapps.com.br',
 	tagline: 'Mais negócio, menos software.',
 	description:
-		'Software house em Niterói (RJ). Criamos aplicativos, plataformas, sistemas e soluções de IA sob medida — em código, com engenharia acelerada por IA — para startups e empresas que querem crescer.',
+		'Software house de Jaraguá do Sul (SC). Criamos aplicativos, plataformas, sistemas e soluções de IA sob medida, em código e com engenharia acelerada por IA, para startups e empresas que querem crescer.',
 	foundingYear: 2021,
 	ceo: 'Danilo Fonseca',
 	location: {
-		city: 'Niterói',
-		state: 'RJ',
-		region: 'Rio de Janeiro',
+		city: 'Jaraguá do Sul',
+		state: 'SC',
+		region: 'Santa Catarina',
 		country: 'BR',
-		label: 'Niterói, RJ — atendemos todo o Brasil',
+		label: 'Jaraguá do Sul, SC · atendemos todo o Brasil',
 	},
 	contact: {
 		/** TODO: confirmar o e-mail comercial. */
 		email: 'contato@kafeapps.com.br',
 		/**
-		 * TODO: número de WhatsApp só com dígitos, com DDI e DDD (ex.: 5521999999999).
+		 * TODO: número de WhatsApp só com dígitos, com DDI e DDD (ex.: 5547999999999).
 		 * Enquanto estiver vazio, o botão flutuante de WhatsApp não aparece.
 		 */
 		whatsapp: '',
-		/** Ex.: "(21) 99999-9999". Exibido no rodapé e na página de contato. */
+		/** Ex.: "(47) 99999-9999". Exibido no rodapé e na página de contato. */
 		phoneDisplay: '',
 		/**
 		 * Endereço que recebe o formulário de contato (ex.: Formspree, Web3Forms,
@@ -72,7 +75,7 @@ export const nav: NavItem[] = [
 
 /** Números exibidos na home e na página Sobre (vindos do site atual da Kafé). */
 export const stats = [
-	{ value: '2021', label: 'Ano em que a Kafé nasceu, em Niterói (RJ)' },
+	{ value: '2021', label: 'Ano em que a Kafé nasceu' },
 	{ value: '4Ds', label: 'Metodologia própria: Discovery, Design, Develop e Deploy' },
 	{ value: '10x', label: 'Mais agilidade na construção do seu produto' },
 	{ value: 'até 40%', label: 'Mais econômico que o desenvolvimento tradicional' },

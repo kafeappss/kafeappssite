@@ -1,6 +1,6 @@
 # Site da Kafé Apps
 
-Site institucional da [Kafé Apps](https://kafeapps.com.br): software house de Niterói (RJ) que desenvolve aplicativos, plataformas e soluções de IA em código, com engenharia aumentada por IA.
+Site institucional da [Kafé Apps](https://kafeapps.com.br): software house de Jaraguá do Sul (SC) que desenvolve aplicativos, plataformas e soluções de IA em código, com engenharia aumentada por IA.
 
 Feito com [Astro](https://astro.build), gera um site 100% estático (HTML, CSS e um pouco de JavaScript): rápido, bom para SEO e fácil de hospedar em qualquer lugar.
 

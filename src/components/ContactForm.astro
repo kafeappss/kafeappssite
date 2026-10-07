@@ -161,7 +161,7 @@ const timings = ['O quanto antes', 'Nos próximos 30 dias', 'Em 2 ou 3 meses', '
 					});
 					if (!response.ok) throw new Error(String(response.status));
 					form.reset();
-					setStatus('Mensagem enviada! Em breve a gente responde — enquanto isso, que tal um café? ☕', 'ok');
+					setStatus('Mensagem enviada! Em breve a gente responde. Enquanto isso, que tal um café? ☕', 'ok');
 				} catch {
 					setStatus(
 						`Não conseguimos enviar agora. Tente novamente ou escreva para ${email || 'a gente pelas redes sociais'}.`,
@@ -181,7 +181,7 @@ const timings = ['O quanto antes', 'Nos próximos 30 dias', 'Em 2 ou 3 meses', '
 			}
 
 			if (email) {
-				const subject = `Novo projeto pelo site — ${String(data.get('nome') ?? '').trim()}`;
+				const subject = `Novo projeto pelo site: ${String(data.get('nome') ?? '').trim()}`;
 				window.location.href = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(message)}`;
 				setStatus('Abrimos o seu aplicativo de e-mail com a mensagem pronta. É só enviar!', 'ok');
 			}

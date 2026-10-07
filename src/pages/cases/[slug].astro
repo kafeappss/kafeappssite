@@ -20,7 +20,7 @@ const { item } = Astro.props;
 const { Content } = await render(item);
 ---
 
-<Base title={`${item.data.title} — Case`} description={item.data.summary} image={item.data.cover}>
+<Base title={`${item.data.title} | Case`} description={item.data.summary} image={item.data.cover}>
 	<PageHero
 		eyebrow={`${item.data.client} · ${item.data.segment}`}
 		title={item.data.title}

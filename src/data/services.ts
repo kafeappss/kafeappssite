@@ -42,12 +42,12 @@ export const services: Service[] = [
 		},
 		hero: {
 			title: 'Aplicativos que as pessoas <em>abrem todo dia.</em>',
-			lead: 'Do primeiro rascunho à publicação na App Store e no Google Play, desenhamos e desenvolvemos aplicativos sob medida para o seu modelo de negócio — em código, com engenheiros acelerados por IA.',
+			lead: 'Do primeiro rascunho à publicação na App Store e no Google Play, desenhamos e desenvolvemos aplicativos sob medida para o seu modelo de negócio, em código e com engenheiros acelerados por IA.',
 		},
 		intro: {
 			title: 'Mais do que telas <em>bonitas.</em>',
 			paragraphs: [
-				'Um bom aplicativo começa muito antes da primeira linha de código. Antes de desenhar telas, entendemos quem vai usar, qual problema precisa ser resolvido e como o app vai gerar resultado para o seu negócio — seja venda, retenção, produtividade ou captação de investimento.',
+				'Um bom aplicativo começa muito antes da primeira linha de código. Antes de desenhar telas, entendemos quem vai usar, qual problema precisa ser resolvido e como o app vai gerar resultado para o seu negócio, seja venda, retenção, produtividade ou captação de investimento.',
 				'Com isso claro, escolhemos a arquitetura certa: desenvolvimento multiplataforma para chegar ao iOS e ao Android com uma só base de código, ou nativo quando o produto exige o máximo do aparelho. A IA acelera o trabalho repetitivo; nossos engenheiros cuidam das decisões e da qualidade.',
 			],
 		},
@@ -61,7 +61,7 @@ export const services: Service[] = [
 			{
 				title: 'Discovery e escopo',
 				description:
-					'Imersão no negócio, mapeamento de jornadas e definição do que entra — e do que fica para depois — na primeira versão.',
+					'Imersão no negócio, mapeamento de jornadas e definição do que entra (e do que fica para depois) na primeira versão.',
 			},
 			{
 				title: 'UX/UI e protótipo navegável',
@@ -119,7 +119,7 @@ export const services: Service[] = [
 			},
 			{
 				q: 'Vocês publicam o app nas lojas?',
-				a: 'Sim. Cuidamos da preparação técnica e dos materiais para a App Store e o Google Play e acompanhamos o processo de revisão. Recomendamos que as contas de desenvolvedor fiquem em nome da sua empresa desde o início — e ajudamos a configurá-las.',
+				a: 'Sim. Cuidamos da preparação técnica e dos materiais para a App Store e o Google Play e acompanhamos o processo de revisão. Recomendamos que as contas de desenvolvedor fiquem em nome da sua empresa desde o início, e ajudamos a configurá-las.',
 			},
 			{
 				q: 'O mesmo app funciona em iPhone e Android?',
@@ -135,7 +135,7 @@ export const services: Service[] = [
 		slug: 'plataformas-web-e-saas',
 		title: 'Plataformas web e SaaS',
 		short:
-			'Marketplaces, portais e produtos SaaS com assinatura — arquitetura sólida, experiência impecável e prontos para escalar.',
+			'Marketplaces, portais e produtos SaaS com assinatura: arquitetura sólida, experiência impecável e prontos para escalar.',
 		icon: 'browser',
 		shape: 'browser',
 		keywords: ['SaaS', 'Marketplaces', 'Portais', 'Assinaturas'],
@@ -238,7 +238,7 @@ export const services: Service[] = [
 		},
 		hero: {
 			title: 'IA que trabalha <em>para o seu negócio.</em>',
-			lead: 'Colocamos modelos de linguagem para trabalhar onde eles geram resultado: agentes que atendem e executam tarefas, assistentes dentro do seu produto e automações que leem, classificam e respondem — integrados aos seus sistemas.',
+			lead: 'Colocamos modelos de linguagem para trabalhar onde eles geram resultado: agentes que atendem e executam tarefas, assistentes dentro do seu produto e automações que leem, classificam e respondem, integrados aos seus sistemas.',
 		},
 		intro: {
 			title: 'IA de verdade, <em>não demonstração.</em>',
@@ -256,7 +256,7 @@ export const services: Service[] = [
 		deliverables: [
 			{
 				title: 'Diagnóstico de oportunidades',
-				description: 'Onde a IA gera retorno de verdade no seu negócio — e onde ela ainda não compensa.',
+				description: 'Onde a IA gera retorno de verdade no seu negócio (e onde ela ainda não compensa).',
 			},
 			{
 				title: 'Agentes de IA',
@@ -340,7 +340,7 @@ export const services: Service[] = [
 			title: 'Aprender rápido <em>custa menos.</em>',
 			paragraphs: [
 				'Toda startup começa com hipóteses: alguém tem esse problema, está disposto a pagar pela solução e vai usar o produto do jeito que imaginamos. O MVP existe para testar essas hipóteses no mundo real, o mais cedo possível.',
-				'O erro mais comum é tentar lançar o produto completo de uma vez. Na Kafé, fazemos o contrário: identificamos o menor conjunto de funcionalidades capaz de entregar valor e gerar aprendizado — e construímos em código, para que o MVP vire a base do produto, e não algo a ser jogado fora.',
+				'O erro mais comum é tentar lançar o produto completo de uma vez. Na Kafé, fazemos o contrário: identificamos o menor conjunto de funcionalidades capaz de entregar valor e gerar aprendizado, e construímos em código, para que o MVP vire a base do produto, e não algo a ser jogado fora.',
 			],
 		},
 		forWho: [
@@ -430,13 +430,13 @@ export const services: Service[] = [
 		},
 		hero: {
 			title: 'Sua operação, <em>finalmente conectada.</em>',
-			lead: 'Planilhas que ninguém entende, informações espalhadas em cinco ferramentas e tarefas repetidas todos os dias. Criamos sistemas internos e integrações sob medida para a sua equipe trabalhar melhor — e crescer sem aumentar o caos.',
+			lead: 'Planilhas que ninguém entende, informações espalhadas em cinco ferramentas e tarefas repetidas todos os dias. Criamos sistemas internos e integrações sob medida para a sua equipe trabalhar melhor e crescer sem aumentar o caos.',
 		},
 		intro: {
 			title: 'O software pronto <em>não te serve?</em>',
 			paragraphs: [
 				'Sistemas de prateleira nem sempre se encaixam no jeito que a sua empresa trabalha. O resultado costuma ser uma coleção de remendos: planilhas paralelas, controles manuais, informações duplicadas e decisões tomadas no escuro.',
-				'Desenvolvemos ferramentas internas desenhadas para os seus processos — de um painel de indicadores a um sistema completo de gestão — e conectamos os sistemas que você já usa.',
+				'Desenvolvemos ferramentas internas desenhadas para os seus processos (de um painel de indicadores a um sistema completo de gestão) e conectamos os sistemas que você já usa.',
 			],
 		},
 		forWho: [
@@ -453,7 +453,7 @@ export const services: Service[] = [
 			{
 				title: 'Sistemas de gestão sob medida',
 				description:
-					'Cadastros, fluxos de aprovação, estoque, ordens de serviço, agendas — o que a sua operação precisar.',
+					'Cadastros, fluxos de aprovação, estoque, ordens de serviço, agendas: o que a sua operação precisar.',
 			},
 			{
 				title: 'Painéis de indicadores',
@@ -500,7 +500,7 @@ export const services: Service[] = [
 			},
 			{
 				q: 'Quanto tempo leva para automatizar um processo?',
-				a: 'Integrações pontuais podem ficar prontas em poucos dias. Sistemas completos são entregues em módulos, para que a equipe comece a usar — e a ganhar tempo — o quanto antes.',
+				a: 'Integrações pontuais podem ficar prontas em poucos dias. Sistemas completos são entregues em módulos, para que a equipe comece a usar (e a ganhar tempo) o quanto antes.',
 			},
 			{
 				q: 'Minha equipe vai conseguir usar?',
@@ -511,7 +511,7 @@ export const services: Service[] = [
 	{
 		slug: 'ux-ui-design',
 		title: 'UX/UI design e discovery',
-		short: 'Pesquisa, estratégia e interfaces que fazem sentido para quem usa — e para o seu negócio.',
+		short: 'Pesquisa, estratégia e interfaces que fazem sentido para quem usa e para o seu negócio.',
 		icon: 'pen',
 		shape: 'layout',
 		keywords: ['UX Research', 'Design Inteligente', 'Protótipos', 'Design system'],

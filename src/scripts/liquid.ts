@@ -1,5 +1,5 @@
 /**
- * Metal líquido — um único corpo de líquido em WebGL que acompanha a navegação
+ * Metal líquido: um único corpo de líquido em WebGL que acompanha a navegação
  * e muda de forma para ilustrar o que está escrito.
  *
  * - data-liquid="clock" (ou "cup bottom": forma + posicionamento) numa seção:
