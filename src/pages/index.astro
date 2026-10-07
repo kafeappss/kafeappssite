@@ -555,6 +555,8 @@ const capabilities = [
 			order: 3;
 			height: clamp(330px, 52svh, 500px);
 			margin-inline: calc(-1 * var(--gutter));
+			/* A âncora do mascote passa da tela; sem isto, o celular afasta o zoom. */
+			overflow-x: clip;
 		}
 
 		/* O espaço é mais largo que a tela: o mascote fica grande. */

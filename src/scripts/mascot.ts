@@ -79,24 +79,34 @@ if (hit && bubble && text) {
 	const label = pill?.querySelector<HTMLElement>('[data-mascot-label]');
 	const pillText = label?.textContent ?? '';
 
+	const pillOnScreen = () => {
+		const box = pill!.getBoundingClientRect();
+		return box.height > 0 && box.top >= 0 && box.bottom <= window.innerHeight;
+	};
+
+	const quietPill = () => {
+		if (!pill?.dataset.talking) return;
+		label!.textContent = pillText;
+		delete pill.dataset.talking;
+	};
+
 	const say = (line: string, duration = 4200) => {
 		window.clearTimeout(hideTimer);
-		const inPill = Boolean(pill && label && portrait.matches);
+		// Se o botão estiver fora da tela (página rolada), a fala vai para o balão.
+		const inPill = Boolean(pill && label && portrait.matches && pillOnScreen());
 		if (inPill) {
 			label!.textContent = line;
 			pill!.dataset.talking = 'true';
 			bubble.classList.remove('is-talking');
 		} else {
+			quietPill();
 			text.textContent = line;
 			bubble.classList.add('is-talking');
 		}
 		if (duration > 0) {
 			hideTimer = window.setTimeout(() => {
 				bubble.classList.remove('is-talking');
-				if (inPill) {
-					label!.textContent = pillText;
-					delete pill!.dataset.talking;
-				}
+				quietPill();
 			}, duration);
 		}
 	};
