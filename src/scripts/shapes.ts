@@ -411,7 +411,7 @@ export const shapes = {
 	rest: {
 		...organic,
 		place: 'view',
-		dim: 0.55,
+		dim: 0.38,
 		prims: [
 			circle(1.1, 0.8, 0.26),
 			circle(1.08, -0.72, 0.2),

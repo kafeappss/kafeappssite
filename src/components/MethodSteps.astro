@@ -104,8 +104,8 @@ const { showOngoing = true, liquid = false } = Astro.props;
 		font-size: 0.8rem;
 		color: var(--text);
 		background: var(--bg-2);
-		border: 1px solid rgb(255 255 255 / 0.25);
-		box-shadow: 0 0 0 6px rgb(0 0 0 / 0.8);
+		border: 1px solid rgb(var(--fg-rgb) / 0.25);
+		box-shadow: 0 0 0 6px rgb(var(--bg-rgb) / 0.8);
 	}
 
 	.method-node {
@@ -116,8 +116,8 @@ const { showOngoing = true, liquid = false } = Astro.props;
 
 	.method-step[data-liquid-active] .method-node,
 	.method-step[data-liquid-hover]:hover .method-node {
-		color: var(--black);
-		background: var(--white);
+		color: var(--ink);
+		background: var(--crema);
 	}
 
 	.method-name {
@@ -158,8 +158,8 @@ const { showOngoing = true, liquid = false } = Astro.props;
 		border-radius: var(--radius-sm);
 		font-size: var(--fs-xs);
 		color: var(--text);
-		background: rgb(255 255 255 / 0.04);
-		border: 1px solid rgb(255 255 255 / 0.11);
+		background: rgb(var(--fg-rgb) / 0.04);
+		border: 1px solid rgb(var(--fg-rgb) / 0.11);
 	}
 
 	.method-ongoing {

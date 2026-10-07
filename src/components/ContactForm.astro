@@ -229,7 +229,7 @@ const timings = ['O quanto antes', 'Nos próximos 30 dias', 'Em 2 ou 3 meses', '
 		padding: 14px 16px;
 		border-radius: var(--radius-sm);
 		border: 1px solid var(--line-strong);
-		background: rgb(0 0 0 / 0.55);
+		background: rgb(var(--bg-rgb) / 0.55);
 		color: var(--text);
 		font-size: 1rem;
 		transition:
@@ -252,7 +252,7 @@ const timings = ['O quanto antes', 'Nos próximos 30 dias', 'Em 2 ou 3 meses', '
 	input:not([type='radio'], [type='checkbox']):hover,
 	textarea:hover,
 	select:hover {
-		border-color: rgb(255 255 255 / 0.3);
+		border-color: rgb(var(--fg-rgb) / 0.3);
 	}
 
 	input:not([type='radio'], [type='checkbox']):focus,
@@ -260,8 +260,8 @@ const timings = ['O quanto antes', 'Nos próximos 30 dias', 'Em 2 ou 3 meses', '
 	select:focus {
 		outline: none;
 		border-color: var(--accent);
-		box-shadow: 0 0 0 4px rgb(255 255 255 / 0.10);
-		background: rgb(0 0 0 / 0.75);
+		box-shadow: 0 0 0 4px rgb(var(--fg-rgb) / 0.10);
+		background: rgb(var(--bg-rgb) / 0.75);
 	}
 
 	.select {
@@ -325,13 +325,13 @@ const timings = ['O quanto antes', 'Nos próximos 30 dias', 'Em 2 ou 3 meses', '
 	}
 
 	.chip:hover span {
-		border-color: rgb(255 255 255 / 0.3);
+		border-color: rgb(var(--fg-rgb) / 0.3);
 	}
 
 	.chip input:checked + span {
-		color: var(--bg);
-		background: var(--white);
-		border-color: var(--white);
+		color: var(--ink);
+		background: var(--crema);
+		border-color: var(--crema);
 	}
 
 	.chip input:focus-visible + span {
@@ -396,11 +396,11 @@ const timings = ['O quanto antes', 'Nos próximos 30 dias', 'Em 2 ou 3 meses', '
 		border-radius: var(--radius-sm);
 		font-size: var(--fs-small);
 		border: 1px solid var(--line-strong);
-		background: rgb(255 255 255 / 0.04);
+		background: rgb(var(--fg-rgb) / 0.04);
 	}
 
 	.form-status[data-tone='ok'] {
-		border-color: rgb(255 255 255 / 0.25);
+		border-color: rgb(var(--fg-rgb) / 0.25);
 		color: var(--text);
 	}
 

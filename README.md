@@ -4,11 +4,19 @@ Site institucional da [Kafé Apps](https://kafeapps.com.br): software house de N
 
 Feito com [Astro](https://astro.build), gera um site 100% estático (HTML, CSS e um pouco de JavaScript): rápido, bom para SEO e fácil de hospedar em qualquer lugar.
 
+## Identidade visual: "Espresso & Crema"
+
+- **Fundo espresso** (`#100c0a`), **texto cor de leite** (`#f4eee6`) e **uma única cor-assinatura, a crema** (`#f4a957`).
+- A crema é a mesma no mascote, no líquido que vira as ilustrações, na segunda linha dos títulos, nos botões e nos detalhes: é ela que amarra tudo.
+- Na abertura, o mascote nasce de uma faixa de café; nas páginas internas, a mesma faixa fecha o topo da página.
+- Ilustrações em 2D: cor chapada, bordas nítidas e brilho suave, sem efeitos sobrando.
+- Todas as cores ficam no topo de `src/styles/global.css`. Para trocar a cor-assinatura, mude `--crema`, `--brand-rgb` e `--liquid` (hex de 6 dígitos).
+
 ## Destaques
 
 - **Líquido que explica o conteúdo (WebGL)**: um único corpo de líquido, em estilo 2D bem acabado (cor chapada, bordas nítidas, brilho suave), acompanha a navegação e vira o desenho do que está escrito: um relógio no problema do tempo, barras de crescimento na virada, um ciclo na metodologia, o K da Kafé no "Sobre" e uma xícara no convite final. Cada forma tem um espaço reservado no layout, rola junto com o conteúdo e nunca fica por cima do texto. Nos cartões de serviço, basta passar o mouse para o líquido virar celular, navegador, IA, foguete, rede ou layout. Veja "Formas do líquido" abaixo.
 - **Mascote com personalidade**: no início da home, uma gota com os olhos inspirados no logo, em pé sobre o horizonte. Ele acompanha o cursor, pisca e muda de expressão: cada clique traz uma reação (feliz, piscadinha, surpreso, apaixonado), cliques demais o deixam tonto (e depois bravo), dá para arrastá-lo como goma (com mouse), ele sente cócegas, se apaixona quando o cursor passa no botão principal e cochila se ninguém mexer na página. Falas em `src/scripts/mascot.ts`.
-- **Fundo vivo**: horizonte de planeta no início, grade de pontos que acende perto do cursor e do líquido, fumaça que flui e uma luz que passeia devagar, tudo em preto, branco e cinza.
+- **Fundo calmo**: só uma fumaça quente que flui devagar e o brilho da cor-assinatura em volta do líquido.
 - **Trilho de seções**: à direita (telas largas), mostra em que parte da página a pessoa está e permite pular entre as seções.
 - **Acessível e leve**: respeita "reduzir movimento" do sistema, tem fundo estático quando não há WebGL, reduz a qualidade em aparelhos mais modestos e economiza bateria quando a página está parada.
 - **Conteúdo para SEO**: página para cada serviço, blog com artigos originais, dados estruturados (schema.org), sitemap, `robots.txt` e imagem de compartilhamento.
@@ -39,7 +47,7 @@ npm run check    # verificação de tipos
 | Método, formatos de trabalho, comparativo e perguntas frequentes | `src/data/method.ts` |
 | Artigos do blog | `src/content/blog/*.md` |
 | Cases | `src/content/cases/*.md` (use `_modelo-de-case.md` como base) |
-| Cores (preto, branco e cinzas), fontes e espaçamentos | `src/styles/global.css` (variáveis no topo) |
+| Cores (espresso, leite e crema), fontes e espaçamentos | `src/styles/global.css` (variáveis no topo) |
 | Logos (KAFÉ APPS e o símbolo K) | `src/assets/brand/` e `public/favicon.svg` |
 | Arquivos da marca para download (K e logo, branco e preto, sem fundo) | `public/brand/` |
 
@@ -57,7 +65,7 @@ Cada seção diz qual desenho o líquido deve formar enquanto ela está no meio 
 - `data-rail="Nome"`: inclui a seção no trilho da direita (aparece quando a página tem pelo menos três).
 - Espaço da forma: coloque `<LiquidSlot class="slot" />` dentro da seção (ou qualquer elemento com `data-liquid-anchor`). A forma mora ali e rola junto com o conteúdo; sem espaço, ela fica ao lado do texto (ou num canto, no celular). A classe `slot` com `head-split` em volta do título monta o layout "título + forma" usado nas seções.
 - `data-liquid-hover="phone"`: num cartão, o líquido vira essa forma ao passar o mouse (no celular, vale o cartão que estiver no meio da tela). O cartão pode ter o próprio `data-liquid-anchor`; se não tiver, usa o espaço da seção.
-- `data-horizon`: desenha a borda do planeta no fim da seção (`data-horizon="0.1"` ajusta a altura).
+- `data-horizon`: desenha a faixa de café no fim da seção (`data-horizon="0.1"` ajusta a altura).
 
 Para testar no console do navegador: `__liquid.show('rocket')` mostra uma forma, `__liquid.react('love')` faz o mascote reagir (`happy`, `wink`, `surprise`, `love`, `dizzy`, `angry`, `giggle`) `__liquid.advance(3)` adianta a animação em 3 segundos e `__liquid.tint('#3b6ef0', '#ffffff')` testa outra cor para o líquido e os olhos.
 

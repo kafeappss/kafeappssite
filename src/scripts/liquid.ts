@@ -111,7 +111,7 @@ uniform vec4 uExpr;    // feliz, surpreso, bravo, apaixonado
 uniform vec4 uExpr2;   // tonto, giro, brilho "de gota", -
 uniform vec4 uGrid;    // espaçamento, raio do ponto, deslocamento da rolagem, rolagem
 uniform vec3 uPtr;     // cursor x, y, ativo
-uniform vec4 uHorizon; // centro x, centro y, raio, intensidade
+uniform vec4 uHorizon; // faixa de café: topo (y), fundo (y), x do mascote, onda extra embaixo dele
 uniform vec4 uBox;     // caixa que contém o líquido (min x, min y, max x, max y)
 uniform vec3 uTint;    // cor do líquido
 uniform vec3 uInk;     // cor dos olhos
@@ -220,39 +220,28 @@ float eyes(vec2 p) {
 	return min(left, right) * s;
 }
 
-// Fundo: fumaça que flui, grade de pontos que reage ao cursor e o horizonte do início.
-vec3 background(vec2 p, vec2 uv, float aura, float px) {
+// Fundo: só uma fumaça quente que flui devagar e uma luz que passeia, na cor do líquido.
+vec3 background(vec2 p, vec2 uv, float aura) {
 	vec2 sm = texture2D(uSmoke, uv).rg;
-	float smoke = sm.r;
-	float lampGlow = sm.g;
-	vec3 col = vec3(0.95) * smoke * (0.075 + 0.04 * aura) + vec3(0.05) * lampGlow;
-
-	vec2 g = vec2(p.x, p.y - uGrid.z);
-	vec2 cell = floor(g / uGrid.x);
-	vec2 local = (fract(g / uGrid.x) - 0.5) * uGrid.x;
-	float dotMask = 1.0 - smoothstep(uGrid.y - px, uGrid.y + px, length(local));
-	float seed = hash(cell);
-	float twinkle = 0.5 + 0.5 * sin(uTime * (0.6 + seed * 1.4) + seed * 6.283);
-	float nearCursor = exp(-dot2(p - uPtr.xy) * 7.0) * uPtr.z;
-	float sweep = smoothstep(0.75, 1.0, sin((p.x * 0.55 + p.y) * 1.6 - uTime * 0.5 - uGrid.w * 0.6));
-	float glow = 0.055 + 0.025 * twinkle + 0.34 * nearCursor + 0.22 * aura + 0.06 * sweep + 0.08 * smoke + 0.08 * lampGlow;
-	vec2 edge = uv - 0.5;
-	col += mix(vec3(1.0), uTint, aura) * glow * dotMask * (1.0 - dot(edge, edge) * 1.4);
-
-	if (uHorizon.w > 0.001) {
-		vec2 hp = p - uHorizon.xy;
-		float len = max(length(hp), 0.0001);
-		float hd = len - uHorizon.z;
-		float lit = pow(clamp(dot(hp / len, normalize(vec2(-0.3, 1.0))) * 0.5 + 0.5, 0.0, 1.0), 8.0);
-		float outside = smoothstep(-px, px, hd);
-		float rim = exp(-abs(hd) * 150.0);
-		float atmosphere = exp(-max(hd, 0.0) * 5.0) * outside;
-		float inner = exp(min(hd, 0.0) * 14.0) * (1.0 - outside);
-		float shimmer = 0.85 + 0.15 * sin(atan(hp.y, hp.x) * 40.0 + uTime * 0.6);
-		col *= mix(1.0, outside, uHorizon.w);
-		col += vec3(rim * 0.95 * shimmer + atmosphere * 0.22 + inner * 0.09) * lit * uHorizon.w;
-	}
+	vec3 warm = mix(vec3(1.0, 0.94, 0.86), uTint, 0.35);
+	vec3 col = warm * sm.r * (0.07 + 0.04 * aura) + uTint * 0.07 * sm.g;
+	// Halo da cor-assinatura em volta do cursor.
+	col += uTint * exp(-dot2(p - uPtr.xy) * 5.0) * 0.035 * uPtr.z;
 	return col;
+}
+
+/*
+ * Superfície de café no fim da seção de abertura: uma faixa de líquido que
+ * ondula, sobe um pouco embaixo do mascote e some aos poucos para baixo.
+ * Retorna a distância até a faixa de café (negativa dentro dela).
+ */
+float surface(vec2 p) {
+	if (uHorizon.x <= uHorizon.y) return 8.0;
+	float wave = 0.022 * sin(p.x * 2.4 + uTime * 0.8) + 0.012 * sin(p.x * 5.7 - uTime * 1.3);
+	float bump = uHorizon.w * exp(-pow((p.x - uHorizon.z) * 1.6, 2.0));
+	float top = uHorizon.x + wave + bump;
+	// Uma faixa que termina no fim da seção: o café nunca fica atrás do texto seguinte.
+	return max(p.y - top, uHorizon.y - p.y);
 }
 
 void main() {
@@ -263,12 +252,19 @@ void main() {
 
 	// Longe do líquido, nem calcula a forma.
 	float near = boxDistance(p);
-	float d = near < 0.45 ? field(p) : 8.0;
-	float aura = exp(-max(d, 0.0) * 6.0) * (1.0 - smoothstep(0.25, 0.45, near));
-	vec3 col = background(p, uv, aura, px);
+	float dShape = near < 0.45 ? field(p) : 8.0;
+	float dSurf = surface(p);
+	// O mascote se funde com a superfície quando encosta nela.
+	float d = smin(dShape, dSurf, 0.08);
+	float aura = exp(-max(dShape, 0.0) * 6.0) * (1.0 - smoothstep(0.25, 0.45, near));
+	vec3 col = background(p, uv, aura);
 	float opacity = 0.2 + 0.8 * uDim * uDim;
 	// Brilho suave em volta (2D, como uma luz que vaza da forma).
-	col += uTint * aura * 0.09 * opacity;
+	col += uTint * aura * 0.1 * opacity;
+	float depth = uHorizon.x - p.y;
+	float band = max(uHorizon.x - uHorizon.y, 0.001);
+	float surfOn = step(uHorizon.y + 0.001, uHorizon.x);
+	col += uTint * exp(-abs(p.y - uHorizon.x) * 9.0) * 0.12 * surfOn * step(-0.02, -depth);
 
 	if (d < px * 2.0) {
 		// 2D bem acabado: cor chapada, um degradê de cima para baixo e uma
@@ -276,24 +272,29 @@ void main() {
 		float edgeW = uCss * 5.0;
 		float boxH = max(uBox.w - uBox.y, 0.001);
 		float top = clamp((p.y - uBox.y) / boxH, 0.0, 1.0);
-		vec3 fill = uTint * (0.84 + 0.16 * top);
+		// Quanto do ponto é superfície (e não forma): define o degradê e o sumiço para baixo.
+		float isSurf = smoothstep(-0.03, 0.03, dShape - dSurf);
+		vec3 fill = uTint * mix(0.84 + 0.16 * top, 1.0 - 0.4 * smoothstep(0.0, band, depth), isSurf);
 		float reach = uExpr2.z > 0.01 ? 4.0 : 1.5;
 		if (d > -edgeW * reach) {
 			float e = px;
-			vec2 grad = vec2(field(p + vec2(e, 0.0)) - d, field(p + vec2(0.0, e)) - d);
+			float dx = smin(near < 0.45 ? field(p + vec2(e, 0.0)) : 8.0, surface(p + vec2(e, 0.0)), 0.08);
+			float dy = smin(near < 0.45 ? field(p + vec2(0.0, e)) : 8.0, surface(p + vec2(0.0, e)), 0.08);
+			vec2 grad = vec2(dx - d, dy - d);
 			vec2 n = grad / max(length(grad), 1e-5);
 			float facing = dot(n, normalize(vec2(-0.45 + uLight.x * 0.3, 0.9)));
-			float band = 1.0 - smoothstep(0.0, edgeW, -d);
-			fill += vec3(0.16) * max(facing, 0.0) * band;
-			fill *= 1.0 - 0.16 * max(-facing, 0.0) * band;
-			// Gotas e mascote ganham o reflexo curvo de desenho animado, rente à borda de cima.
-			if (uExpr2.z > 0.01) {
+			float rim = 1.0 - smoothstep(0.0, edgeW, -d);
+			fill += vec3(0.16) * max(facing, 0.0) * rim;
+			fill *= 1.0 - 0.16 * max(-facing, 0.0) * rim;
+			// Gotas, mascote e café ganham o reflexo curvo de desenho animado, rente à borda de cima.
+			float glossy = max(uExpr2.z, isSurf);
+			if (glossy > 0.01) {
 				float inside = -d;
 				float shine = smoothstep(edgeW * 1.2, edgeW * 1.8, inside) * (1.0 - smoothstep(edgeW * 2.4, edgeW * 3.4, inside));
-				fill = mix(fill, vec3(1.0), shine * smoothstep(0.6, 0.95, facing) * 0.6 * uExpr2.z);
+				fill = mix(fill, vec3(1.0, 0.97, 0.92), shine * smoothstep(0.6, 0.95, facing) * 0.6 * glossy);
 			}
 		}
-		float alpha = (1.0 - smoothstep(-px, px, d)) * opacity;
+		float alpha = (1.0 - smoothstep(-px, px, d)) * mix(opacity, 1.0 - smoothstep(band * 0.55, band, depth), isSurf);
 		col = mix(col, fill, alpha);
 	}
 
@@ -1151,7 +1152,8 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 		}
 
 		// Gota do cursor (só nas formações "orgânicas").
-		const cursorTarget = pointer.active && def.magnet && !mascot.dragging ? 0.055 * Math.min(aspect, 1) : 0;
+		// A gotinha que segue o cursor só aparece perto do mascote (no resto, ficaria parecendo mancha).
+		const cursorTarget = pointer.active && def.eyes && !mascot.dragging ? 0.055 * Math.min(aspect, 1) : 0;
 		if (cursor.r < 0.002 && pointer.active) {
 			cursor.x = pointer.x;
 			cursor.y = pointer.y;
@@ -1192,17 +1194,19 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 		}
 	}
 
+	/** Faixa de café no fim da seção marcada com data-horizon (o mascote nasce dela). */
 	function horizon(): [number, number, number, number] {
-		if (!horizonEl) return [0, 0, 1, 0];
+		if (!horizonEl) return [0, 0, 0, 0];
 		const r = horizonEl.getBoundingClientRect();
+		if (r.bottom < -40 || r.top > cssH) return [0, 0, 0, 0];
 		const portrait = aspect < 0.9;
 		const bottom = 1 - (r.bottom / cssH) * 2;
-		const radius = portrait ? 1.7 : Math.max(2.4, aspect * 1.6);
-		// data-horizon="0.1": quanto a borda do planeta sobe acima do fim da seção.
+		// data-horizon="0.1": altura da faixa (em unidades do WebGL) acima do fim da seção.
 		const custom = horizonEl.dataset.horizon;
-		const lift = custom ? Number(custom) : portrait ? 0.36 : 0.26;
-		const top = bottom + lift;
-		return [portrait ? 0 : aspect * 0.2, top - radius, radius, smooth(0.08, 0.85, r.bottom / cssH)];
+		const lift = custom ? Number(custom) : portrait ? 0.2 : 0.22;
+		const mascotHere = Boolean(formation.def.eyes) && eye.alpha > 0.05;
+		const bump = mascotHere ? 0.07 * eye.alpha : 0;
+		return [bottom + lift, bottom, mascotHere ? slots[0].v[0] : 0, bump];
 	}
 
 	/** Caixa que contém todas as peças (com folga), para o shader pular o resto da tela. */

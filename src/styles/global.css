@@ -5,39 +5,49 @@
    ========================================================================== */
 
 :root {
-	/* Cores */
-	--black: #000;
-	--white: #fff;
+	/* Identidade "Espresso & Crema": fundo de café, texto cor de leite e uma
+	   cor-assinatura (crema) que amarra mascote, líquido, destaques e botões. */
+	--espresso: #100c0a;
+	--milk: #f4eee6;
+	--crema: #f4a957;
+	--crema-strong: #ffbd73;
+	--ink: #1b120c;
+	--fg-rgb: 244 238 230;
+	--bg-rgb: 16 12 10;
+	--brand-rgb: 244 169 87;
+
+	--black: var(--espresso);
+	--white: var(--milk);
 	/* Cor do líquido (formas e mascote) e dos olhos do mascote. Use hex de 6 dígitos. */
-	--liquid: #f4f4f4;
-	--liquid-ink: #060606;
-	--gray-100: #f2f2f2;
-	--gray-200: #d9d9d9;
-	--gray-300: #b3b3b3;
-	--gray-400: #8f8f8f;
-	--gray-500: #6e6e6e;
-	--gray-600: #4d4d4d;
-	--gray-700: #2e2e2e;
-	--gray-800: #1c1c1c;
-	--gray-900: #0f0f0f;
+	--liquid: #f4a957;
+	--liquid-ink: #1b120c;
+	--gray-100: #efe8de;
+	--gray-200: #d8cfc3;
+	--gray-300: #b4aa9d;
+	--gray-400: #8e8478;
+	--gray-500: #6d645a;
+	--gray-600: #4e463e;
+	--gray-700: #2f2924;
+	--gray-800: #1f1a16;
+	--gray-900: #15110e;
 
-	--bg: var(--black);
-	--bg-2: #070707;
-	--surface: #0e0e0e;
-	--surface-2: #161616;
-	--surface-3: #262626;
-	--line: rgb(255 255 255 / 0.09);
-	--line-strong: rgb(255 255 255 / 0.17);
+	--bg: var(--espresso);
+	--bg-2: #140f0c;
+	--surface: #18130f;
+	--surface-2: #201a15;
+	--surface-3: #2c241e;
+	--line: rgb(var(--fg-rgb) / 0.1);
+	--line-strong: rgb(var(--fg-rgb) / 0.18);
 
-	--text: var(--white);
-	--text-muted: #b8b8b8;
-	--text-dim: #999999;
-	/* Segunda cor das manchetes (o trecho entre <em>). */
-	--text-quiet: #8e8e8e;
-	--accent: var(--white);
+	--text: var(--milk);
+	--text-muted: rgb(var(--fg-rgb) / 0.74);
+	--text-dim: rgb(var(--fg-rgb) / 0.56);
+	/* Segunda cor das manchetes (o trecho entre <em>): a cor-assinatura. */
+	--text-quiet: var(--crema);
+	--accent: var(--crema);
 
-	--gradient-metal: linear-gradient(100deg, #ffffff 0%, #cfcfcf 45%, #7d7d7d 100%);
-	--glow: 0 0 0 1px rgb(255 255 255 / 0.2), 0 20px 60px -20px rgb(255 255 255 / 0.25);
+	--gradient-metal: linear-gradient(100deg, var(--milk) 0%, #f8d3a4 45%, var(--crema) 100%);
+	--glow: 0 0 0 1px rgb(var(--brand-rgb) / 0.4), 0 20px 60px -20px rgb(var(--brand-rgb) / 0.5);
 
 	/* Tipografia */
 	/* Inter no texto; Gilroy nos títulos (Figtree segura o lugar até os
@@ -395,8 +405,8 @@ ol[role='list'] {
    -------------------------------------------------------------------------- */
 
 .btn {
-	--btn-bg: var(--white);
-	--btn-fg: var(--bg);
+	--btn-bg: var(--crema);
+	--btn-fg: var(--ink);
 	position: relative;
 	display: inline-flex;
 	align-items: center;
@@ -425,7 +435,7 @@ ol[role='list'] {
 	position: absolute;
 	inset: 0;
 	z-index: -1;
-	background: var(--gray-200);
+	background: var(--crema-strong);
 	opacity: 0;
 	transition: opacity 0.4s ease;
 }
@@ -454,7 +464,7 @@ ol[role='list'] {
 }
 
 .btn-ghost {
-	--btn-bg: rgb(255 255 255 / 0.06);
+	--btn-bg: rgb(var(--fg-rgb) / 0.06);
 	--btn-fg: var(--text);
 	border: 1px solid var(--line-strong);
 	backdrop-filter: blur(12px);
@@ -462,12 +472,12 @@ ol[role='list'] {
 }
 
 .btn-ghost::before {
-	background: rgb(255 255 255 / 0.08);
+	background: rgb(var(--fg-rgb) / 0.08);
 }
 
 .btn-ghost:hover {
 	box-shadow: none;
-	border-color: rgb(255 255 255 / 0.3);
+	border-color: rgb(var(--fg-rgb) / 0.3);
 }
 
 .btn-sm {
@@ -515,8 +525,8 @@ ol[role='list'] {
 	position: relative;
 	border-radius: var(--radius);
 	background:
-		radial-gradient(420px circle at var(--mx) var(--my), rgb(255 255 255 / 0.05), transparent 60%),
-		linear-gradient(180deg, rgb(20 20 20 / 0.78), rgb(8 8 8 / 0.78));
+		radial-gradient(420px circle at var(--mx) var(--my), rgb(var(--fg-rgb) / 0.05), transparent 60%),
+		linear-gradient(180deg, rgb(32 26 21 / 0.78), rgb(20 16 13 / 0.78));
 	border: 1px solid var(--line);
 	backdrop-filter: blur(18px);
 	-webkit-backdrop-filter: blur(18px);
@@ -531,7 +541,7 @@ ol[role='list'] {
 	inset: -1px;
 	border-radius: inherit;
 	padding: 1px;
-	background: radial-gradient(260px circle at var(--mx) var(--my), rgb(255 255 255 / 0.5), transparent 70%);
+	background: radial-gradient(260px circle at var(--mx) var(--my), rgb(var(--fg-rgb) / 0.5), transparent 70%);
 	-webkit-mask:
 		linear-gradient(#000 0 0) content-box,
 		linear-gradient(#000 0 0);
@@ -555,7 +565,7 @@ ol[role='list'] {
 	border: 1px solid var(--line-strong);
 	font-size: var(--fs-xs);
 	color: var(--text-muted);
-	background: rgb(255 255 255 / 0.03);
+	background: rgb(var(--fg-rgb) / 0.03);
 	white-space: nowrap;
 }
 
@@ -602,7 +612,7 @@ ol[role='list'] {
 .prose a {
 	color: var(--text);
 	text-decoration: underline;
-	text-decoration-color: rgb(255 255 255 / 0.4);
+	text-decoration-color: rgb(var(--fg-rgb) / 0.4);
 	text-underline-offset: 3px;
 	transition: text-decoration-color 0.3s ease;
 }

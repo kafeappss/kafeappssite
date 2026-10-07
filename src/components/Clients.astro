@@ -45,7 +45,7 @@ const logoFor = (key: string) => logos[`../assets/clients/${key}.svg`]?.default;
 		border-right: 1px solid var(--line);
 		border-bottom: 1px solid var(--line);
 		color: var(--gray-300);
-		background: rgb(0 0 0 / 0.35);
+		background: rgb(var(--bg-rgb) / 0.35);
 		transition:
 			color 0.3s ease,
 			background-color 0.3s ease;
@@ -53,7 +53,7 @@ const logoFor = (key: string) => logos[`../assets/clients/${key}.svg`]?.default;
 
 	.clients li:hover {
 		color: var(--white);
-		background: rgb(255 255 255 / 0.03);
+		background: rgb(var(--fg-rgb) / 0.03);
 	}
 
 	.clients :global(svg) {

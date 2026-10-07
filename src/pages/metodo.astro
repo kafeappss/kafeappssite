@@ -216,8 +216,8 @@ const methodFaq = faq.filter((item) => /IA|MVP|lançamento/.test(item.q));
 		margin-bottom: 6px;
 		border-radius: var(--radius-sm);
 		color: var(--text);
-		background: rgb(255 255 255 / 0.06);
-		border: 1px solid rgb(255 255 255 / 0.12);
+		background: rgb(var(--fg-rgb) / 0.06);
+		border: 1px solid rgb(var(--fg-rgb) / 0.12);
 	}
 
 	.ritual h3 {
@@ -241,7 +241,7 @@ const methodFaq = faq.filter((item) => /IA|MVP|lançamento/.test(item.q));
 	.model .tag {
 		justify-self: start;
 		color: var(--text);
-		border-color: rgb(255 255 255 / 0.17);
+		border-color: rgb(var(--fg-rgb) / 0.17);
 	}
 
 	.model p {
