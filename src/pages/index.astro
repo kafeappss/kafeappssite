@@ -75,7 +75,7 @@ const capabilities = [
 <Base
 	description="A Kafé Apps cria aplicativos, plataformas, sistemas e soluções de IA sob medida — em código, com engenharia acelerada por IA. Software house em Niterói (RJ) que atende todo o Brasil."
 >
-	<!-- Início: o mascote em pé no horizonte -->
+	<!-- Início: o mascote (no celular, como no Zirtuno: título curto, mascote grande e "Diga oi") -->
 	<section class="hero" data-liquid="mascot" data-rail="Início" data-horizon>
 		<div class="container hero-inner">
 			<div class="hero-copy">
@@ -93,12 +93,18 @@ const capabilities = [
 				</div>
 				<ul role="list" class="hero-proof" data-reveal style="--delay: 0.65s">
 					<li><Icon name="clock" size={18} /> Desde {site.foundingYear}</li>
-					<li><Icon name="spark" size={18} /> Engenharia aumentada por IA</li>
+					<li data-mascot-look="star"><Icon name="spark" size={18} /> Engenharia aumentada por IA</li>
 					<li><Icon name="k" size={18} /> Metodologia 4Ds</li>
 				</ul>
 			</div>
-			<!-- Espaço do mascote: ao lado do texto no computador, abaixo dele no celular. -->
-			<div class="hero-mascot" data-liquid-anchor aria-hidden="true"></div>
+			<!-- Espaço do mascote: ao lado do texto no computador, logo abaixo do título no celular. -->
+			<div class="hero-stage">
+				<div class="hero-mascot" data-liquid-anchor aria-hidden="true"></div>
+				<button class="talk-pill" type="button" data-mascot-talk>
+					<span class="talk-eyes" aria-hidden="true"><i></i><i></i></span>
+					<span class="talk-label" data-mascot-label aria-live="polite">Diga oi</span>
+				</button>
+			</div>
 		</div>
 		<Mascot />
 	</section>
@@ -481,11 +487,18 @@ const capabilities = [
 		color: var(--accent);
 	}
 
-	.hero-mascot {
-		min-height: 200px;
+	.hero-stage {
+		display: grid;
+		justify-items: center;
+		gap: 6px;
 	}
 
-	/* Tela larga: mascote ao lado do texto. */
+	.hero-mascot {
+		justify-self: stretch;
+		min-height: 220px;
+	}
+
+	/* Tela larga: mascote ao lado do texto, com o "Diga oi" embaixo. */
 	@media (min-width: 960px) and (min-aspect-ratio: 9/10) {
 		.hero-inner {
 			grid-template-columns: minmax(0, 1.3fr) minmax(0, 0.7fr);
@@ -493,38 +506,96 @@ const capabilities = [
 			gap: 24px;
 		}
 
-		/* O mascote fica embaixo, saindo da superfície de café do fim do hero. */
 		.hero-mascot {
-			align-self: end;
-			height: clamp(380px, 62vh, 620px);
-			margin-bottom: -235px;
+			height: clamp(340px, 52vh, 560px);
 		}
 	}
 
-	/* Tela em pé: o mascote mora no fim do hero, abaixo do texto, em cima do horizonte. */
+	/*
+	 * Tela em pé (celular): primeira tela só com o título e o mascote grande,
+	 * como no Zirtuno. O texto, os botões e os números vêm logo abaixo.
+	 */
 	@media (max-aspect-ratio: 9/10) {
 		.hero {
 			align-items: stretch;
-			padding-top: calc(var(--header-h) + 28px);
-			padding-bottom: 8px;
+			padding-top: calc(var(--header-h) + 22px);
+			padding-bottom: 40px;
 		}
 
 		.hero-inner {
-			grid-template-rows: auto 1fr;
-			gap: 22px;
+			display: flex;
+			flex-direction: column;
+			gap: 20px;
 		}
 
 		.hero-copy {
-			gap: 22px;
+			display: contents;
 		}
 
-		/* Metade do corpo fica acima da faixa de café. */
+		.hero .eyebrow::before {
+			display: none;
+		}
+
+		.hero .eyebrow {
+			order: 1;
+			align-self: center;
+			max-width: 30ch;
+			text-align: center;
+			line-height: 1.7;
+		}
+
+		.hero-title {
+			order: 2;
+			align-self: center;
+			text-align: center;
+		}
+
+		.hero-stage {
+			position: relative;
+			order: 3;
+			height: clamp(330px, 52svh, 500px);
+			margin-inline: calc(-1 * var(--gutter));
+		}
+
+		/* O espaço é mais largo que a tela: o mascote fica grande. */
 		.hero-mascot {
-			min-height: 190px;
-			margin-bottom: 34px;
+			position: absolute;
+			inset: 0 -14% 62px;
+			min-height: 0;
+		}
+
+		.talk-pill {
+			position: absolute;
+			bottom: 8px;
+			left: 50%;
+			transform: translateX(-50%);
+		}
+
+		.talk-pill:active {
+			transform: translateX(-50%) scale(0.96);
+		}
+
+		.hero-lead {
+			order: 4;
+			margin-top: 12px;
+			text-align: center;
+		}
+
+		.hero .btn-row {
+			order: 5;
+			flex-direction: column;
+			align-self: stretch;
+		}
+
+		.hero .btn-row :global(.btn) {
+			width: 100%;
+		}
+
+		.hero-proof {
+			order: 6;
+			justify-content: center;
 		}
 	}
-
 
 	/* 01 · Problema ------------------------------------------------------------ */
 	.pains {

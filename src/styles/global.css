@@ -515,6 +515,77 @@ ol[role='list'] {
 	height: 16px;
 }
 
+/* Pílula "Diga oi": conversa com o mascote. */
+.talk-pill {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	padding: 11px 18px 11px 14px;
+	border-radius: 999px;
+	border: 1px solid rgb(var(--brand-rgb) / 0.35);
+	background: rgb(var(--bg-rgb) / 0.85);
+	color: var(--text);
+	font-size: 0.86rem;
+	font-weight: 600;
+	backdrop-filter: blur(10px);
+	-webkit-backdrop-filter: blur(10px);
+	transition:
+		border-color 0.3s ease,
+		background-color 0.3s ease,
+		transform 0.4s var(--ease-out);
+}
+
+.talk-pill:hover {
+	border-color: var(--crema);
+	background: rgb(var(--brand-rgb) / 0.12);
+}
+
+.talk-pill:active {
+	transform: scale(0.96);
+}
+
+/* Quando o mascote fala no celular, a pílula vira o balão de fala. */
+.talk-pill[data-talking] {
+	max-width: min(86vw, 360px);
+	padding: 12px 18px 12px 14px;
+	border-radius: 20px;
+	border-color: var(--crema);
+	background: var(--milk);
+	color: var(--ink);
+	line-height: 1.35;
+	text-align: left;
+}
+
+.talk-pill[data-talking] .talk-eyes i {
+	background: var(--ink);
+}
+
+.talk-eyes {
+	display: inline-flex;
+	gap: 4px;
+}
+
+/* Os olhinhos do mascote, inclinados como os recortes do K. */
+.talk-eyes i {
+	width: 4px;
+	height: 11px;
+	border-radius: 1px;
+	background: var(--crema);
+	transform: skewX(-16deg);
+	animation: talk-blink 4s infinite;
+}
+
+@keyframes talk-blink {
+	0%,
+	92%,
+	100% {
+		transform: skewX(-16deg) scaleY(1);
+	}
+	95% {
+		transform: skewX(-16deg) scaleY(0.15);
+	}
+}
+
 /* --------------------------------------------------------------------------
    Cartões
    -------------------------------------------------------------------------- */

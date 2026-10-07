@@ -1,21 +1,33 @@
 ---
 import Base from '../layouts/Base.astro';
 import Icon from '../components/Icon.astro';
+import Mascot from '../components/Mascot.astro';
 ---
 
 <Base title="Página não encontrada" description="A página que você procura não existe ou mudou de endereço." noindex>
-	<section class="not-found" data-liquid="pool">
-		<div class="container">
-			<p class="eyebrow" data-reveal>Erro 404</p>
-			<h1 class="display" data-split>Esse café <em>esfriou.</em></h1>
-			<p class="lead" data-reveal style="--delay: 0.2s">
-				A página que você procura não existe ou mudou de endereço. Que tal recomeçar por aqui?
-			</p>
-			<div class="btn-row" data-reveal style="--delay: 0.3s">
-				<a class="btn" href="/">Voltar para o início <Icon name="arrow" class="arrow" /></a>
-				<a class="btn btn-ghost" href="/servicos">Ver serviços</a>
+	<!-- O mascote aparece tristinho aqui (data-mascot-mood="sad") e tenta animar a pessoa. -->
+	<section class="not-found" data-liquid="mascot" data-mascot-mood="sad">
+		<div class="container nf-inner">
+			<div class="nf-copy">
+				<p class="eyebrow" data-reveal>Erro 404</p>
+				<h1 class="display" data-split>Esse café <em>esfriou.</em></h1>
+				<p class="lead" data-reveal style="--delay: 0.2s">
+					A página que você procura não existe ou mudou de endereço. Que tal recomeçar por aqui?
+				</p>
+				<div class="btn-row" data-reveal style="--delay: 0.3s">
+					<a class="btn" href="/" data-mascot-look="love">Voltar para o início <Icon name="arrow" class="arrow" /></a>
+					<a class="btn btn-ghost" href="/servicos">Ver serviços</a>
+				</div>
+			</div>
+			<div class="nf-stage">
+				<div class="nf-mascot" data-liquid-anchor aria-hidden="true"></div>
+				<button class="talk-pill" type="button" data-mascot-talk>
+					<span class="talk-eyes" aria-hidden="true"><i></i><i></i></span>
+					<span class="talk-label" data-mascot-label aria-live="polite">Anima ele</span>
+				</button>
 			</div>
 		</div>
+		<Mascot />
 	</section>
 </Base>
 
@@ -28,10 +40,33 @@ import Icon from '../components/Icon.astro';
 		padding-block: calc(var(--header-h) + 40px) 120px;
 	}
 
-	.not-found .container {
+	.nf-inner {
+		display: grid;
+		gap: 32px;
+		align-items: center;
+	}
+
+	.nf-copy {
 		display: grid;
 		gap: 24px;
 		justify-items: start;
+	}
+
+	.nf-stage {
+		display: grid;
+		justify-items: center;
+		gap: 6px;
+	}
+
+	.nf-mascot {
+		justify-self: stretch;
+		height: clamp(240px, 40vh, 460px);
+	}
+
+	@media (min-width: 960px) {
+		.nf-inner {
+			grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+		}
 	}
 
 	.not-found .lead {
