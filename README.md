@@ -20,8 +20,8 @@ Feito com [Astro](https://astro.build), gera um site 100% estático (HTML, CSS e
   - clique duplo: cambalhota; toque longo (celular): enche de ar;
   - arrastar (mouse): puxa-puxa. O corpo fica no lugar e se inclina, e o pedaço que você segura sai dele preso por um "pescoço" que afina e resiste conforme estica (perto do limite, ele treme de esforço). Ao soltar, a ponta volta num estalo e o corpo achata, balança e assenta;
   - mouse rápido por cima: cócegas; mouse devagar: carinho;
-  - mouse no botão principal: apaixonado; em temas de IA: olhos de estrela;
-  - cursor sai da página: fica triste e comemora quando ele volta; voltar para a aba: comemora;
+  - mouse em "Tirar minha ideia do papel": acena que sim com a cabeça; num botão de contato ("Fale com a gente", "Começar meu projeto", WhatsApp): aparecem dois pezinhos e ele bate o pé de alegria; em temas de IA: olhos de estrela;
+  - cursor sai da página: balança a cabeça que não, tristinho, e comemora quando ele volta; voltar para a aba: comemora;
   - ninguém mexe: boceja e depois cochila;
   - digitar "café" em qualquer lugar: festa; copiar um texto: piscadinha; voltar ao topo depois de ler tudo: carinho;
   - cumprimenta conforme a hora do dia. No celular, a fala aparece dentro do botão "Diga oi".
@@ -76,7 +76,7 @@ Cada seção diz qual desenho o líquido deve formar enquanto ela está no meio 
 - Espaço da forma: coloque `<LiquidSlot class="slot" />` dentro da seção (ou qualquer elemento com `data-liquid-anchor`). A forma mora ali e rola junto com o conteúdo; sem espaço, ela fica ao lado do texto (ou num canto, no celular). A classe `slot` com `head-split` em volta do título monta o layout "título + forma" usado nas seções.
 - `data-liquid-hover="phone"`: num cartão, o líquido vira essa forma ao passar o mouse (no celular, vale o cartão que estiver no meio da tela). O cartão pode ter o próprio `data-liquid-anchor`; se não tiver, usa o espaço da seção.
 - `data-horizon`: no estilo `liquid`, desenha a faixa de café no fim da seção (`data-horizon="0.1"` ajusta a altura).
-- `data-mascot-look="love"` ou `"star"`: o mascote olha para o elemento e reage quando o mouse passa por ele.
+- `data-mascot-look="nod"`, `"tap"`, `"love"` ou `"star"`: o mascote olha para o elemento e reage quando o mouse passa por ele (acena que sim, bate o pezinho, fica apaixonado ou com olhos de estrela).
 
 Para testar no console do navegador: `__liquid.show('rocket')` mostra uma forma, `__liquid.react('love')` faz o mascote reagir (`happy`, `wink`, `surprise`, `love`, `dizzy`, `angry`, `giggle`, `spin`, `star`, `sad`, `pet`, `yawn`, `inflate`, `party`) `__liquid.advance(3)` adianta a animação em 3 segundos, `__liquid.state()` mostra a forma atual e a fase da transformação e `__liquid.tint('#3b6ef0', '#ffffff')` testa outra cor para o líquido e os olhos.
 

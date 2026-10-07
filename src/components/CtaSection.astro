@@ -24,10 +24,10 @@ const whatsapp = whatsappLink();
 		<h2 class="h1" data-split set:html={title} />
 		<p class="lead" data-reveal style="--delay: 0.2s">{lead}</p>
 		<div class="btn-row" data-reveal style="--delay: 0.3s">
-			<a class="btn" href={site.contact.briefUrl}>Começar meu projeto <Icon name="arrow" class="arrow" /></a>
+			<a class="btn" href={site.contact.briefUrl} data-mascot-look="tap">Começar meu projeto <Icon name="arrow" class="arrow" /></a>
 			{
 				whatsapp ? (
-					<a class="btn btn-ghost" href={whatsapp} target="_blank" rel="noopener">
+					<a class="btn btn-ghost" href={whatsapp} target="_blank" rel="noopener" data-mascot-look="tap">
 						<Icon name="whatsapp" size={20} /> Chamar no WhatsApp
 					</a>
 				) : (

@@ -24,6 +24,9 @@ const SLOTS = 14;
 const BALL = 11;
 const NECK = 12;
 const BLOB = 13;
+/** Os pezinhos do mascote (aparecem quando ele bate o pé de alegria). */
+const FOOT_L = 6;
+const FOOT_R = 7;
 const STORAGE_KEY = 'kafe:liquid:v3';
 
 const VERTEX_SHADER = /* glsl */ `
@@ -382,6 +385,8 @@ const REACTIONS: Record<string, number> = {
 	yawn: 1.8,
 	inflate: 1.3,
 	party: 2.4,
+	nod: 1.3,
+	shake: 1.3,
 };
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
@@ -564,7 +569,7 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 	let lastInteraction = performance.now();
 
 	const globals = { dim: 1, k: 0.2, wob: 0.011, shine: 1, settle: 0 };
-	const eye = { alpha: 0, gx: 0, gy: 0, openL: 1, openR: 1, nextBlink: 2, blinkUntil: 0, spin: 0, roll: 0 };
+	const eye = { alpha: 0, gx: 0, gy: 0, openL: 1, openR: 1, nextBlink: 2, blinkUntil: 0, spin: 0, roll: 0, offX: 0, offY: 0 };
 	const expr: Expression = { happy: 0, surprise: 0, angry: 0, love: 0, dizzy: 0, star: 0, sad: 0 };
 	const mascot = {
 		reaction: '',
@@ -601,6 +606,9 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 		snapping: false,
 		/** Até quando o corpo balança solto depois do estalo. */
 		snapUntil: -10,
+		/** Pezinhos à mostra (0 a 1) e quando ele pode acenar que sim de novo. */
+		tap: 0,
+		nodReadyAt: 0,
 		/** Humor da página (ex.: data-mascot-mood="sad" na 404). */
 		mood: document.querySelector<HTMLElement>('[data-mascot-mood]')?.dataset.mascotMood ?? '',
 	};
@@ -942,7 +950,8 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 			// (Soltar o mascote fora da janela não conta: ele ainda está balançando.)
 			if (finePointer && eye.alpha > 0.5 && time > mascot.awayReadyAt && !mascot.sleeping && !mascot.dragging && time > mascot.snapUntil) {
 				mascot.away = true;
-				react('sad');
+				// Balança a cabeça que não: "não vai embora!".
+				react('shake');
 				emit('away');
 			}
 		});
@@ -1123,7 +1132,8 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 	}
 
 	// Elementos que chamam a atenção do mascote (data-mascot-look): ele olha e,
-	// conforme o valor, se apaixona ("love") ou fica com olhos de estrela ("star").
+	// conforme o valor, se apaixona ("love"), fica com olhos de estrela ("star"),
+	// acena que sim com a cabeça ("nod") ou bate o pezinho de alegria ("tap").
 	document.querySelectorAll<HTMLElement>('[data-mascot-look]').forEach((el) => {
 		const enter = () => {
 			mascot.lookEl = el;
@@ -1132,6 +1142,12 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 			if (eye.alpha < 0.5) return;
 			if (mascot.lookMood === 'love') emit('cta');
 			if (mascot.lookMood === 'star') emit('star');
+			if (mascot.lookMood === 'tap') emit('tap');
+			if (mascot.lookMood === 'nod' && time > mascot.nodReadyAt) {
+				mascot.nodReadyAt = time + 2.5;
+				react('nod');
+				emit('nod');
+			}
 		};
 		const leave = () => {
 			if (mascot.lookEl !== el) return;
@@ -1190,9 +1206,27 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 				target[3] *= k;
 				target[4] *= k;
 			}
-			if (active === 'sad' || (mascot.away && !active)) {
+			if (active === 'sad' || active === 'shake' || (mascot.away && !active)) {
 				target[1] -= 0.05 * R0;
 				target[3] *= 0.95;
+			}
+			// Pezinhos: com o mouse num botão de contato, ele bate o pé de alegria
+			// (um pé fica plantado, o outro bate com a ponta para cima, e o corpo quica).
+			const wantTap = mascot.lookMood === 'tap' && !mascot.dragging && !mascot.sleeping ? 1 : 0;
+			mascot.tap += (wantTap - mascot.tap) * Math.min(1, dt * (wantTap ? 7 : 9));
+			if (mascot.tap > 0.01) {
+				const k = mascot.tap;
+				const beat = Math.max(0, Math.sin(time * Math.PI * 2 * 2.4));
+				const lift = beat * beat;
+				// Sapatinhos logo abaixo do corpo (com uma fresta mínima, sem se fundir a ele).
+				// Eles acompanham o corpo, menos a quicada: o pé plantado fica no chão.
+				const bounce = 0.035 * R0 * lift * k;
+				const fw = 0.2 * R0 * k;
+				const fh = 0.11 * R0 * k;
+				const sole = body[1] - bounce - Math.max(body[3], R0 * 0.5) - 0.03 * R0 - fh;
+				target[1] += bounce;
+				out[FOOT_L] = { v: [body[0] - 0.33 * R0, sole, fw, fh, fh, -0.08, 0], op: 1 };
+				out[FOOT_R] = { v: [body[0] + 0.33 * R0, sole + 0.15 * R0 * lift * k, fw, fh, fh, 0.08 + 0.5 * lift * k, 0], op: 1 };
 			}
 			if (active === 'party') target[1] += Math.abs(Math.sin(time * 9)) * 0.1 * R0;
 			if (mascot.sleeping) {
@@ -1290,6 +1324,26 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 		const turns = active === 'spin' ? 1 : active === 'party' ? 2 : 0;
 		const span = active === 'spin' ? 0.8 : 1.4;
 		eye.roll = turns ? ease(Math.min(age / span, 1)) * Math.PI * 2 * turns : 0;
+
+		// Acenar que sim (a parte de cima da bolinha abaixa e volta, e o rosto
+		// acompanha) e balançar que não (o rosto vira de um lado para o outro).
+		eye.offX = 0;
+		eye.offY = 0;
+		if (active === 'nod') {
+			const env = Math.sin(Math.min(age / REACTIONS.nod, 1) * Math.PI);
+			const dip = (0.5 - 0.5 * Math.cos(age * Math.PI * 2 * 2.4)) * env;
+			eye.offY = -0.9 * dip;
+			target[3] *= 1 - 0.11 * dip;
+			target[1] -= R0 * 0.11 * dip;
+			target[2] *= 1 + 0.04 * dip;
+		}
+		if (active === 'shake') {
+			const env = Math.sin(Math.min(age / REACTIONS.shake, 1) * Math.PI);
+			const swing = Math.sin(age * Math.PI * 2 * 2.6) * env;
+			eye.offX = 0.85 * swing;
+			eye.roll += 0.12 * swing;
+			target[0] += 0.05 * R0 * swing;
+		}
 		if (turns && age < span) {
 			const squash = Math.sin((age / span) * Math.PI * 2 * turns);
 			target[2] *= 1 + 0.08 * squash;
@@ -1300,7 +1354,7 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 		const goal: Expression = { happy: 0, surprise: 0, angry: 0, love: 0, dizzy: 0, star: 0, sad: 0 };
 		let openL = 1;
 		let openR = 1;
-		if (active === 'happy' || active === 'giggle' || active === 'spin') goal.happy = 1;
+		if (active === 'happy' || active === 'giggle' || active === 'spin' || active === 'nod') goal.happy = 1;
 		else if (active === 'pet') goal.happy = 0.85;
 		else if (active === 'surprise' || active === 'wake' || active === 'boing' || active === 'inflate') goal.surprise = 1;
 		else if (active === 'love') goal.love = 1;
@@ -1310,7 +1364,7 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 		} else if (active === 'dizzy') goal.dizzy = 1;
 		else if (active === 'angry') goal.angry = 1;
 		else if (active === 'star') goal.star = 1;
-		else if (active === 'sad') goal.sad = 1;
+		else if (active === 'sad' || active === 'shake') goal.sad = 1;
 		else if (active === 'yawn') {
 			goal.surprise = 0.5;
 			openL = openR = 0.35;
@@ -1318,6 +1372,8 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 		else if (mascot.dragging) goal.angry = 1;
 		else if (mascot.lookMood === 'love') goal.love = 1;
 		else if (mascot.lookMood === 'star') goal.star = 1;
+		else if (mascot.lookMood === 'tap') goal.happy = 1;
+		else if (mascot.lookMood === 'nod') goal.happy = 0.6;
 		else if (mascot.away) goal.sad = 1;
 		else if (mascot.sleeping) openL = openR = 0.07;
 		else if (near) goal.surprise = 0.45;
@@ -1674,13 +1730,20 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 		stepMascot(dt, out, now);
 		// Molas: o corpo segue firme quando puxado e balança solto depois do estalo.
 		const wobbling = time < mascot.snapUntil;
-		const bodyK = mascot.dragging ? 30 : wobbling ? 110 : solid ? 8.5 : 6.5;
-		const bodyC = mascot.dragging ? 8 : wobbling ? 6.5 : solid ? 4.4 : 3.7;
+		// Acenar, balançar e bater o pé são rápidos: o corpo acompanha com uma mola firme.
+		const active = time < mascot.until ? mascot.reaction : '';
+		const lively = active === 'nod' || active === 'shake' || mascot.tap > 0.05;
+		const bodyK = mascot.dragging ? 30 : wobbling ? 110 : lively ? 220 : solid ? 8.5 : 6.5;
+		const bodyC = mascot.dragging ? 8 : wobbling ? 6.5 : lively ? 22 : solid ? 4.4 : 3.7;
 		springK.fill(6.5);
 		springC.fill(3.7);
 		springK[0] = bodyK;
 		springC[0] = bodyC;
 		springK[BLOB] = mascot.dragging ? 140 : mascot.snapping ? 110 : 6.5;
+		if (mascot.tap > 0.01) {
+			springK[FOOT_L] = springK[FOOT_R] = 320;
+			springC[FOOT_L] = springC[FOOT_R] = 34;
+		}
 		springC[BLOB] = mascot.dragging ? 18 : mascot.snapping ? 11 : 3.7;
 		const gooGoal = applyMorph(out, place, dt);
 
@@ -1858,7 +1921,7 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 		gl!.uniform4fv(uniforms.b, dataB);
 		gl!.uniform3f(uniforms.cur, cursor.x, cursor.y, cursor.r);
 		gl!.uniform4f(uniforms.eye, body[0], body[1], Math.max(Math.min(body[2], body[3]), 0.001), eye.alpha);
-		gl!.uniform4f(uniforms.eye2, eye.gx, eye.gy, eye.openL, eye.openR);
+		gl!.uniform4f(uniforms.eye2, eye.gx + eye.offX, eye.gy + eye.offY, eye.openL, eye.openR);
 		gl!.uniform4f(uniforms.expr, expr.happy, expr.surprise, expr.angry, expr.love);
 		gl!.uniform4f(uniforms.expr2, expr.dizzy, eye.spin, globals.shine, 0);
 		gl!.uniform4f(uniforms.expr3, expr.star, expr.sad, eye.roll, 0);
@@ -1993,6 +2056,8 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 			render();
 		},
 		state: () => ({ name: formation.name, place: lastPlace, el: formationEl?.id || formationEl?.className, quality, morph: morph.phase }),
+		/** Posição e tamanho de cada peça (x, y, meia-largura, meia-altura, canto, rotação, contorno). */
+		slots: () => slots.map((slot) => slot.v.map((v) => Math.round(v * 1000) / 1000)),
 		/** Testa outra cor para o líquido, ex.: __liquid.tint('#3b6ef0'). */
 		tint: (hex: string, inkHex?: string) => {
 			const parse = (value: string) => {

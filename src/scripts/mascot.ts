@@ -6,11 +6,13 @@
  * - clique: uma reação diferente a cada vez (feliz, piscadinha, surpreso, apaixonado…);
  * - cliques demais em sequência: fica tonto, depois bravo;
  * - clique duplo: dá uma cambalhota;
- * - arrastar (mouse): estica como goma e volta com um "boing";
+ * - arrastar (mouse): puxa-puxa, e volta com um "boing";
  * - toque longo (celular): enche de ar;
  * - mouse rápido por cima: cócegas; mouse devagar por cima: carinho;
- * - mouse no botão principal: apaixonado; em temas de IA: olhos de estrela;
- * - cursor sai da página: fica triste (e comemora quando ele volta);
+ * - mouse em "Tirar minha ideia do papel": acena que sim com a cabeça;
+ * - mouse num botão de contato: bate o pezinho de alegria;
+ * - em temas de IA: olhos de estrela;
+ * - cursor sai da página: balança a cabeça que não, tristinho (e comemora quando ele volta);
  * - ninguém mexe: boceja e cochila; voltar para a aba: comemora;
  * - digitar "café" (ou "kafe") em qualquer lugar: festa;
  * - copiar um texto da página: piscadinha;
@@ -47,6 +49,8 @@ const EVENTS: Record<string, string[]> = {
 	wake: ['Opa! Tava só descansando os olhos. 👀', 'Hã? Eu tava acordado, juro.'],
 	yawn: ['Aaaahh… 🥱', 'Tá quietinho por aí, hein?'],
 	cta: ['Isso! Clica aí. 🧡'],
+	nod: ['Isso! Bora tirar do papel? 👍'],
+	tap: ['Oba, vamos conversar! 🎉'],
 	star: ['IA? Meu assunto favorito. ✦'],
 	away: ['Ei, não vai embora! ☕', 'Volta aqui, a conversa tava boa.'],
 	return: ['Voltou! 😄', 'Sabia que você voltava.'],
@@ -161,7 +165,7 @@ if (hit && bubble && text) {
 	window.addEventListener('kafe:mascot-event', (event) => {
 		const kind = String((event as CustomEvent).detail);
 		if (kind === 'sleep') return say('Zzz…', 0);
-		if (kind === 'cta' || kind === 'star' || kind === 'welcome') {
+		if (kind === 'cta' || kind === 'star' || kind === 'welcome' || kind === 'nod' || kind === 'tap') {
 			if (saidOnce.has(kind)) return;
 			saidOnce.add(kind);
 		}
@@ -171,8 +175,8 @@ if (hit && bubble && text) {
 	// Palavra secreta: digitar "café" ou "kafe" em qualquer lugar (fora de campos de texto).
 	let typed = '';
 	window.addEventListener('keydown', (event) => {
-		const target = event.target as HTMLElement;
-		if (target.closest('input, textarea, select, [contenteditable]')) return;
+		const target = event.target;
+		if (target instanceof Element && target.closest('input, textarea, select, [contenteditable]')) return;
 		if (event.key.length !== 1) return;
 		typed = (typed + event.key.toLowerCase()).slice(-6);
 		if (/(caf[eé]|kafe)$/.test(typed) && visible()) {
