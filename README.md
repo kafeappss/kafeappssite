@@ -27,7 +27,7 @@ Feito com [Astro](https://astro.build), gera um site 100% estático (HTML, CSS e
   - cumprimenta conforme a hora do dia. No celular, a fala aparece dentro do botão "Diga oi".
   Falas em `src/scripts/mascot.ts`; expressões e movimentos em `src/scripts/liquid.ts`.
 - **Fundo calmo**: só uma fumaça quente que flui devagar e o brilho da cor-assinatura em volta das formas.
-- **Trilho de seções**: à direita (telas largas), mostra em que parte da página a pessoa está e permite pular entre as seções.
+- **Trilho de seções**: à direita (telas largas), uma régua de tracinhos com uma bolinha no começo de cada seção. Perto da posição atual, os tracinhos crescem como uma lupa e o da posição atual fica grosso e claro. Com o mouse por cima, a lupa segue o cursor e mostra o nome da seção; clicar leva até lá (pelo teclado, cada seção é um botão).
 - **Acessível e leve**: respeita "reduzir movimento" do sistema, tem fundo estático quando não há WebGL, reduz a qualidade em aparelhos mais modestos e economiza bateria quando a página está parada.
 - **Conteúdo para SEO**: página para cada serviço, blog com artigos originais, dados estruturados (schema.org), sitemap, `robots.txt` e imagem de compartilhamento.
 

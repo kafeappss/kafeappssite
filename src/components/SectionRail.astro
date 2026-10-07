@@ -1,139 +1,319 @@
 ---
 /**
- * Trilho lateral (desktop) com as etapas da página. É montado a partir das
- * seções marcadas com data-rail="Nome" e mostra em qual delas você está.
+ * Trilho lateral (desktop), no estilo de uma régua: tracinhos de cima a baixo
+ * da tela, com uma bolinha no começo de cada seção (marcada com data-rail="Nome").
+ *
+ * Perto da posição atual da página, os tracinhos crescem como uma lupa (com um
+ * "vale" logo antes e depois, que destaca o volume); o tracinho da posição atual
+ * fica grosso e claro, e os da seção atual ficam mais claros que os outros.
+ * Com o mouse por cima, a lupa segue o cursor e mostra o nome da seção; clicar
+ * leva até lá. Pelo teclado, cada seção é um botão (Tab) sobre a sua bolinha.
  */
 ---
 
 <nav class="rail" aria-label="Seções desta página" data-rail-nav hidden>
-	<ol role="list" data-rail-list></ol>
+	<div class="rail-ruler" data-rail-ruler aria-hidden="true"></div>
+	<ol role="list" class="rail-links" data-rail-list></ol>
+	<span class="rail-tip" data-rail-tip aria-hidden="true"></span>
 </nav>
 
 <script>
 	const nav = document.querySelector<HTMLElement>('[data-rail-nav]');
+	const ruler = document.querySelector<HTMLElement>('[data-rail-ruler]');
 	const list = document.querySelector<HTMLOListElement>('[data-rail-list]');
+	const tip = document.querySelector<HTMLElement>('[data-rail-tip]');
 	const sections = Array.from(document.querySelectorAll<HTMLElement>('[data-rail]'));
 
-	if (nav && list && sections.length >= 3) {
-		const smooth = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+	if (nav && ruler && list && tip && sections.length >= 3) {
+		const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+		/** Distância entre os tracinhos (px). */
+		const SPACING = 18;
+		/** Linha da tela (45% da altura) que define em qual seção a página está. */
+		const LINE = 0.45;
+		const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+		const numberOf = (index: number) => String(index + 1).padStart(2, '0');
+
 		const buttons = sections.map((section, index) => {
 			const item = document.createElement('li');
 			const button = document.createElement('button');
 			button.type = 'button';
-			button.innerHTML = `<span class="rail-label"></span><span class="rail-num">${String(index + 1).padStart(2, '0')}</span><span class="rail-tick" aria-hidden="true"></span>`;
-			button.querySelector('.rail-label')!.textContent = section.dataset.rail ?? '';
-			button.setAttribute('aria-label', `${String(index + 1).padStart(2, '0')} — ${section.dataset.rail}`);
-			button.addEventListener('click', () => section.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto' }));
+			button.className = 'rail-dot';
+			button.setAttribute('aria-label', `${numberOf(index)} — ${section.dataset.rail}`);
+			button.addEventListener('click', () => go(index));
+			button.addEventListener('focus', () => {
+				// Só pelo teclado: com o mouse, a lupa já segue o cursor.
+				if (!button.matches(':focus-visible')) return;
+				pointerAt = dotAt[index];
+				showTip(index, dotAt[index]);
+				kick();
+			});
+			button.addEventListener('blur', () => {
+				pointerAt = null;
+				hideTip();
+				kick();
+			});
 			item.append(button);
 			list.append(item);
 			return button;
 		});
-		nav.hidden = false;
 
-		let scheduled = false;
-		const update = () => {
-			scheduled = false;
-			const line = window.innerHeight * 0.45;
+		let ticks: HTMLSpanElement[] = [];
+		let count = 0;
+		let gap = SPACING;
+		/** Onde cada seção começa (0 = topo da página, 1 = fim) e o tracinho da sua bolinha. */
+		let starts: number[] = [];
+		let dotAt: number[] = [];
+		/** Seção dona de cada tracinho. */
+		let owner: number[] = [];
+		/** Centro da lupa (em tracinhos), o alvo dela e a posição do mouse sobre a régua. */
+		let lens = 0;
+		let pointerAt: number | null = null;
+		let frame = 0;
+		let last = 0;
+
+		const maxScroll = () => Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+		const position = () => clamp(window.scrollY / maxScroll(), 0, 1) * (count - 1);
+		const sectionAt = (tick: number) => owner[clamp(Math.round(tick), 0, count - 1)] ?? 0;
+
+		function layout() {
+			const height = ruler!.clientHeight;
+			if (!height) return;
+			count = Math.max(12, Math.floor(height / SPACING) + 1);
+			gap = height / (count - 1);
+			const max = maxScroll();
+			starts = sections.map((section) =>
+				clamp((section.getBoundingClientRect().top + window.scrollY - window.innerHeight * LINE) / max, 0, 1),
+			);
+			// Uma bolinha por seção, sem duas no mesmo tracinho.
+			dotAt = [];
+			starts.forEach((start, index) => {
+				const previous = dotAt[index - 1] ?? -1;
+				dotAt.push(Math.min(count - 1, Math.max(Math.round(start * (count - 1)), previous + 1)));
+			});
+			owner = Array.from({ length: count }, (_, tick) => {
+				let section = 0;
+				dotAt.forEach((dot, index) => {
+					if (dot <= tick) section = index;
+				});
+				return section;
+			});
+			if (ticks.length !== count) {
+				ruler!.replaceChildren();
+				ticks = Array.from({ length: count }, () => {
+					const tick = document.createElement('span');
+					tick.className = 'tick';
+					ruler!.append(tick);
+					return tick;
+				});
+			}
+			ticks.forEach((tick, index) => {
+				tick.style.top = `${index * gap}px`;
+				tick.classList.toggle('is-major', dotAt.includes(index));
+			});
+			buttons.forEach((button, index) => (button.style.top = `${dotAt[index] * gap}px`));
+			draw();
+		}
+
+		function draw() {
+			const now = position();
+			const current = Math.round(now);
+			// Seção atual: a última que já passou da linha de 45% da tela.
 			let active = 0;
 			sections.forEach((section, index) => {
-				if (section.getBoundingClientRect().top <= line) active = index;
+				if (section.getBoundingClientRect().top <= window.innerHeight * LINE) active = index;
 			});
 			buttons.forEach((button, index) => {
 				if (index === active) button.setAttribute('aria-current', 'step');
 				else button.removeAttribute('aria-current');
 			});
-			nav.style.setProperty('--progress', String(active / Math.max(1, sections.length - 1)));
-		};
-		const schedule = () => {
-			if (scheduled) return;
-			scheduled = true;
-			requestAnimationFrame(update);
-		};
-		window.addEventListener('scroll', schedule, { passive: true });
-		window.addEventListener('resize', schedule, { passive: true });
-		update();
+			ticks.forEach((tick, index) => {
+				const d = index - lens;
+				// Lupa: cresce perto do centro e encolhe num "vale" logo antes e depois.
+				const bell = Math.exp(-((d / 4.2) ** 2));
+				const dip = Math.exp(-(((Math.abs(d) - 8.5) / 2.2) ** 2));
+				let length = 12 * (1 - 0.82 * dip) + 34 * bell;
+				let thickness = 2;
+				let alpha = 0.24 + 0.5 * bell;
+				const major = tick.classList.contains('is-major');
+				const dot = major && bell < 0.12;
+				if (dot) {
+					length = thickness = 5;
+					alpha = 0.7;
+				} else if (major) {
+					length += 6;
+					thickness = 3;
+					alpha = Math.max(alpha, 0.85);
+				}
+				if (owner[index] === active && bell > 0.05) alpha = Math.min(1, alpha + 0.25);
+				const isCurrent = index === current;
+				if (isCurrent) {
+					length = Math.max(length, 24);
+					thickness = 4;
+					alpha = 1;
+				}
+				tick.style.width = `${length.toFixed(1)}px`;
+				tick.style.height = `${thickness}px`;
+				tick.style.opacity = alpha.toFixed(3);
+				tick.classList.toggle('is-dot', dot && !isCurrent);
+				tick.classList.toggle('is-current', isCurrent);
+			});
+		}
+
+		function step(time: number) {
+			const dt = last ? Math.min(0.05, (time - last) / 1000) : 1 / 60;
+			last = time;
+			const target = pointerAt ?? position();
+			lens = reduced ? target : lens + (target - lens) * (1 - Math.exp(-dt * 9));
+			draw();
+			if (Math.abs(target - lens) > 0.002) {
+				frame = requestAnimationFrame(step);
+			} else {
+				lens = target;
+				draw();
+				frame = 0;
+				last = 0;
+			}
+		}
+
+		function kick() {
+			if (!frame) frame = requestAnimationFrame(step);
+		}
+
+		function showTip(section: number, tick: number) {
+			tip!.textContent = `${numberOf(section)} · ${sections[section].dataset.rail ?? ''}`;
+			tip!.style.top = `${ruler!.offsetTop + tick * gap}px`;
+			tip!.classList.add('is-visible');
+		}
+
+		function hideTip() {
+			tip!.classList.remove('is-visible');
+		}
+
+		function go(section: number) {
+			sections[section].scrollIntoView({ behavior: reduced ? 'auto' : 'smooth' });
+		}
+
+		// Mouse sobre a régua: a lupa segue o cursor e mostra a seção daquele ponto.
+		nav.addEventListener('pointermove', (event) => {
+			if (event.pointerType === 'touch') return;
+			const box = ruler.getBoundingClientRect();
+			pointerAt = clamp((event.clientY - box.top) / gap, 0, count - 1);
+			showTip(sectionAt(pointerAt), pointerAt);
+			kick();
+		});
+		nav.addEventListener('pointerleave', () => {
+			if (nav.querySelector(':focus-visible')) return;
+			pointerAt = null;
+			hideTip();
+			kick();
+		});
+		// Clique na régua: perto de uma bolinha, vai para a seção; senão, para aquele ponto da página.
+		nav.addEventListener('click', (event) => {
+			if ((event.target as HTMLElement).closest('button') || pointerAt === null) return;
+			const near = dotAt.findIndex((dot) => Math.abs(dot - pointerAt!) <= 1.5);
+			if (near >= 0) return go(near);
+			window.scrollTo({ top: (pointerAt / (count - 1)) * maxScroll(), behavior: reduced ? 'auto' : 'smooth' });
+		});
+
+		window.addEventListener('scroll', kick, { passive: true });
+		window.addEventListener('resize', () => {
+			layout();
+			kick();
+		});
+		// Imagens e fontes carregando mudam a altura da página: refaz a régua.
+		new ResizeObserver(() => layout()).observe(document.body);
+
+		nav.hidden = false;
+		layout();
+		lens = position();
+		draw();
 	}
 </script>
 
 <style>
 	.rail {
 		position: fixed;
-		top: 50%;
-		right: 18px;
+		top: calc(var(--header-h) + 14px);
+		bottom: 22px;
+		right: 0;
 		z-index: 70;
 		display: none;
+		width: 84px;
+	}
+
+	.rail-ruler {
+		position: absolute;
+		inset: 0 22px 0 auto;
+		width: 60px;
+		pointer-events: none;
+	}
+
+	.rail-ruler :global(.tick) {
+		position: absolute;
+		right: 0;
+		width: 12px;
+		height: 2px;
+		border-radius: 2px;
+		background: var(--text);
+		opacity: 0.24;
 		transform: translateY(-50%);
 	}
 
-	.rail ol {
-		display: grid;
-		gap: 2px;
+	.rail-ruler :global(.tick.is-dot) {
+		border-radius: 50%;
+	}
+
+	.rail-ruler :global(.tick.is-current) {
+		background: var(--accent);
+		box-shadow: 0 0 12px rgb(var(--brand-rgb) / 0.35);
+	}
+
+	.rail-links {
 		margin: 0;
 		padding: 0;
 		list-style: none;
 	}
 
-	.rail :global(button) {
-		display: flex;
-		align-items: center;
-		justify-content: flex-end;
-		gap: 10px;
-		width: 100%;
-		padding: 6px 0 6px 12px;
-		color: var(--text-dim);
+	.rail-links :global(.rail-dot) {
+		position: absolute;
+		right: 12px;
+		width: 34px;
+		height: 18px;
+		border-radius: var(--radius-sm);
+		transform: translateY(-50%);
+	}
+
+	.rail-links :global(.rail-dot:focus-visible) {
+		outline: 2px solid var(--accent);
+		outline-offset: 0;
+	}
+
+	.rail-tip {
+		position: absolute;
+		right: 92px;
+		padding: 6px 12px;
+		border: 1px solid var(--line-strong);
+		border-radius: 999px;
+		background: rgb(var(--bg-rgb) / 0.88);
+		color: var(--text);
 		font-size: 0.68rem;
 		font-weight: 600;
 		letter-spacing: 0.16em;
 		text-transform: uppercase;
-		font-variant-numeric: tabular-nums;
-	}
-
-	.rail :global(.rail-label) {
-		opacity: 0;
-		transform: translateX(6px);
 		white-space: nowrap;
+		pointer-events: none;
+		backdrop-filter: blur(10px);
+		-webkit-backdrop-filter: blur(10px);
+		opacity: 0;
+		transform: translate(8px, -50%);
 		transition:
-			opacity 0.3s ease,
-			transform 0.4s var(--ease-out);
+			opacity 0.2s ease,
+			transform 0.35s var(--ease-out);
 	}
 
-	.rail :global(.rail-num) {
-		transition: color 0.3s ease;
-	}
-
-	.rail :global(.rail-tick) {
-		width: 10px;
-		height: 1px;
-		background: currentColor;
-		opacity: 0.6;
-		transition:
-			width 0.5s var(--ease-out),
-			opacity 0.3s ease;
-	}
-
-	.rail :global(button[aria-current]) {
-		color: var(--text);
-	}
-
-	.rail :global(button[aria-current] .rail-tick) {
-		width: 28px;
+	.rail-tip.is-visible {
 		opacity: 1;
-	}
-
-	.rail:hover :global(.rail-label),
-	.rail:focus-within :global(.rail-label) {
-		opacity: 1;
-		transform: none;
-	}
-
-	.rail:hover,
-	.rail:focus-within {
-		padding-left: 18px;
-		background: linear-gradient(90deg, transparent, rgb(var(--bg-rgb) / 0.85) 30%);
-	}
-
-	.rail :global(button:hover) {
-		color: var(--text);
+		transform: translate(0, -50%);
 	}
 
 	@media (min-width: 1100px) {
