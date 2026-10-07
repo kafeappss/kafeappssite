@@ -4,16 +4,18 @@ import { methodSteps } from '../data/method';
 
 interface Props {
 	showOngoing?: boolean;
+	/** Cada etapa gira o ciclo do líquido (formas cycle-1 a cycle-4) ao passar o mouse. */
+	liquid?: boolean;
 }
 
-const { showOngoing = true } = Astro.props;
+const { showOngoing = true, liquid = false } = Astro.props;
 ---
 
 <div class="method">
 	<ol role="list" class="method-steps" data-reveal>
 		{
 			methodSteps.map((step, index) => (
-				<li class="method-step" style={`--i: ${index}`}>
+				<li class="method-step" style={`--i: ${index}`} data-liquid-hover={liquid ? `cycle-${index + 1}` : undefined}>
 					<span class="method-node label">{String(index + 1).padStart(2, '0')}</span>
 					<p class="method-name">{step.name}</p>
 					<p class="method-coffee">{step.coffee}</p>
@@ -104,6 +106,18 @@ const { showOngoing = true } = Astro.props;
 		background: var(--bg-2);
 		border: 1px solid rgb(255 255 255 / 0.25);
 		box-shadow: 0 0 0 6px rgb(0 0 0 / 0.8);
+	}
+
+	.method-node {
+		transition:
+			background-color 0.3s ease,
+			color 0.3s ease;
+	}
+
+	.method-step[data-liquid-active] .method-node,
+	.method-step[data-liquid-hover]:hover .method-node {
+		color: var(--black);
+		background: var(--white);
 	}
 
 	.method-name {

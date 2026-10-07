@@ -1,4 +1,5 @@
 ---
+import LiquidSlot from './LiquidSlot.astro';
 import { site } from '../data/site';
 
 interface Props {
@@ -15,6 +16,8 @@ interface Props {
 
 const { eyebrow, title, lead, breadcrumbs = [], liquid = 'page', rail } = Astro.props;
 
+// Formas livres ("page", "rest") ocupam a tela toda; as demais ganham um espaço ao lado do título.
+const hasSlot = !['page', 'rest', 'pool'].includes(liquid);
 const trail = [{ label: 'Início', href: '/' }, ...breadcrumbs];
 const breadcrumbSchema = {
 	'@context': 'https://schema.org',
@@ -28,8 +31,9 @@ const breadcrumbSchema = {
 };
 ---
 
-<section class="page-hero" data-liquid={liquid} data-rail={rail}>
-	<div class="container">
+<section class:list={['page-hero', { 'has-slot': hasSlot }]} data-liquid={liquid} data-rail={rail} data-horizon="0.02">
+	<div class="container page-hero-inner">
+		<div class="page-hero-copy">
 		{
 			breadcrumbs.length > 0 && (
 				<nav class="breadcrumbs" aria-label="Você está em" data-reveal>
@@ -45,6 +49,8 @@ const breadcrumbSchema = {
 		<h1 class="h1" data-split set:html={title} />
 		{lead && <p class="lead" data-reveal style="--delay: 0.2s">{lead}</p>}
 		<slot />
+		</div>
+		{hasSlot && <LiquidSlot class="slot page-hero-slot" />}
 	</div>
 	<script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
 </section>
@@ -55,10 +61,30 @@ const breadcrumbSchema = {
 		padding-bottom: clamp(56px, 7vw, 110px);
 	}
 
-	.page-hero .container {
+	.page-hero-inner {
+		display: grid;
+		gap: 8px;
+		align-items: center;
+	}
+
+	.page-hero-copy {
 		display: grid;
 		gap: 24px;
 		justify-items: start;
+	}
+
+	@media (min-width: 960px) {
+		.has-slot .page-hero-inner {
+			grid-template-columns: minmax(0, 1.3fr) minmax(0, 0.7fr);
+			gap: 48px;
+		}
+
+		.page-hero-slot {
+			order: 0;
+			justify-self: stretch;
+			width: auto;
+			height: clamp(280px, 30vw, 420px);
+		}
 	}
 
 	.page-hero h1 {

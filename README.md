@@ -6,8 +6,9 @@ Feito com [Astro](https://astro.build), gera um site 100% estático (HTML, CSS e
 
 ## Destaques
 
-- **Líquido que explica o conteúdo (WebGL)**: um único corpo de metal líquido acompanha a navegação e vira o desenho do que está escrito: um relógio no problema do tempo, um celular no serviço de aplicativos, um foguete no MVP, um ciclo na metodologia, o K da Kafé no "Sobre" e uma xícara no convite final. Veja "Formas do líquido" abaixo.
-- **Mascote interativo**: no início da home, uma gota com os olhos inspirados no logo. Ele acompanha o cursor, pisca e, ao ser clicado, pula e fala (frases em `src/scripts/mascot.ts`). No celular ele ganha um espaço só dele, abaixo do texto.
+- **Líquido que explica o conteúdo (WebGL)**: um único corpo de metal líquido acompanha a navegação e vira o desenho do que está escrito: um relógio no problema do tempo, barras de crescimento na virada, um ciclo na metodologia, o K da Kafé no "Sobre" e uma xícara no convite final. Cada forma tem um espaço reservado no layout, rola junto com o conteúdo e nunca fica por cima do texto. Nos cartões de serviço, basta passar o mouse para o líquido virar celular, navegador, IA, foguete, rede ou layout. Veja "Formas do líquido" abaixo.
+- **Mascote com personalidade**: no início da home, uma gota com os olhos inspirados no logo, em pé sobre o horizonte. Ele acompanha o cursor, pisca e muda de expressão: cada clique traz uma reação (feliz, piscadinha, surpreso, apaixonado), cliques demais o deixam tonto (e depois bravo), dá para arrastá-lo como goma (com mouse), ele sente cócegas, se apaixona quando o cursor passa no botão principal e cochila se ninguém mexer na página. Falas em `src/scripts/mascot.ts`.
+- **Fundo vivo**: horizonte de planeta no início, grade de pontos que acende perto do cursor e do líquido, fumaça que flui e uma luz que passeia devagar, tudo em preto, branco e cinza.
 - **Trilho de seções**: à direita (telas largas), mostra em que parte da página a pessoa está e permite pular entre as seções.
 - **Acessível e leve**: respeita "reduzir movimento" do sistema, tem fundo estático quando não há WebGL, reduz a qualidade em aparelhos mais modestos e economiza bateria quando a página está parada.
 - **Conteúdo para SEO**: página para cada serviço, blog com artigos originais, dados estruturados (schema.org), sitemap, `robots.txt` e imagem de compartilhamento.
@@ -31,7 +32,8 @@ npm run check    # verificação de tipos
 | Contatos, redes sociais, CNPJ, números, diferenciais, depoimentos, clientes e tecnologias | `src/data/site.ts` |
 | Logos dos clientes (SVG em branco, sem fundo) | `src/assets/clients/` + lista `clients` em `src/data/site.ts` |
 | Desenhos do líquido (relógio, celular, foguete…) | `src/scripts/shapes.ts` |
-| Falas do mascote | `src/scripts/mascot.ts` |
+| Falas e reações do mascote | `src/scripts/mascot.ts` |
+| Expressões do mascote, fundo e física do líquido | `src/scripts/liquid.ts` |
 | Serviços (cards e páginas `/servicos/...`) | `src/data/services.ts` |
 | Método, formatos de trabalho, comparativo e perguntas frequentes | `src/data/method.ts` |
 | Artigos do blog | `src/content/blog/*.md` |
@@ -50,11 +52,13 @@ Cada seção diz qual desenho o líquido deve formar enquanto ela está no meio 
 <section data-liquid="rocket" data-rail="MVP">…</section>
 ```
 
-- `data-liquid="nome [lugar]"`: `nome` é uma das formas de `src/scripts/shapes.ts` (`mascot`, `clock`, `bars`, `code`, `code-ai`, `ai`, `phone`, `browser`, `rocket`, `nodes`, `layout`, `cycle-0` a `cycle-4`, `k`, `cup`, `rest`, `pool`, `page`). O `lugar` é opcional: `stage` (ao lado do texto, padrão), `bottom`, `center` ou `view` (tela toda). No celular as formas ficam menores, num canto e mais apagadas, para não competir com o texto.
+- `data-liquid="nome [lugar]"`: `nome` é uma das formas de `src/scripts/shapes.ts` (`mascot`, `clock`, `bars`, `code`, `code-ai`, `ai`, `phone`, `browser`, `rocket`, `nodes`, `layout`, `cycle-0` a `cycle-4`, `k`, `cup`, `rest`, `pool`, `page`). O `lugar` só vale quando a seção não tem espaço reservado: `stage` (ao lado do texto, padrão), `bottom`, `center` ou `view` (tela toda).
 - `data-rail="Nome"`: inclui a seção no trilho da direita (aparece quando a página tem pelo menos três).
-- `data-liquid-anchor`: um elemento dentro da seção que reserva espaço para a forma, que passa a rolar junto com o conteúdo. É assim que o mascote fica abaixo do texto no celular e a xícara fica abaixo dos botões no convite final.
+- Espaço da forma: coloque `<LiquidSlot class="slot" />` dentro da seção (ou qualquer elemento com `data-liquid-anchor`). A forma mora ali e rola junto com o conteúdo; sem espaço, ela fica ao lado do texto (ou num canto, no celular). A classe `slot` com `head-split` em volta do título monta o layout "título + forma" usado nas seções.
+- `data-liquid-hover="phone"`: num cartão, o líquido vira essa forma ao passar o mouse (no celular, vale o cartão que estiver no meio da tela). O cartão pode ter o próprio `data-liquid-anchor`; se não tiver, usa o espaço da seção.
+- `data-horizon`: desenha a borda do planeta no fim da seção (`data-horizon="0.1"` ajusta a altura).
 
-Para testar uma forma, abra o console do navegador e rode `__liquid.show('rocket')`.
+Para testar no console do navegador: `__liquid.show('rocket')` mostra uma forma, `__liquid.react('love')` faz o mascote reagir (`happy`, `wink`, `surprise`, `love`, `dizzy`, `angry`, `giggle`) e `__liquid.advance(3)` adianta a animação em 3 segundos.
 
 ### Fontes
 

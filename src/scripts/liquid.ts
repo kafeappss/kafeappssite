@@ -2,11 +2,15 @@
  * Metal líquido — um único corpo de líquido em WebGL que acompanha a navegação
  * e muda de forma para ilustrar o que está escrito.
  *
- * Cada seção (ou bloco) declara uma formação com data-liquid, por exemplo
- * data-liquid="clock" ou data-liquid="cup bottom" (forma + posicionamento).
- * Quando o elemento chega ao centro da tela, as peças do líquido escorrem e se
- * remodelam até a nova forma. No topo, o líquido ganha olhos: é o mascote.
+ * - data-liquid="clock" (ou "cup bottom": forma + posicionamento) numa seção:
+ *   quando ela chega ao centro da tela, o líquido escorre até virar essa forma.
+ * - data-liquid-anchor num elemento dentro da seção: o espaço onde a forma mora.
+ *   Ela rola junto com o conteúdo e nunca fica por cima do texto.
+ * - data-liquid-hover="phone" num cartão: ao passar o mouse, o líquido vira a
+ *   forma do cartão (no celular, vale o cartão que estiver no meio da tela).
+ * - data-horizon numa seção: desenha o horizonte (a borda de um planeta) no fim dela.
  *
+ * No início da home o líquido ganha olhos: é o mascote, com expressões e reações.
  * Sem WebGL, ou com "reduzir movimento" ativo no sistema, o site continua
  * funcionando com um fundo estático (e as formas aparecem sem animação).
  */
@@ -14,7 +18,7 @@
 import { shapes, type Placement, type Prim, type ShapeDef } from './shapes';
 
 const SLOTS = 14;
-const STORAGE_KEY = 'kafe:liquid:v2';
+const STORAGE_KEY = 'kafe:liquid:v3';
 
 const VERTEX_SHADER = /* glsl */ `
 attribute vec2 aPos;
@@ -43,10 +47,13 @@ uniform vec2 uLight;
 uniform vec4 uA[SLOTS];
 uniform vec4 uB[SLOTS];
 uniform vec3 uCur;
-uniform vec4 uEye;
-uniform vec4 uEye2;
-
-const vec3 BG = vec3(0.0);
+uniform vec4 uEye;     // x, y, raio do corpo, visibilidade
+uniform vec4 uEye2;    // olhar x, olhar y, abertura esquerda, abertura direita
+uniform vec4 uExpr;    // feliz, surpreso, bravo, apaixonado
+uniform vec4 uExpr2;   // tonto, giro, -, -
+uniform vec4 uGrid;    // espaçamento, raio do ponto, deslocamento da rolagem, rolagem
+uniform vec3 uPtr;     // cursor x, y, ativo
+uniform vec4 uHorizon; // centro x, centro y, raio, intensidade
 
 float hash(vec2 p) {
 	p = fract(p * vec2(123.34, 456.21));
@@ -83,10 +90,32 @@ float smax(float a, float b, float k) {
 	return -smin(-a, -b, k);
 }
 
+float dot2(vec2 v) {
+	return dot(v, v);
+}
+
 float sdRBox(vec2 p, vec2 b, float r) {
 	r = min(r, min(b.x, b.y));
 	vec2 q = abs(p) - b + r;
 	return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - r;
+}
+
+float sdSeg(vec2 p, vec2 a, vec2 b) {
+	vec2 pa = p - a;
+	vec2 ba = b - a;
+	float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
+	return length(pa - ba * h);
+}
+
+float sdArc(vec2 p, vec2 sc, float ra, float rb) {
+	p.x = abs(p.x);
+	return ((sc.y * p.x > sc.x * p.y) ? length(p - sc * ra) : abs(length(p) - ra)) - rb;
+}
+
+float sdHeart(vec2 p) {
+	p.x = abs(p.x);
+	if (p.y + p.x > 1.0) return sqrt(dot2(p - vec2(0.25, 0.75))) - 0.35355;
+	return sqrt(min(dot2(p - vec2(0.0, 1.0)), dot2(p - 0.5 * max(p.x + p.y, 0.0)))) * sign(p.x - p.y);
 }
 
 float prim(vec2 p, vec4 a, vec4 b) {
@@ -119,19 +148,78 @@ float bevel(float d) {
 	return sqrt(1.0 - (1.0 - t) * (1.0 - t));
 }
 
-// Olhos do mascote: paralelogramos inclinados, como os recortes das letras do logo.
+/*
+ * Um olho do mascote, em unidades do raio do corpo. A forma base é o recorte
+ * inclinado das letras do logo; as expressões se misturam a ela:
+ * feliz (arco), surpreso (círculo), bravo (> <), apaixonado (coração), tonto (X girando).
+ */
+float eyeShape(vec2 e, float side, float open) {
+	vec2 b = e;
+	b.x -= b.y * 0.3;
+	float dBase = sdRBox(b, vec2(0.085, 0.2 * open), 0.02);
+	float dHappy = sdArc(e - vec2(0.0, -0.08), vec2(0.913, 0.408), 0.14, 0.042);
+	float dSurprise = length(e - vec2(0.0, 0.02)) - 0.165 * max(open, 0.25);
+	vec2 c = vec2(e.x * -side, e.y);
+	float dAngry = min(sdSeg(c, vec2(-0.08, 0.12), vec2(0.07, 0.0)), sdSeg(c, vec2(0.07, 0.0), vec2(-0.08, -0.12))) - 0.04;
+	float dLove = sdHeart((e - vec2(0.0, -0.16)) / 0.32) * 0.32;
+	float a = uExpr2.y * side;
+	vec2 r = mat2(cos(a), -sin(a), sin(a), cos(a)) * e;
+	float dDizzy = min(sdSeg(r, vec2(-0.11, -0.11), vec2(0.11, 0.11)), sdSeg(r, vec2(-0.11, 0.11), vec2(0.11, -0.11))) - 0.036;
+	float wBase = max(0.0, 1.0 - uExpr.x - uExpr.y - uExpr.z - uExpr.w - uExpr2.x);
+	float sum = max(wBase + uExpr.x + uExpr.y + uExpr.z + uExpr.w + uExpr2.x, 0.001);
+	return (wBase * dBase + uExpr.x * dHappy + uExpr.y * dSurprise + uExpr.z * dAngry + uExpr.w * dLove + uExpr2.x * dDizzy) / sum;
+}
+
 float eyes(vec2 p) {
 	float s = uEye.z;
-	vec2 q = p - uEye.xy - uEye2.xy * s * 0.22;
-	float open = max(uEye2.z, 0.06);
-	float d = 1e3;
-	for (int j = 0; j < 2; j++) {
-		float side = j == 0 ? -1.0 : 1.0;
-		vec2 e = q - vec2(side * 0.34 * s, 0.1 * s);
-		e.x -= e.y * 0.3;
-		d = min(d, sdRBox(e, vec2(0.085 * s, 0.2 * s * open), 0.02 * s));
+	vec2 q = (p - uEye.xy) / s - uEye2.xy * 0.22;
+	float left = eyeShape(q - vec2(-0.34, 0.1), -1.0, max(uEye2.z, 0.06));
+	float right = eyeShape(q - vec2(0.34, 0.1), 1.0, max(uEye2.w, 0.06));
+	return min(left, right) * s;
+}
+
+// Fundo: fumaça que flui, grade de pontos que reage ao cursor e o horizonte do início.
+vec3 background(vec2 p, vec2 uv, float aura, float px) {
+	vec3 col = vec3(0.0);
+
+	vec2 q = p * 1.15 - vec2(0.0, uGrid.w * 0.25) + vec2(0.0, -uTime * 0.04);
+	float warp = fbm(q * 0.8 + vec2(uTime * 0.02, -uTime * 0.015));
+	float m = fbm(q + vec2(warp, warp * 0.6) * 1.5);
+	float region = smoothstep(0.25, 0.75, noise(p * 0.45 - vec2(0.0, uGrid.w * 0.12) + uTime * 0.012));
+	float smoke = smoothstep(0.38, 0.95, m) * (0.35 + 0.65 * region);
+	col += vec3(0.95) * smoke * (0.075 + 0.05 * aura);
+
+	// Uma luz suave que passeia devagar pela tela (e acompanha a rolagem).
+	vec2 lamp = vec2(sin(uTime * 0.07) * 1.1, cos(uTime * 0.05 + uGrid.w * 0.35) * 0.7);
+	float lampGlow = exp(-dot2((p - lamp) * vec2(0.55, 0.8)) * 1.6);
+	col += vec3(0.05) * lampGlow;
+
+	vec2 g = vec2(p.x, p.y - uGrid.z);
+	vec2 cell = floor(g / uGrid.x);
+	vec2 local = (fract(g / uGrid.x) - 0.5) * uGrid.x;
+	float dotMask = 1.0 - smoothstep(uGrid.y - px, uGrid.y + px, length(local));
+	float seed = hash(cell);
+	float twinkle = 0.5 + 0.5 * sin(uTime * (0.6 + seed * 1.4) + seed * 6.283);
+	float nearCursor = exp(-dot2(p - uPtr.xy) * 7.0) * uPtr.z;
+	float sweep = smoothstep(0.75, 1.0, sin((p.x * 0.55 + p.y) * 1.6 - uTime * 0.5 - uGrid.w * 0.6));
+	float glow = 0.055 + 0.025 * twinkle + 0.34 * nearCursor + 0.2 * aura + 0.06 * sweep + 0.08 * smoke + 0.08 * lampGlow;
+	vec2 edge = uv - 0.5;
+	col += vec3(glow * dotMask * (1.0 - dot(edge, edge) * 1.4));
+
+	if (uHorizon.w > 0.001) {
+		vec2 hp = p - uHorizon.xy;
+		float len = max(length(hp), 0.0001);
+		float hd = len - uHorizon.z;
+		float lit = pow(clamp(dot(hp / len, normalize(vec2(-0.3, 1.0))) * 0.5 + 0.5, 0.0, 1.0), 8.0);
+		float outside = smoothstep(-px, px, hd);
+		float rim = exp(-abs(hd) * 150.0);
+		float atmosphere = exp(-max(hd, 0.0) * 5.0) * outside;
+		float inner = exp(min(hd, 0.0) * 14.0) * (1.0 - outside);
+		float shimmer = 0.85 + 0.15 * sin(atan(hp.y, hp.x) * 40.0 + uTime * 0.6);
+		col *= mix(1.0, outside, uHorizon.w);
+		col += vec3(rim * 0.95 * shimmer + atmosphere * 0.22 + inner * 0.09) * lit * uHorizon.w;
 	}
-	return d;
+	return col;
 }
 
 void main() {
@@ -141,14 +229,9 @@ void main() {
 	float px = 2.0 / uRes.y;
 
 	float d = field(p);
-	vec3 col = BG;
-
 	float aura = exp(-max(d, 0.0) * 3.6);
-	col += vec3(0.22) * aura * 0.07;
-	vec2 q = p * 1.3 + vec2(0.0, -uTime * 0.045);
-	float m = fbm(q + vec2(fbm(q * 0.9 + uTime * 0.02), 0.0) * 1.3);
-	float mist = smoothstep(0.42, 0.95, m) * (0.3 + 0.7 * aura);
-	col += vec3(0.9) * mist * 0.035;
+	vec3 col = background(p, uv, aura, px);
+	col += vec3(0.22) * aura * 0.05;
 
 	if (d < px * 2.0) {
 		float e = px * 1.5;
@@ -182,16 +265,16 @@ void main() {
 		liquid += vec3(1.0) * spec * (1.0 + 0.6 * uChrome);
 		liquid += vec3(0.7) * spec2 * 0.3;
 
-		col = mix(col, liquid, smoothstep(px, -px, d));
+		liquid = mix(col, liquid, 0.35 + 0.65 * uDim);
+		col = mix(col, liquid, 1.0 - smoothstep(-px, px, d));
 	}
 
 	if (uEye.w > 0.01) {
 		float ed = eyes(p);
-		col = mix(col, vec3(1.0), smoothstep(px, -px, ed) * uEye.w);
+		col = mix(col, vec3(1.0), (1.0 - smoothstep(-px, px, ed)) * uEye.w);
 		col += vec3(1.0) * exp(-max(ed, 0.0) * 55.0) * 0.18 * uEye.w;
 	}
 
-	col = mix(BG, col, 0.4 + 0.6 * uDim);
 	vec2 vv = uv - 0.5;
 	col *= 1.0 - dot(vv, vv) * 0.5;
 	col += (hash(gl_FragCoord.xy + fract(uTime * 7.0) * 100.0) - 0.5) / 255.0;
@@ -218,10 +301,31 @@ type Slot = {
 
 type Formation = { name: string; def: ShapeDef; place: Placement };
 
+type Place = { cx: number; cy: number; s: number; sx: number; view: boolean; dim: number; anchored: boolean };
+
+type Expression = { happy: number; surprise: number; angry: number; love: number; dizzy: number };
+
+/** Reações do mascote (disparadas por src/scripts/mascot.ts ou pelo próprio líquido). */
+const REACTIONS: Record<string, number> = {
+	happy: 1.3,
+	surprise: 1.0,
+	wink: 0.9,
+	love: 1.9,
+	dizzy: 2.6,
+	angry: 1.5,
+	giggle: 1.5,
+	wake: 0.9,
+	boing: 1.0,
+};
+
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 const random = (seed: number) => {
 	const x = Math.sin(seed * 91.17 + 7.31) * 43758.5453;
 	return x - Math.floor(x);
+};
+const smooth = (a: number, b: number, x: number) => {
+	const t = clamp((x - a) / (b - a), 0, 1);
+	return t * t * (3 - 2 * t);
 };
 
 function createShader(gl: WebGLRenderingContext, type: number, source: string) {
@@ -260,35 +364,30 @@ function parseFormation(value: string | undefined): Formation {
 	return { name: resolved, def, place: (place as Placement) ?? def.place ?? 'stage' };
 }
 
-/** Onde a forma fica na tela: centro (cx, cy) e escala, em unidades do WebGL. */
-function placementOf(place: Placement, aspect: number, isMascot: boolean) {
+/** Onde a forma fica quando a seção não reserva um espaço para ela (em unidades do WebGL). */
+function placementOf(place: Placement, aspect: number, isMascot: boolean): Place {
 	const R = Math.min(aspect, 1);
 	const portrait = aspect < 0.9;
+	const at = (cx: number, cy: number, s: number, dim = 1): Place => ({ cx, cy, s, sx: 0, view: false, dim, anchored: false });
 	// No celular o texto ocupa a largura toda: as formas ficam menores, num canto
 	// e mais discretas, para nunca competir com o conteúdo.
 	switch (place) {
 		case 'view':
-			return { cx: 0, cy: 0, s: R, sx: aspect, view: true, dim: 1 };
+			return { cx: 0, cy: 0, s: R, sx: aspect, view: true, dim: 1, anchored: false };
 		case 'bottom':
-			return portrait
-				? { cx: 0, cy: -0.74, s: 0.36 * R, sx: 0, view: false, dim: 0.8 }
-				: { cx: 0, cy: -0.68, s: 0.27, sx: 0, view: false, dim: 1 };
+			return portrait ? at(0, -0.74, 0.36 * R, 0.8) : at(0, -0.68, 0.27);
 		case 'center':
-			return { cx: 0, cy: 0, s: portrait ? 0.62 * R : 0.38, sx: 0, view: false, dim: 1 };
+			return at(0, 0, portrait ? 0.62 * R : 0.38);
 		default:
-			if (portrait) {
-				return isMascot
-					? { cx: 0.5 * aspect, cy: -0.76, s: 0.3 * R, sx: 0, view: false, dim: 1 }
-					: { cx: 0.64 * aspect, cy: 0.6, s: 0.3 * R, sx: 0, view: false, dim: 0.5 };
-			}
-			if (aspect < 1.25) return { cx: 0.6 * aspect, cy: 0, s: 0.3, sx: 0, view: false, dim: 1 };
-			return { cx: 0.52 * aspect, cy: 0, s: isMascot ? 0.36 : 0.4, sx: 0, view: false, dim: 1 };
+			if (portrait) return isMascot ? at(0.5 * aspect, -0.76, 0.3 * R) : at(0.64 * aspect, 0.6, 0.3 * R, 0.5);
+			if (aspect < 1.25) return at(0.6 * aspect, 0, 0.3);
+			return at(0.52 * aspect, 0, isMascot ? 0.36 : 0.4);
 	}
 }
 
 export function initLiquid(canvas: HTMLCanvasElement) {
 	const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-	const finePointer = window.matchMedia('(pointer: fine)').matches;
+	const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 
 	const gl = canvas.getContext('webgl', {
 		alpha: false,
@@ -326,6 +425,11 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 		cur: u('uCur'),
 		eye: u('uEye'),
 		eye2: u('uEye2'),
+		expr: u('uExpr'),
+		expr2: u('uExpr2'),
+		grid: u('uGrid'),
+		ptr: u('uPtr'),
+		horizon: u('uHorizon'),
 	};
 	const dataA = new Float32Array(SLOTS * 4);
 	const dataB = new Float32Array(SLOTS * 4);
@@ -333,6 +437,8 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 	// ---------------------------------------------------------------- estado
 	let width = 1;
 	let height = 1;
+	let cssW = 1;
+	let cssH = 1;
 	let aspect = 1;
 	let quality = window.innerWidth < 768 ? 0.7 : 0.72;
 	let time = 0;
@@ -343,7 +449,24 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 	let lastInteraction = performance.now();
 
 	const globals = { dim: 1, k: 0.2, bevel: 0.15, wob: 0.011, chrome: 0 };
-	const eye = { alpha: 0, open: 1, gx: 0, gy: 0, nextBlink: 2, blinkUntil: 0, happyUntil: 0 };
+	const eye = { alpha: 0, gx: 0, gy: 0, openL: 1, openR: 1, nextBlink: 2, blinkUntil: 0, spin: 0 };
+	const expr: Expression = { happy: 0, surprise: 0, angry: 0, love: 0, dizzy: 0 };
+	const mascot = {
+		reaction: '',
+		start: -10,
+		until: -10,
+		boost: 0,
+		pressed: false,
+		dragging: false,
+		downX: 0,
+		downY: 0,
+		tickle: 0,
+		tickleReadyAt: 0,
+		sleeping: false,
+		lastInput: performance.now(),
+		lookEl: null as HTMLElement | null,
+		lookLove: false,
+	};
 
 	const slots: Slot[] = Array.from({ length: SLOTS }, (_, i) => ({
 		v: [0, 0, 0, 0, 0, 0, 0],
@@ -357,45 +480,102 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 		drag: 0.6 + random(i + 51) * 0.8,
 	}));
 	const cursor = { x: 0, y: 0, r: 0, vx: 0, vy: 0, vr: 0 };
-	const pointer = { x: 0, y: 0, active: false, lastMove: 0, lightX: 0, lightY: 0 };
+	const pointer = { x: 0, y: 0, active: false, lastMove: 0, lightX: 0, lightY: 0, speed: 0, glow: 0 };
 
-	const sections = Array.from(document.querySelectorAll<HTMLElement>('[data-liquid]'));
-	let formation = parseFormation(sections[0]?.dataset.liquid);
-	let formationEl: HTMLElement | undefined = sections[0];
+	// ------------------------------------------------------------ formações
+	// Com mouse, os cartões (data-liquid-hover) mudam a forma ao passar o mouse.
+	// Em telas de toque, eles entram na fila normal: vale o que estiver no meio da tela.
+	const hoverMode = finePointer && !reducedMotion;
+	const targetEls = Array.from(document.querySelectorAll<HTMLElement>('[data-liquid], [data-liquid-hover]')).filter(
+		(el) => el.hasAttribute('data-liquid') || !hoverMode,
+	);
+	const formationOf = (el: HTMLElement | undefined) => el?.dataset.liquid ?? el?.dataset.liquidHover;
+	let observed: HTMLElement | undefined = targetEls[0];
+	let hovered: HTMLElement | null = null;
+	let formationEl: HTMLElement | undefined = observed;
+	let formation = parseFormation(formationOf(observed));
+	let lastPlace: Place = placementOf('stage', 1.6, false);
 
-	/**
-	 * Se a seção tiver um espaço reservado ([data-liquid-anchor] visível), a forma
-	 * mora ali e rola junto com o conteúdo, como o mascote no celular.
-	 */
-	function anchorPlacement() {
-		const anchor = formationEl?.querySelector<HTMLElement>('[data-liquid-anchor]');
-		if (!anchor) return null;
-		const r = anchor.getBoundingClientRect();
-		if (!r.width || !r.height) return null;
-		const c = canvas.getBoundingClientRect();
-		return {
-			cx: (((r.left + r.width / 2 - c.left) / c.width) * 2 - 1) * aspect,
-			cy: 1 - ((r.top + r.height / 2 - c.top) / c.height) * 2,
-			s: (Math.min(r.height, r.width * 0.6) / c.height) * 0.95,
-			sx: 0,
-			view: false,
-			dim: 1,
-			anchored: true,
-		};
+	let activeEl: HTMLElement | undefined;
+	function refreshFormation() {
+		const el = hovered ?? observed;
+		if (!el) return;
+		// Marca o elemento em foco (ex.: o cartão esconde o ícone enquanto o líquido está nele).
+		if (activeEl !== el) {
+			activeEl?.removeAttribute('data-liquid-active');
+			el.setAttribute('data-liquid-active', '');
+			activeEl = el;
+		}
+		formationEl = el;
+		formation = parseFormation(formationOf(el));
+		lastInteraction = performance.now();
+		if (reducedMotion) {
+			settle();
+			render();
+		}
 	}
 
-	function currentPlacement() {
-		return anchorPlacement() ?? { ...placementOf(formation.place, aspect, Boolean(formation.def.eyes)), anchored: false };
+	const ownAnchors = new WeakMap<HTMLElement, HTMLElement[]>();
+	function anchorsOf(el: HTMLElement) {
+		let list = ownAnchors.get(el);
+		if (!list) {
+			list = Array.from(el.querySelectorAll<HTMLElement>('[data-liquid-anchor]')).filter(
+				(anchor) => anchor.closest('[data-liquid], [data-liquid-hover]') === el,
+			);
+			ownAnchors.set(el, list);
+		}
+		return list;
+	}
+
+	/**
+	 * O espaço reservado para a forma: o primeiro [data-liquid-anchor] visível da
+	 * seção. Cartões sem espaço próprio visível usam o da seção em que estão.
+	 */
+	function anchorPlacement(): Place | null {
+		if (!formationEl || formation.place === 'view') return null;
+		let node: HTMLElement | null = formationEl;
+		while (node) {
+			for (const anchor of anchorsOf(node)) {
+				const r = anchor.getBoundingClientRect();
+				if (r.width > 0 && r.height > 0) {
+					const scale = Number(anchor.dataset.liquidAnchor) || 1;
+					return {
+						cx: (((r.left + r.width / 2) / cssW) * 2 - 1) * aspect,
+						cy: 1 - ((r.top + r.height / 2) / cssH) * 2,
+						s: (Math.min(r.height, r.width * 0.8) / cssH) * 0.95 * scale,
+						sx: 0,
+						view: false,
+						dim: 1,
+						anchored: true,
+					};
+				}
+			}
+			if (!node.hasAttribute('data-liquid-hover')) break;
+			node = node.parentElement?.closest<HTMLElement>('[data-liquid], [data-liquid-hover]') ?? null;
+		}
+		return null;
+	}
+
+	function currentPlacement(): Place {
+		return anchorPlacement() ?? placementOf(formation.place, aspect, Boolean(formation.def.eyes));
+	}
+
+	/** Formas pequenas pedem fusão e chanfro proporcionais, senão viram uma bolha. */
+	function detailScale(place: Place) {
+		return place.view ? 1 : clamp(place.s / 0.4, 0.22, 1.6);
 	}
 
 	const hit = document.querySelector<HTMLElement>('[data-mascot-hit]');
 	const bubble = document.querySelector<HTMLElement>('[data-mascot-bubble]');
+	const horizonEl = document.querySelector<HTMLElement>('[data-horizon]');
+
+	const emit = (kind: string) => window.dispatchEvent(new CustomEvent('kafe:mascot-event', { detail: kind }));
 
 	/** Alvos de cada peça para a formação atual, já em coordenadas da tela. */
 	function targets(t: number, place = currentPlacement()) {
 		const def = formation.def;
 		const prims: Prim[] = def.prims.map((prim) => [...prim] as Prim);
-		def.anim?.(t, prims);
+		def.anim?.(def.eyes ? t + mascot.boost : t, prims);
 		const drift = (def.drift ?? 1) * (place.view ? 1 : place.s * 2.2);
 		const out: { v: number[]; op: number }[] = [];
 		let sumX = 0;
@@ -427,29 +607,43 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 		return out;
 	}
 
+	function applyGlobals(place: Place, ease: number) {
+		const def = formation.def;
+		const detail = detailScale(place);
+		const minBevel = (5 / cssH) * 2;
+		const goal = {
+			dim: (def.dim ?? 0.95) * place.dim,
+			k: (def.k ?? 0.2) * detail,
+			bevel: Math.max((def.bevel ?? 0.15) * detail, minBevel),
+			wob: (def.wob ?? 0.011) * detail,
+			chrome: def.chrome ?? 0,
+		};
+		for (const key of Object.keys(goal) as (keyof typeof goal)[]) {
+			globals[key] += (goal[key] - globals[key]) * ease;
+		}
+	}
+
 	function settle() {
 		const place = currentPlacement();
+		lastPlace = place;
 		const out = targets(time, place);
 		out.forEach(({ v, op }, i) => {
 			slots[i].v = [...v];
 			slots[i].vel = [0, 0, 0, 0, 0, 0, 0];
 			slots[i].op = op || slots[i].op;
 		});
-		const def = formation.def;
-		globals.dim = (def.dim ?? 0.95) * place.dim;
-		globals.k = def.k ?? 0.2;
-		globals.bevel = def.bevel ?? 0.15;
-		globals.wob = def.wob ?? 0.011;
-		globals.chrome = def.chrome ?? 0;
-		eye.alpha = def.eyes ? 1 : 0;
+		applyGlobals(place, 1);
+		eye.alpha = formation.def.eyes ? 1 : 0;
 	}
 
 	function resize() {
 		const rect = canvas.getBoundingClientRect();
+		cssW = Math.max(rect.width, 1);
+		cssH = Math.max(rect.height, 1);
 		const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
-		const nextWidth = Math.max(1, Math.round(rect.width * dpr * quality));
-		const nextHeight = Math.max(1, Math.round(rect.height * dpr * quality));
-		aspect = rect.width / Math.max(rect.height, 1);
+		const nextWidth = Math.max(1, Math.round(cssW * dpr * quality));
+		const nextHeight = Math.max(1, Math.round(cssH * dpr * quality));
+		aspect = cssW / cssH;
 		if (nextWidth === width && nextHeight === height) return;
 		width = canvas.width = nextWidth;
 		height = canvas.height = nextHeight;
@@ -484,7 +678,6 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 		}
 	}
 
-	// ------------------------------------------------------------ formações
 	const visible = new Set<HTMLElement>();
 	const observer = new IntersectionObserver(
 		(entries) => {
@@ -493,73 +686,320 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 				if (entry.isIntersecting) visible.add(element);
 				else visible.delete(element);
 			}
-			const current = sections.filter((section) => visible.has(section)).at(-1);
-			if (!current) return;
-			const next = parseFormation(current.dataset.liquid);
-			if (current === formationEl || (next.name === formation.name && next.place === formation.place)) {
-				formationEl = current;
-				return;
-			}
-			formation = next;
-			formationEl = current;
-			if (reducedMotion) {
-				settle();
-				render();
-			}
+			const current = targetEls.filter((el) => visible.has(el)).at(-1);
+			if (!current || current === observed) return;
+			observed = current;
+			if (!hovered) refreshFormation();
 		},
 		{ rootMargin: '-45% 0px -45% 0px' },
 	);
-	sections.forEach((section) => observer.observe(section));
+	targetEls.forEach((el) => observer.observe(el));
+
+	if (hoverMode) {
+		document.querySelectorAll<HTMLElement>('[data-liquid-hover]').forEach((el) => {
+			const enter = () => {
+				hovered = el;
+				refreshFormation();
+			};
+			const leave = () => {
+				if (hovered !== el) return;
+				hovered = null;
+				refreshFormation();
+			};
+			el.addEventListener('pointerenter', enter);
+			el.addEventListener('pointerleave', leave);
+			el.addEventListener('focusin', enter);
+			el.addEventListener('focusout', leave);
+		});
+	}
 
 	// --------------------------------------------------------- interação
 	let lastScroll = window.scrollY;
-	const toWorld = (clientX: number, clientY: number) => {
-		const rect = canvas.getBoundingClientRect();
-		return { x: ((clientX / rect.width) * 2 - 1) * aspect, y: -((clientY / rect.height) * 2 - 1) };
+	const toWorld = (clientX: number, clientY: number) => ({
+		x: ((clientX / cssW) * 2 - 1) * aspect,
+		y: -((clientY / cssH) * 2 - 1),
+	});
+	const markInput = () => {
+		mascot.lastInput = performance.now();
 	};
 
 	if (!reducedMotion) {
 		window.addEventListener(
 			'pointermove',
 			(event) => {
+				const now = performance.now();
 				const world = toWorld(event.clientX, event.clientY);
+				const dt = Math.max((now - pointer.lastMove) / 1000, 0.008);
+				const speed = Math.hypot(world.x - pointer.x, world.y - pointer.y) / dt;
+				pointer.speed = pointer.active ? Math.min(speed, 12) : 0;
 				pointer.x = world.x;
 				pointer.y = world.y;
 				pointer.active = finePointer || event.pointerType === 'mouse';
-				pointer.lastMove = performance.now();
-				lastInteraction = pointer.lastMove;
+				pointer.lastMove = now;
+				lastInteraction = now;
+				markInput();
 			},
 			{ passive: true },
 		);
 		document.documentElement.addEventListener('pointerleave', () => {
 			pointer.active = false;
 		});
+		window.addEventListener('scroll', markInput, { passive: true });
+		window.addEventListener('keydown', markInput);
+		window.addEventListener('pointerdown', markInput, { passive: true });
 	}
 
-	/** Cutucada no mascote: ele pula, as gotinhas se espalham e os olhos sorriem. */
-	window.addEventListener('kafe:mascot-poke', () => {
-		lastInteraction = performance.now();
-		eye.happyUntil = time + 1.1;
+	// ----------------------------------------------------------- mascote
+	function burst(strength: number) {
 		const body = slots[0];
-		body.vel[2] += 1.6;
-		body.vel[3] -= 1.6;
-		body.vel[1] += 1.2;
 		for (let i = 1; i < 6; i++) {
 			const s = slots[i];
 			const dx = s.v[0] - body.v[0];
 			const dy = s.v[1] - body.v[1];
 			const len = Math.hypot(dx, dy) || 1;
-			s.vel[0] += (dx / len) * 1.4;
-			s.vel[1] += (dy / len) * 1.4;
+			s.vel[0] += (dx / len) * strength;
+			s.vel[1] += (dy / len) * strength;
+		}
+	}
+
+	/** Dispara uma reação: expressão + movimento do corpo. */
+	function react(type: string) {
+		if (!(type in REACTIONS)) return;
+		lastInteraction = performance.now();
+		mascot.reaction = type;
+		mascot.start = time;
+		mascot.until = time + REACTIONS[type];
+		const body = slots[0];
+		// Impulsos proporcionais ao tamanho do corpo: ~20% de deformação, nunca uma "salsicha".
+		const R = Math.max(lastPlace.s * 0.82, 0.05);
+		switch (type) {
+			case 'happy':
+				body.vel[1] += 1.9 * R;
+				body.vel[2] += 1.0 * R;
+				body.vel[3] -= 1.0 * R;
+				burst(2.4 * R);
+				break;
+			case 'surprise':
+			case 'wake':
+			case 'boing':
+				body.vel[3] += 1.2 * R;
+				body.vel[2] -= 0.7 * R;
+				body.vel[1] += 0.8 * R;
+				burst(3.4 * R);
+				break;
+			case 'wink':
+				body.vel[1] += 1.0 * R;
+				body.vel[0] += 0.6 * R;
+				break;
+			case 'love':
+				body.vel[2] += 0.7 * R;
+				body.vel[3] += 0.7 * R;
+				break;
+			case 'dizzy':
+				burst(4.5 * R);
+				break;
+			case 'angry':
+				body.vel[2] += 1.0 * R;
+				body.vel[3] -= 0.8 * R;
+				break;
+			case 'giggle':
+				burst(1.8 * R);
+				break;
 		}
 		if (reducedMotion) render();
+	}
+
+	window.addEventListener('kafe:mascot-react', (event) => react(String((event as CustomEvent).detail)));
+
+	// Arrastar o mascote (com mouse): ele estica como goma e volta com um "boing".
+	if (hit && !reducedMotion) {
+		hit.addEventListener('pointerdown', (event) => {
+			if (event.pointerType === 'touch' || event.button !== 0) return;
+			mascot.pressed = true;
+			mascot.downX = event.clientX;
+			mascot.downY = event.clientY;
+			hit.setPointerCapture(event.pointerId);
+		});
+		hit.addEventListener('pointermove', (event) => {
+			if (!mascot.pressed || mascot.dragging) return;
+			if (Math.hypot(event.clientX - mascot.downX, event.clientY - mascot.downY) > 8) {
+				mascot.dragging = true;
+				hit.dataset.dragging = 'true';
+			}
+		});
+		const release = () => {
+			if (!mascot.pressed) return;
+			mascot.pressed = false;
+			if (!mascot.dragging) return;
+			mascot.dragging = false;
+			delete hit.dataset.dragging;
+			hit.dataset.dragEnd = String(performance.now());
+			react('boing');
+			emit('dragged');
+		};
+		hit.addEventListener('pointerup', release);
+		hit.addEventListener('pointercancel', release);
+	}
+
+	// Botões que chamam a atenção do mascote: ele olha (e, no principal, se apaixona).
+	document.querySelectorAll<HTMLElement>('[data-mascot-look]').forEach((el) => {
+		const enter = () => {
+			mascot.lookEl = el;
+			mascot.lookLove = el.dataset.mascotLook === 'love';
+			markInput();
+			if (mascot.lookLove && eye.alpha > 0.5) emit('cta');
+		};
+		const leave = () => {
+			if (mascot.lookEl !== el) return;
+			mascot.lookEl = null;
+			mascot.lookLove = false;
+		};
+		el.addEventListener('pointerenter', enter);
+		el.addEventListener('pointerleave', leave);
+		el.addEventListener('focusin', enter);
+		el.addEventListener('focusout', leave);
 	});
+
+	function stepMascot(dt: number, out: { v: number[]; op: number }[], now: number) {
+		const def = formation.def;
+		const visibleMascot = Boolean(def.eyes);
+		const body = slots[0].v;
+		const target = out[0].v;
+		const R0 = target[2] || 0.1;
+		const active = time < mascot.until ? mascot.reaction : '';
+		const age = time - mascot.start;
+		const pd = pointer.active ? Math.hypot(pointer.x - body[0], pointer.y - body[1]) : 99;
+		const near = visibleMascot && pd < R0 * 1.7;
+
+		if (visibleMascot) {
+			if (active === 'dizzy') {
+				target[0] += Math.sin(time * 9) * 0.1 * R0;
+				target[1] += Math.cos(time * 6.5) * 0.05 * R0;
+			}
+			if (active === 'angry') target[0] += Math.sin(time * 44) * 0.06 * R0 * Math.max(0, 1 - age / 1.3);
+			if (active === 'love') {
+				const beat = Math.pow(Math.abs(Math.sin(time * 5.5)), 10) * 0.08;
+				target[2] *= 1 + beat;
+				target[3] *= 1 + beat;
+				target[4] *= 1 + beat;
+			}
+			if (active === 'giggle') {
+				const shake = Math.sin(time * 18);
+				target[1] += Math.abs(shake) * 0.07 * R0;
+				target[2] *= 1 + shake * 0.05;
+				target[3] *= 1 - shake * 0.05;
+			}
+			if (mascot.sleeping) {
+				target[2] *= 1.04;
+				target[3] *= 0.95 + Math.sin(time * 1.2) * 0.015;
+			}
+			if (mascot.dragging) {
+				const dx = pointer.x - target[0];
+				const dy = pointer.y - target[1];
+				const len = Math.hypot(dx, dy) || 1e-6;
+				const reach = Math.min(len, R0 * 1.8);
+				const stretch = reach / (R0 * 1.8);
+				target[0] += (dx / len) * reach * 0.5;
+				target[1] += (dy / len) * reach * 0.5;
+				target[2] = R0 * (1 + 0.6 * stretch);
+				target[3] = R0 * (1 - 0.24 * stretch);
+				target[4] = Math.min(target[2], target[3]);
+				target[5] = Math.atan2(dy, dx);
+				for (let i = 1; i < 6; i++) {
+					out[i].v[0] += (pointer.x - out[i].v[0]) * 0.25;
+					out[i].v[1] += (pointer.y - out[i].v[1]) * 0.25;
+				}
+			}
+
+			// Cócegas: passar o mouse rápido por cima.
+			if (near && !mascot.dragging) mascot.tickle += pointer.speed * dt;
+			mascot.tickle *= Math.exp(-dt * 1.4);
+			if (mascot.tickle > R0 * 9 && time > mascot.tickleReadyAt && !active) {
+				mascot.tickle = 0;
+				mascot.tickleReadyAt = time + 6;
+				react('giggle');
+				emit('tickle');
+			}
+
+			// Soneca depois de um tempo sem ninguém mexer na página.
+			const screenY = ((1 - body[1]) / 2) * cssH;
+			const onScreen = screenY > -50 && screenY < cssH + 50;
+			const idleFor = (now - mascot.lastInput) / 1000;
+			if (!mascot.sleeping && onScreen && idleFor > 16 && eye.alpha > 0.5) {
+				mascot.sleeping = true;
+				emit('sleep');
+			}
+		}
+		if (mascot.sleeping && ((now - mascot.lastInput) / 1000 < 0.4 || !visibleMascot)) {
+			mascot.sleeping = false;
+			if (visibleMascot) {
+				react('wake');
+				emit('wake');
+			}
+		}
+
+		mascot.boost += dt * (active === 'dizzy' ? 3.2 : active === 'giggle' || active === 'happy' ? 1.2 : 0);
+
+		// Expressão desejada.
+		const goal: Expression = { happy: 0, surprise: 0, angry: 0, love: 0, dizzy: 0 };
+		let openL = 1;
+		let openR = 1;
+		if (active === 'happy' || active === 'giggle') goal.happy = 1;
+		else if (active === 'surprise' || active === 'wake' || active === 'boing') goal.surprise = 1;
+		else if (active === 'love') goal.love = 1;
+		else if (active === 'dizzy') goal.dizzy = 1;
+		else if (active === 'angry') goal.angry = 1;
+		else if (active === 'wink') openR = 0.06;
+		else if (mascot.dragging) goal.angry = 1;
+		else if (mascot.lookLove) goal.love = 1;
+		else if (mascot.sleeping) openL = openR = 0.07;
+		else if (near) goal.surprise = 0.45;
+
+		if (time > eye.nextBlink) {
+			eye.blinkUntil = time + 0.14;
+			eye.nextBlink = time + 2 + random(time) * 3.5;
+		}
+		if (time < eye.blinkUntil && !goal.love && !goal.dizzy && !goal.angry) {
+			openL = Math.min(openL, 0.06);
+			openR = Math.min(openR, 0.06);
+		}
+		const e1 = Math.min(1, dt * 10);
+		for (const key of Object.keys(goal) as (keyof Expression)[]) expr[key] += (goal[key] - expr[key]) * e1;
+		const e2 = Math.min(1, dt * 18);
+		eye.openL += (openL - eye.openL) * e2;
+		eye.openR += (openR - eye.openR) * e2;
+		eye.spin += dt * 7 * expr.dizzy;
+
+		// Para onde os olhos olham.
+		let gx = Math.sin(time * 0.5) * 0.4;
+		let gy = Math.sin(time * 0.37) * 0.2;
+		let look: { x: number; y: number } | null = null;
+		if (mascot.lookEl) {
+			const r = mascot.lookEl.getBoundingClientRect();
+			look = toWorld(r.left + r.width / 2, r.top + r.height / 2);
+		} else if (pointer.active) look = { x: pointer.x, y: pointer.y };
+		if (mascot.sleeping) {
+			gx = 0;
+			gy = -0.5;
+		} else if (look) {
+			const dx = look.x - body[0];
+			const dy = look.y - body[1];
+			const len = Math.hypot(dx, dy) || 1;
+			const reach = Math.min(1, len / 0.6);
+			gx = (dx / len) * reach;
+			gy = (dy / len) * reach;
+		}
+		eye.gx += (gx - eye.gx) * Math.min(1, dt * 6);
+		eye.gy += (gy - eye.gy) * Math.min(1, dt * 6);
+		eye.alpha += ((visibleMascot ? 1 : 0) - eye.alpha) * Math.min(1, dt * 4);
+	}
 
 	// ------------------------------------------------------------- física
 	function step(dt: number) {
 		time += dt;
 		const now = performance.now();
 		if (pointer.active && now - pointer.lastMove > 4000) pointer.active = false;
+		pointer.speed *= Math.exp(-dt * 8);
 
 		const scrollY = window.scrollY;
 		const scrollDelta = clamp(scrollY - lastScroll, -160, 160);
@@ -567,14 +1007,14 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 		lastScroll = scrollY;
 		const def = formation.def;
 		const place = currentPlacement();
+		lastPlace = place;
 		// Formas ancoradas já acompanham a rolagem; o empurrão extra seria em dobro.
-		const impulse = place.anchored
-			? 0
-			: (scrollDelta / Math.max(window.innerHeight, 1)) * 2 * 2.4 * (def.inertia ?? 1);
+		const impulse = place.anchored ? 0 : (scrollDelta / cssH) * 2 * 2.4 * (def.inertia ?? 1);
 
 		const out = targets(time, place);
-		const stiffness = 6.5;
-		const damping = 3.7;
+		stepMascot(dt, out, now);
+		const stiffness = mascot.dragging ? 14 : 6.5;
+		const damping = mascot.dragging ? 6 : 3.7;
 
 		for (let i = 0; i < SLOTS; i++) {
 			const slot = slots[i];
@@ -589,7 +1029,7 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 
 			let tx = tv[0];
 			let ty = tv[1];
-			if (def.magnet && pointer.active && i > 0) {
+			if (def.magnet && pointer.active && i > 0 && !mascot.dragging) {
 				const dx = pointer.x - tx;
 				const dy = pointer.y - ty;
 				const distance = Math.hypot(dx, dy);
@@ -599,7 +1039,7 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 					ty += dy * pull;
 				}
 			}
-			if (def.eyes && i === 0 && pointer.active) {
+			if (def.eyes && i === 0 && pointer.active && !mascot.dragging) {
 				tx += clamp(pointer.x - tx, -0.6, 0.6) * 0.05;
 				ty += clamp(pointer.y - ty, -0.6, 0.6) * 0.05;
 			}
@@ -608,16 +1048,18 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 			const goal = [tx, ty, tv[2], tv[3], tv[4], tv[5], tv[6]];
 			// Rotação pelo caminho mais curto.
 			goal[5] = slot.v[5] + ((((goal[5] - slot.v[5] + Math.PI) % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2)) - Math.PI;
-			for (let k = 0; k < 7; k++) {
-				slot.vel[k] += ((goal[k] - slot.v[k]) * stiffness - slot.vel[k] * damping) * dt;
-				slot.vel[k] = clamp(slot.vel[k], -5, 5);
-				slot.v[k] += slot.vel[k] * dt;
+			const k = i === 0 ? stiffness : 6.5;
+			const c = i === 0 ? damping : 3.7;
+			for (let j = 0; j < 7; j++) {
+				slot.vel[j] += ((goal[j] - slot.v[j]) * k - slot.vel[j] * c) * dt;
+				slot.vel[j] = clamp(slot.vel[j], -5, 5);
+				slot.v[j] += slot.vel[j] * dt;
 			}
-			for (const k of [2, 3, 4, 6]) slot.v[k] = Math.max(0, slot.v[k]);
+			for (const j of [2, 3, 4, 6]) slot.v[j] = Math.max(0, slot.v[j]);
 		}
 
 		// Gota do cursor (só nas formações "orgânicas").
-		const cursorTarget = pointer.active && def.magnet ? 0.055 * Math.min(aspect, 1) : 0;
+		const cursorTarget = pointer.active && def.magnet && !mascot.dragging ? 0.055 * Math.min(aspect, 1) : 0;
 		if (cursor.r < 0.002 && pointer.active) {
 			cursor.x = pointer.x;
 			cursor.y = pointer.y;
@@ -629,38 +1071,11 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 		cursor.y += cursor.vy * dt;
 		cursor.r = Math.max(0, cursor.r + cursor.vr * dt);
 
-		// Olhos: aparecem só no mascote, piscam e acompanham o cursor.
-		eye.alpha += ((def.eyes ? 1 : 0) - eye.alpha) * Math.min(1, dt * 4);
-		if (time > eye.nextBlink) {
-			eye.blinkUntil = time + 0.14;
-			eye.nextBlink = time + 2 + random(time) * 3.5;
-		}
-		const happy = time < eye.happyUntil;
-		const openTarget = time < eye.blinkUntil ? 0.06 : happy ? 0.3 : 1;
-		eye.open += (openTarget - eye.open) * Math.min(1, dt * 18);
-		const body = slots[0].v;
-		let gx = Math.sin(time * 0.5) * 0.4;
-		let gy = Math.sin(time * 0.37) * 0.2;
-		if (pointer.active) {
-			const dx = pointer.x - body[0];
-			const dy = pointer.y - body[1];
-			const len = Math.hypot(dx, dy) || 1;
-			const reach = Math.min(1, len / 0.6);
-			gx = (dx / len) * reach;
-			gy = (dy / len) * reach;
-		}
-		eye.gx += (gx - eye.gx) * Math.min(1, dt * 6);
-		eye.gy += (gy - eye.gy) * Math.min(1, dt * 6);
-
 		pointer.lightX += ((pointer.active ? pointer.x / aspect : 0) - pointer.lightX) * Math.min(1, dt * 2);
 		pointer.lightY += ((pointer.active ? pointer.y : 0) - pointer.lightY) * Math.min(1, dt * 2);
+		pointer.glow += ((pointer.active ? 1 : 0) - pointer.glow) * Math.min(1, dt * 3);
 
-		const ease = Math.min(1, dt * 2);
-		globals.dim += ((def.dim ?? 0.95) * place.dim - globals.dim) * ease;
-		globals.k += ((def.k ?? 0.2) - globals.k) * ease;
-		globals.bevel += ((def.bevel ?? 0.15) - globals.bevel) * ease;
-		globals.wob += ((def.wob ?? 0.011) - globals.wob) * ease;
-		globals.chrome += ((def.chrome ?? 0) - globals.chrome) * ease;
+		applyGlobals(place, Math.min(1, dt * 2));
 	}
 
 	/** Posiciona o botão invisível e o balão de fala sobre o mascote. */
@@ -668,10 +1083,9 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 		if (!hit && !bubble) return;
 		const show = eye.alpha > 0.5;
 		const body = slots[0].v;
-		const rect = canvas.getBoundingClientRect();
-		const sx = ((body[0] / aspect + 1) / 2) * rect.width;
-		const sy = ((1 - body[1]) / 2) * rect.height;
-		const radius = (Math.max(body[2], body[3]) / 2) * rect.height;
+		const sx = ((body[0] / aspect + 1) / 2) * cssW;
+		const sy = ((1 - body[1]) / 2) * cssH;
+		const radius = (Math.max(body[2], body[3]) / 2) * cssH;
 		if (hit) {
 			hit.dataset.visible = String(show);
 			hit.style.transform = `translate(${sx - radius}px, ${sy - radius}px)`;
@@ -680,9 +1094,22 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 		if (bubble) {
 			bubble.dataset.visible = String(show);
 			// No celular o balão encosta na margem direita para não cobrir o texto.
-			const bx = rect.width < 640 ? rect.width - 16 : clamp(sx - radius * 0.35, 180, rect.width - 16);
+			const bx = cssW < 640 ? cssW - 16 : clamp(sx - radius * 0.35, 180, cssW - 16);
 			bubble.style.transform = `translate(${bx}px, ${sy - radius * 1.02}px)`;
 		}
+	}
+
+	function horizon(): [number, number, number, number] {
+		if (!horizonEl) return [0, 0, 1, 0];
+		const r = horizonEl.getBoundingClientRect();
+		const portrait = aspect < 0.9;
+		const bottom = 1 - (r.bottom / cssH) * 2;
+		const radius = portrait ? 1.7 : Math.max(2.4, aspect * 1.6);
+		// data-horizon="0.1": quanto a borda do planeta sobe acima do fim da seção.
+		const custom = horizonEl.dataset.horizon;
+		const lift = custom ? Number(custom) : portrait ? 0.36 : 0.26;
+		const top = bottom + lift;
+		return [portrait ? 0 : aspect * 0.2, top - radius, radius, smooth(0.08, 0.85, r.bottom / cssH)];
 	}
 
 	function render() {
@@ -692,6 +1119,8 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 			dataB.set([v[4], v[5], v[6], slots[i].op], i * 4);
 		}
 		const body = slots[0].v;
+		const scrollWorld = (window.scrollY / cssH) * 2;
+		const spacing = (30 / cssH) * 2;
 		gl!.uniform2f(uniforms.res, width, height);
 		gl!.uniform1f(uniforms.time, time);
 		gl!.uniform1f(uniforms.dim, globals.dim);
@@ -703,8 +1132,13 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 		gl!.uniform4fv(uniforms.a, dataA);
 		gl!.uniform4fv(uniforms.b, dataB);
 		gl!.uniform3f(uniforms.cur, cursor.x, cursor.y, cursor.r);
-		gl!.uniform4f(uniforms.eye, body[0], body[1], Math.min(body[2], body[3]), eye.alpha);
-		gl!.uniform4f(uniforms.eye2, eye.gx, eye.gy, eye.open, 0);
+		gl!.uniform4f(uniforms.eye, body[0], body[1], Math.max(Math.min(body[2], body[3]), 0.001), eye.alpha);
+		gl!.uniform4f(uniforms.eye2, eye.gx, eye.gy, eye.openL, eye.openR);
+		gl!.uniform4f(uniforms.expr, expr.happy, expr.surprise, expr.angry, expr.love);
+		gl!.uniform4f(uniforms.expr2, expr.dizzy, eye.spin, 0, 0);
+		gl!.uniform4f(uniforms.grid, spacing, (1.15 / cssH) * 2, (scrollWorld * 0.35) % spacing, scrollWorld);
+		gl!.uniform3f(uniforms.ptr, pointer.x, pointer.y, pointer.glow);
+		gl!.uniform4f(uniforms.horizon, ...horizon());
 		gl!.drawArrays(gl!.TRIANGLES, 0, 3);
 		placeMascotUi();
 	}
@@ -765,8 +1199,10 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 		});
 	}
 
+	refreshFormation();
 	render();
 	canvas.classList.add('is-live');
+	document.documentElement.classList.add('liquid-live');
 	start();
 
 	new ResizeObserver(() => {
@@ -782,11 +1218,10 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 	window.addEventListener('pagehide', save);
 
 	if (reducedMotion) {
-		// Sem animação, a forma ancorada só precisa ser redesenhada ao rolar.
+		// Sem animação, a forma ancorada e o horizonte só precisam ser redesenhados ao rolar.
 		window.addEventListener(
 			'scroll',
 			() => {
-				if (!currentPlacement().anchored) return;
 				settle();
 				render();
 			},
@@ -798,14 +1233,22 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 		event.preventDefault();
 		stop();
 		canvas.classList.remove('is-live');
+		document.documentElement.classList.remove('liquid-live');
 	});
 
-	// Ferramenta de inspeção: window.__liquid.show('clock') no console.
+	// Ferramenta de inspeção: window.__liquid.show('clock') ou .react('love') no console.
 	(window as unknown as { __liquid: unknown }).__liquid = {
 		show: (value: string) => {
 			formation = parseFormation(value);
 			formationEl = undefined;
 			lastInteraction = performance.now();
 		},
+		react,
+		/** Adianta a simulação (útil em testes e capturas de tela). */
+		advance: (seconds: number) => {
+			for (let i = 0; i < Math.round(seconds * 60); i++) step(1 / 60);
+			render();
+		},
+		state: () => ({ name: formation.name, place: lastPlace, el: formationEl?.id || formationEl?.className }),
 	};
 }

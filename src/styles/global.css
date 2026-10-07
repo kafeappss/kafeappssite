@@ -304,6 +304,41 @@ ol[role='list'] {
 	max-width: 640px;
 }
 
+/* --------------------------------------------------------------------------
+   Espaço do líquido ao lado do título (ou acima dele, no celular)
+   -------------------------------------------------------------------------- */
+.head-split {
+	display: grid;
+	gap: 4px;
+	align-items: center;
+	margin-bottom: clamp(40px, 5vw, 72px);
+}
+
+.head-split .section-head {
+	margin-bottom: 0;
+}
+
+.slot {
+	order: -1;
+	justify-self: start;
+	width: min(200px, 56vw);
+	height: 150px;
+}
+
+@media (min-width: 960px) {
+	.head-split {
+		grid-template-columns: minmax(0, 1fr) minmax(280px, 0.6fr);
+		gap: 48px;
+	}
+
+	.head-split .slot {
+		order: 0;
+		justify-self: stretch;
+		width: auto;
+		height: clamp(260px, 28vw, 360px);
+	}
+}
+
 /* Seção em duas colunas: texto à esquerda, "palco" à direita, onde o
    líquido assume a forma que ilustra o conteúdo. */
 .split {

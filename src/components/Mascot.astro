@@ -5,7 +5,7 @@
  */
 ---
 
-<button class="mascot-hit" type="button" data-mascot-hit aria-label="Mascote da Kafé: clique para ele falar"
+<button class="mascot-hit" type="button" data-mascot-hit aria-label="Mascote da Kafé: clique para ele reagir e falar"
 ></button>
 <div class="mascot-bubble" data-mascot-bubble aria-live="polite">
 	<p class="mascot-bubble-inner" data-mascot-text></p>
@@ -30,6 +30,16 @@
 	.mascot-hit[data-visible='true'] {
 		visibility: visible;
 		pointer-events: auto;
+	}
+
+	@media (hover: hover) and (pointer: fine) {
+		.mascot-hit {
+			cursor: grab;
+		}
+
+		.mascot-hit[data-dragging='true'] {
+			cursor: grabbing;
+		}
 	}
 
 	.mascot-hit:focus-visible {

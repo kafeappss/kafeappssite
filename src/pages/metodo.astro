@@ -3,6 +3,7 @@ import Base from '../layouts/Base.astro';
 import PageHero from '../components/PageHero.astro';
 import SectionHead from '../components/SectionHead.astro';
 import MethodSteps from '../components/MethodSteps.astro';
+import LiquidSlot from '../components/LiquidSlot.astro';
 import Marquee from '../components/Marquee.astro';
 import Faq from '../components/Faq.astro';
 import CtaSection from '../components/CtaSection.astro';
@@ -59,14 +60,17 @@ const methodFaq = faq.filter((item) => /IA|MVP|lançamento/.test(item.q));
 		breadcrumbs={[{ label: 'Método' }]}
 	/>
 
-	<section class="section method-section" data-liquid="rest" data-rail="Etapas">
+	<section class="section method-section" data-liquid="cycle-0" data-rail="Etapas">
 		<div class="container">
-			<SectionHead
-				eyebrow="As quatro etapas"
-				title="Do grão à xícara, <em>etapa por etapa.</em>"
-				lead="Cada etapa tem objetivos e entregáveis claros. Você só avança quando está seguro do que foi feito."
-			/>
-			<MethodSteps />
+			<div class="head-split">
+				<SectionHead
+					eyebrow="As quatro etapas"
+					title="Do grão à xícara, <em>etapa por etapa.</em>"
+					lead="Cada etapa tem objetivos e entregáveis claros. Você só avança quando está seguro do que foi feito."
+				/>
+				<LiquidSlot class="slot" />
+			</div>
+			<MethodSteps liquid />
 		</div>
 	</section>
 
@@ -140,7 +144,9 @@ const methodFaq = faq.filter((item) => /IA|MVP|lançamento/.test(item.q));
 					}
 				</ul>
 			</div>
-			<div class="stage" aria-hidden="true"></div>
+			<div class="ai-stage">
+				<LiquidSlot class="slot ai-slot" icon="spark" />
+			</div>
 		</div>
 	</section>
 
@@ -170,6 +176,21 @@ const methodFaq = faq.filter((item) => /IA|MVP|lançamento/.test(item.q));
 </Base>
 
 <style>
+	/* IA: a forma fica parada ao lado enquanto o texto passa. */
+	@media (min-width: 1024px) {
+		.ai-stage {
+			position: sticky;
+			top: calc(var(--header-h) + 40px);
+		}
+
+		.ai-slot {
+			order: 0;
+			justify-self: stretch;
+			width: auto;
+			height: min(480px, calc(100vh - var(--header-h) - 120px));
+		}
+	}
+
 	.method-section {
 		padding-top: clamp(40px, 5vw, 80px);
 	}

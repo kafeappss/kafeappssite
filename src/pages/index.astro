@@ -4,6 +4,8 @@ import Base from '../layouts/Base.astro';
 import SectionHead from '../components/SectionHead.astro';
 import Marquee from '../components/Marquee.astro';
 import Mascot from '../components/Mascot.astro';
+import LiquidSlot from '../components/LiquidSlot.astro';
+import MethodSteps from '../components/MethodSteps.astro';
 import Testimonials from '../components/Testimonials.astro';
 import Clients from '../components/Clients.astro';
 import BlogCard from '../components/BlogCard.astro';
@@ -11,7 +13,7 @@ import Faq from '../components/Faq.astro';
 import CtaSection from '../components/CtaSection.astro';
 import Icon from '../components/Icon.astro';
 import { services } from '../data/services';
-import { aiPillars, engagementModels, faq, methodSteps } from '../data/method';
+import { aiPillars, engagementModels, faq } from '../data/method';
 import { differentials, productTypes, site, stats, technologies } from '../data/site';
 
 const posts = (await getCollection('blog', ({ data }) => !data.draft))
@@ -53,6 +55,9 @@ const stages = [
 	},
 ];
 
+/** Tamanho de cada serviço no mosaico (em colunas de uma grade de 6). */
+const spans = ['span-3', 'span-3', 'span-2', 'span-2', 'span-2', 'span-4'];
+
 const capabilities = [
 	'Aplicativos iOS e Android',
 	'Plataformas SaaS',
@@ -70,25 +75,29 @@ const capabilities = [
 <Base
 	description="A Kafé Apps cria aplicativos, plataformas, sistemas e soluções de IA sob medida — em código, com engenharia acelerada por IA. Software house em Niterói (RJ) que atende todo o Brasil."
 >
-	<!-- Início: o mascote -->
-	<section class="hero" data-liquid="mascot" data-rail="Início">
+	<!-- Início: o mascote em pé no horizonte -->
+	<section class="hero" data-liquid="mascot" data-rail="Início" data-horizon>
 		<div class="container hero-inner">
-			<p class="eyebrow" data-reveal>Software house · Código + IA · {site.location.city}, {site.location.state}</p>
-			<h1 class="display hero-title" data-split>Mais negócio, <em>menos software.</em></h1>
-			<p class="lead hero-lead" data-reveal style="--delay: 0.35s">
-				A Kafé Apps cria aplicativos, plataformas, sistemas e soluções de IA sob medida — em código, com
-				engenheiros acelerados por inteligência artificial. Do MVP ao produto em escala, sem desperdício.
-			</p>
-			<div class="btn-row" data-reveal style="--delay: 0.5s">
-				<a class="btn" href={site.contact.briefUrl}>Tirar minha ideia do papel <Icon name="arrow" class="arrow" /></a>
-				<a class="btn btn-ghost" href="#servicos">Ver o que fazemos</a>
+			<div class="hero-copy">
+				<p class="eyebrow" data-reveal>Software house · Código + IA · {site.location.city}, {site.location.state}</p>
+				<h1 class="display hero-title" data-split>Mais negócio, <em>menos software.</em></h1>
+				<p class="lead hero-lead" data-reveal style="--delay: 0.35s">
+					A Kafé Apps cria aplicativos, plataformas, sistemas e soluções de IA sob medida — em código, com
+					engenheiros acelerados por inteligência artificial. Do MVP ao produto em escala, sem desperdício.
+				</p>
+				<div class="btn-row" data-reveal style="--delay: 0.5s">
+					<a class="btn" href={site.contact.briefUrl} data-mascot-look="love">
+						Tirar minha ideia do papel <Icon name="arrow" class="arrow" />
+					</a>
+					<a class="btn btn-ghost" href="#servicos" data-mascot-look="look">Ver o que fazemos</a>
+				</div>
+				<ul role="list" class="hero-proof" data-reveal style="--delay: 0.65s">
+					<li><Icon name="clock" size={18} /> Desde {site.foundingYear}</li>
+					<li><Icon name="spark" size={18} /> Engenharia aumentada por IA</li>
+					<li><Icon name="k" size={18} /> Metodologia 4Ds</li>
+				</ul>
 			</div>
-			<ul role="list" class="hero-proof" data-reveal style="--delay: 0.65s">
-				<li><Icon name="clock" size={18} /> Desde {site.foundingYear}</li>
-				<li><Icon name="spark" size={18} /> Engenharia aumentada por IA</li>
-				<li><Icon name="k" size={18} /> Metodologia 4Ds</li>
-			</ul>
-			<!-- No celular o mascote ganha um espaço só dele, longe do texto. -->
+			<!-- Espaço do mascote: ao lado do texto no computador, abaixo dele no celular. -->
 			<div class="hero-mascot" data-liquid-anchor aria-hidden="true"></div>
 		</div>
 		<Mascot />
@@ -102,110 +111,138 @@ const capabilities = [
 
 	<!-- 01 · Problema: o relógio -->
 	<section class="section" id="problema" data-liquid="clock" data-rail="Problema">
-		<div class="container split">
-			<div class="split-text">
+		<div class="container">
+			<div class="head-split">
 				<SectionHead
 					num="01"
 					eyebrow="O problema"
 					title="Boas ideias raramente morrem por serem ruins. <em>Morrem por demorar.</em>"
 					lead="Meses de desenvolvimento antes do primeiro usuário, orçamento consumido por funcionalidades que ninguém pediu e um time caro antes de o negócio provar que funciona. Existe outro caminho."
 				/>
-				<ol role="list" class="list-lines">
-					{
-						pains.map((pain, index) => (
-							<li data-reveal style={`--delay: ${index * 0.08}s`}>
-								<span class="list-num label">0{index + 1}</span>
-								<div>
-									<h3>{pain.title}</h3>
-									<p>{pain.description}</p>
-								</div>
-							</li>
-						))
-					}
-				</ol>
+				<LiquidSlot class="slot" icon="clock" />
 			</div>
-			<div class="stage" aria-hidden="true"></div>
+			<ol role="list" class="pains">
+				{
+					pains.map((pain, index) => (
+						<li class="card pain" data-reveal style={`--delay: ${index * 0.1}s`}>
+							<span class="pain-num label">0{index + 1}</span>
+							<h3 class="h3">{pain.title}</h3>
+							<p>{pain.description}</p>
+						</li>
+					))
+				}
+			</ol>
 		</div>
 	</section>
 
 	<!-- 02 · Virada: as barras de crescimento -->
 	<section class="section" data-liquid="bars" data-rail="Virada">
-		<div class="container split">
-			<div class="split-text">
-				<SectionHead
-					num="02"
-					eyebrow="A virada"
-					title="Primeiro o negócio. <em>Depois o software.</em>"
-					lead="Entendemos o negócio antes de escolher a tecnologia. Cada linha de código precisa ter um motivo para existir — e um resultado para entregar."
-				/>
-				<ol role="list" class="stages">
-					{
-						stages.map((stage, index) => (
-							<li class="stage-item" data-reveal style={`--delay: ${index * 0.1}s`}>
-								<span class="stage-from label">{stage.from}</span>
-								<p class="stage-name">{stage.name}</p>
-								<p class="stage-desc">{stage.description}</p>
-							</li>
-						))
-					}
-				</ol>
-			</div>
-			<div class="stage" aria-hidden="true"></div>
+		<div class="container turn">
+			<LiquidSlot class="slot turn-slot" />
+			<SectionHead
+				num="02"
+				eyebrow="A virada"
+				title="Primeiro o negócio. <em>Depois o software.</em>"
+				lead="Entendemos o negócio antes de escolher a tecnologia. Cada linha de código precisa ter um motivo para existir — e um resultado para entregar."
+				center
+			/>
+			<ol role="list" class="stages">
+				{
+					stages.map((stage, index) => (
+						<li class="stage" data-reveal style={`--delay: ${index * 0.12}s`}>
+							<span class="stage-from label">{stage.from}</span>
+							<p class="stage-name">{stage.name}</p>
+							<p class="stage-desc">{stage.description}</p>
+							{index < stages.length - 1 && (
+								<span class="stage-arrow" aria-hidden="true">
+									<Icon name="arrow" size={22} />
+								</span>
+							)}
+						</li>
+					))
+				}
+			</ol>
 		</div>
 	</section>
 
-	<!-- 03 · Serviços: o líquido vira cada serviço -->
-	<section class="section services" id="servicos" data-rail="Serviços">
-		<div class="container split">
-			<div class="split-text">
-				<div data-liquid="code">
-					<SectionHead
-						num="03"
-						eyebrow="O que fazemos"
-						title="Do aplicativo à IA, <em>tudo em código.</em>"
-						lead="Seis frentes, um só time: estratégia, design, engenharia e inteligência artificial trabalhando juntos — do primeiro rascunho à evolução contínua."
-					/>
-				</div>
+	<!-- 03 · Serviços: passe o mouse e o líquido vira cada serviço -->
+	<section class="section services" id="servicos" data-liquid="code" data-rail="Serviços">
+		<div class="container">
+			<div class="head-split">
+				<SectionHead
+					num="03"
+					eyebrow="O que fazemos"
+					title="Do aplicativo à IA, <em>tudo em código.</em>"
+					lead="Seis frentes, um só time: estratégia, design, engenharia e inteligência artificial trabalhando juntos — do primeiro rascunho à evolução contínua."
+				/>
+				<LiquidSlot class="slot" />
+			</div>
+			<div class="bento">
 				{
 					services.map((service, index) => (
-						<article class="block" data-liquid={service.shape}>
-							<p class="block-num label">
-								{String(index + 1).padStart(2, '0')} / {String(services.length).padStart(2, '0')}
-							</p>
-							<h3 class="block-title" data-reveal>
-								{service.title}
-							</h3>
-							<p class="block-text" data-reveal style="--delay: 0.08s">
-								{service.short}
-							</p>
-							<ul role="list" class="block-tags" data-reveal style="--delay: 0.14s">
+						<a
+							href={`/servicos/${service.slug}`}
+							class:list={['svc', spans[index]]}
+							data-liquid-hover={service.shape}
+							data-reveal
+							style={`--delay: ${(index % 3) * 0.08}s`}
+						>
+							<div class="svc-top">
+								<span class="svc-num label">{String(index + 1).padStart(2, '0')}</span>
+								<span class="svc-slot" data-liquid-anchor aria-hidden="true">
+									<Icon name={service.icon} size={40} class="svc-icon" />
+								</span>
+							</div>
+							<h3 class="svc-title">{service.title}</h3>
+							<p class="svc-text">{service.short}</p>
+							<ul role="list" class="svc-tags">
 								{service.keywords.map((keyword) => (
 									<li class="tag">{keyword}</li>
 								))}
 							</ul>
-							<a class="link-arrow" href={`/servicos/${service.slug}`} data-reveal style="--delay: 0.2s">
-								Ver detalhes do serviço <Icon name="arrow" />
-							</a>
-						</article>
+							<span class="svc-more">
+								Ver detalhes <Icon name="arrow-up-right" size={18} />
+							</span>
+						</a>
 					))
 				}
-				<div class="block-more" data-reveal>
-					<p class="label">E também</p>
-					<ul role="list" class="chips">
-						{productTypes.map((type) => <li class="tag">{type}</li>)}
-					</ul>
-				</div>
+				<a href={site.contact.briefUrl} class="svc svc-cta span-2" data-reveal style="--delay: 0.16s">
+					<span class="svc-num label">Não sabe por onde começar?</span>
+					<p class="svc-title">Monte um pré-orçamento com a Kafeína, nossa IA.</p>
+					<span class="svc-more">
+						Começar agora <Icon name="arrow" size={18} />
+					</span>
+				</a>
 			</div>
-			<div class="stage" aria-hidden="true"></div>
 		</div>
 	</section>
 
-	<!-- 04 · Engenharia aumentada por IA -->
+	<!-- 04 · O que dá para construir -->
+	<section class="section" data-liquid="rest">
+		<div class="container">
+			<SectionHead num="04" eyebrow="O que dá para construir" title="Do delivery ao SaaS, <em>sua ideia tem lugar aqui.</em>" />
+			<ul role="list" class="types" data-reveal>
+				{
+					productTypes.map((type) => (
+						<li>
+							<span>{type}</span>
+							<Icon name="k" size={16} class="types-mark" />
+						</li>
+					))
+				}
+			</ul>
+		</div>
+	</section>
+
+	<!-- 05 · Engenharia aumentada por IA: código + faísca -->
 	<section class="section" id="ia" data-liquid="code-ai" data-rail="IA">
-		<div class="container split">
-			<div class="split-text">
+		<div class="container ia">
+			<div class="ia-stage">
+				<LiquidSlot class="slot ia-slot" icon="spark" />
+			</div>
+			<div class="ia-copy">
 				<SectionHead
-					num="04"
+					num="05"
 					eyebrow="Engenharia aumentada por IA"
 					title="Código escrito por pessoas. <em>Acelerado por IA.</em>"
 					lead="Nossos engenheiros trabalham lado a lado com agentes de IA. A IA cuida do trabalho repetitivo; as pessoas cuidam das decisões, da arquitetura e da qualidade. Você recebe software sob medida, mais rápido."
@@ -214,6 +251,7 @@ const capabilities = [
 					{
 						aiPillars.map((pillar, index) => (
 							<li data-reveal style={`--delay: ${index * 0.06}s`}>
+								<span class="pillar-num label">0{index + 1}</span>
 								<h3>{pillar.title}</h3>
 								<p>{pillar.description}</p>
 							</li>
@@ -233,49 +271,29 @@ const capabilities = [
 					)
 				}
 			</div>
-			<div class="stage" aria-hidden="true"></div>
 		</div>
 	</section>
 
-	<!-- 05 · Metodologia 4Ds: o ciclo -->
-	<section class="section" id="metodo" data-rail="Método">
-		<div class="container split">
-			<div class="split-text">
-				<div data-liquid="cycle-0">
-					<SectionHead
-						num="05"
-						eyebrow="Metodologia 4Ds"
-						title="Quatro etapas. <em>Nenhuma surpresa.</em>"
-						lead="Nossa metodologia própria combina design inteligente, engenharia acelerada por IA e processos ágeis. Você acompanha cada etapa em tempo real."
-					/>
-				</div>
-				{
-					methodSteps.map((step, index) => (
-						<article class="block step" data-liquid={`cycle-${index + 1}`}>
-							<p class="block-num label">
-								0{index + 1} · {step.coffee}
-							</p>
-							<h3 class="block-title" data-reveal>
-								{step.name}
-							</h3>
-							<p class="step-title" data-reveal style="--delay: 0.06s">
-								{step.title}
-							</p>
-							<p class="block-text" data-reveal style="--delay: 0.1s">
-								{step.description}
-							</p>
-							<p class="step-output" data-reveal style="--delay: 0.16s">
-								<Icon name="check" size={16} /> {step.output}
-							</p>
-						</article>
-					))
-				}
+	<!-- 06 · Metodologia 4Ds: o ciclo (cada etapa gira o ciclo) -->
+	<section class="section" id="metodo" data-liquid="cycle-0" data-rail="Método">
+		<div class="container">
+			<div class="head-split">
+				<SectionHead
+					num="06"
+					eyebrow="Metodologia 4Ds"
+					title="Quatro etapas. <em>Nenhuma surpresa.</em>"
+					lead="Nossa metodologia própria combina design inteligente, engenharia acelerada por IA e processos ágeis. Você acompanha cada etapa em tempo real."
+				/>
+				<LiquidSlot class="slot" />
 			</div>
-			<div class="stage" aria-hidden="true"></div>
+			<MethodSteps liquid />
 		</div>
 
 		<div class="container models" data-liquid="rest">
-			<p class="eyebrow" data-reveal>Formatos de trabalho</p>
+			<div class="head-row">
+				<p class="eyebrow" data-reveal>Formatos de trabalho</p>
+				<a class="link-arrow" href="/metodo" data-reveal>Ver o método completo <Icon name="arrow" /></a>
+			</div>
 			<div class="models-grid">
 				{
 					engagementModels.map((model, index) => (
@@ -298,11 +316,11 @@ const capabilities = [
 		</div>
 	</section>
 
-	<!-- 06 · Clientes -->
+	<!-- 07 · Clientes -->
 	<section class="section" id="clientes" data-liquid="rest" data-rail="Clientes">
 		<div class="container">
 			<SectionHead
-				num="06"
+				num="07"
 				eyebrow="Quem confia"
 				title="Empresas que resolveram problemas reais <em>com a Kafé.</em>"
 			/>
@@ -313,12 +331,12 @@ const capabilities = [
 		</div>
 	</section>
 
-	<!-- 07 · Quem somos: o K -->
+	<!-- 08 · Quem somos: o K -->
 	<section class="section" id="sobre" data-liquid="k" data-rail="Sobre">
-		<div class="container split">
-			<div class="split-text">
+		<div class="container soul">
+			<div class="soul-text">
 				<SectionHead
-					num="07"
+					num="08"
 					eyebrow="Quem somos"
 					title="Nascemos em Niterói para <em>tirar ideias do papel.</em>"
 				/>
@@ -331,6 +349,13 @@ const capabilities = [
 					<p class="soul-quote">
 						Toda boa ideia já começou numa conversa de café. Nosso trabalho é garantir que ela não termine ali.
 					</p>
+					<a class="link-arrow" href="/sobre">Conheça a Kafé <Icon name="arrow" /></a>
+				</div>
+			</div>
+			<div class="soul-bento">
+				<div class="k-tile">
+					<LiquidSlot class="k-slot" icon="k" iconSize={64} />
+					<span class="k-caption label">Kafé Apps · desde {site.foundingYear}</span>
 				</div>
 				<dl class="stats">
 					{
@@ -342,9 +367,7 @@ const capabilities = [
 						))
 					}
 				</dl>
-				<a class="link-arrow" href="/sobre" data-reveal>Conheça a Kafé <Icon name="arrow" /></a>
 			</div>
-			<div class="stage" aria-hidden="true"></div>
 		</div>
 
 		<div class="container" data-liquid="rest">
@@ -423,6 +446,11 @@ const capabilities = [
 	.hero-inner {
 		display: grid;
 		gap: 28px;
+	}
+
+	.hero-copy {
+		display: grid;
+		gap: 28px;
 		justify-items: start;
 	}
 
@@ -458,10 +486,23 @@ const capabilities = [
 	}
 
 	.hero-mascot {
-		display: none;
+		min-height: 200px;
 	}
 
-	/* Tela em pé: o mascote mora no fim do hero, abaixo do texto. */
+	/* Tela larga: mascote ao lado do texto. */
+	@media (min-width: 960px) and (min-aspect-ratio: 9/10) {
+		.hero-inner {
+			grid-template-columns: minmax(0, 1.3fr) minmax(0, 0.7fr);
+			align-items: center;
+			gap: 24px;
+		}
+
+		.hero-mascot {
+			height: clamp(380px, 62vh, 640px);
+		}
+	}
+
+	/* Tela em pé: o mascote mora no fim do hero, abaixo do texto, em cima do horizonte. */
 	@media (max-aspect-ratio: 9/10) {
 		.hero {
 			align-items: stretch;
@@ -470,14 +511,16 @@ const capabilities = [
 		}
 
 		.hero-inner {
-			grid-template-rows: repeat(5, auto) 1fr;
+			grid-template-rows: auto 1fr;
+			gap: 22px;
+		}
+
+		.hero-copy {
 			gap: 22px;
 		}
 
 		.hero-mascot {
-			display: block;
-			justify-self: stretch;
-			min-height: 180px;
+			min-height: 190px;
 		}
 
 		.hero .scroll-cue {
@@ -516,155 +559,269 @@ const capabilities = [
 	}
 
 	@keyframes drip {
-		0% { transform: translateY(-100%); }
-		100% { transform: translateY(100%); }
+		0% {
+			transform: translateY(-100%);
+		}
+		100% {
+			transform: translateY(100%);
+		}
 	}
 
-	/* Listas em linhas (problema) ---------------------------------------------- */
-	.list-lines {
+	/* 01 · Problema ------------------------------------------------------------ */
+	.pains {
 		display: grid;
-		border-top: 1px solid var(--line);
-	}
-
-	.list-lines li {
-		display: grid;
-		grid-template-columns: 48px 1fr;
 		gap: 16px;
-		padding: 26px 0;
-		border-bottom: 1px solid var(--line);
 	}
 
-	.list-num {
-		padding-top: 4px;
+	.pain {
+		display: grid;
+		gap: 14px;
+		align-content: start;
+		padding: clamp(26px, 3vw, 38px);
+	}
+
+	.pain-num {
 		font-size: var(--fs-xs);
 		color: var(--text-dim);
 	}
 
-	.list-lines h3 {
-		font-size: 1.3rem;
-		letter-spacing: -0.02em;
-	}
-
-	.list-lines p {
-		margin-top: 6px;
+	.pain p {
 		color: var(--text-muted);
 		font-size: var(--fs-small);
-		max-width: 520px;
 	}
 
-	/* Virada --------------------------------------------------------------------- */
+	/* 02 · Virada -------------------------------------------------------------- */
+	.turn {
+		display: grid;
+		justify-items: center;
+	}
+
+	.turn-slot {
+		order: 0;
+		justify-self: center;
+		width: min(240px, 64vw);
+		height: clamp(150px, 18vw, 230px);
+		margin-bottom: 12px;
+	}
+
 	.stages {
 		display: grid;
-		border-top: 1px solid var(--line);
+		gap: 16px;
+		width: 100%;
 	}
 
-	.stage-item {
+	.stage {
+		position: relative;
 		display: grid;
-		gap: 8px;
-		padding: 26px 0;
-		border-bottom: 1px solid var(--line);
+		gap: 10px;
+		align-content: start;
+		padding: 30px 0 26px;
+		border-top: 1px solid var(--line-strong);
 	}
 
 	.stage-from {
-		font-size: 0.7rem;
-		letter-spacing: 0.16em;
+		font-size: 0.72rem;
+		letter-spacing: 0.12em;
 		text-transform: uppercase;
 		color: var(--text-dim);
 	}
 
 	.stage-name {
 		font-family: var(--font-display);
-		font-size: clamp(2.6rem, 1.8rem + 3vw, 4.2rem);
+		font-size: clamp(3rem, 2rem + 4vw, 5.5rem);
 		font-weight: 700;
 		line-height: 0.95;
-		letter-spacing: -0.045em;
+		letter-spacing: -0.055em;
 		background: var(--gradient-metal);
 		-webkit-background-clip: text;
 		background-clip: text;
 		color: transparent;
+		padding-right: 0.06em;
 		justify-self: start;
-		padding-right: 0.04em;
 	}
 
 	.stage-desc {
-		max-width: 460px;
+		max-width: 340px;
 		color: var(--text-muted);
 	}
 
-	/* Blocos (serviços e etapas do método) ----------------------------------- */
-	.block {
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: flex-start;
-		gap: 14px;
-		padding: 48px 0;
-		border-top: 1px solid var(--line);
+	.stage-arrow {
+		display: none;
 	}
 
-	.block-num {
-		font-size: 0.72rem;
-		letter-spacing: 0.16em;
+	/* 03 · Serviços (mosaico) -------------------------------------------------- */
+	.bento {
+		display: grid;
+		gap: 16px;
+	}
+
+	/* Cartões vazados: o líquido aparece atrás deles sem desfoque. */
+	.svc {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		gap: 14px;
+		min-height: 100%;
+		padding: clamp(24px, 2.6vw, 34px);
+		border: 1px solid var(--line);
+		border-radius: var(--radius);
+		background: linear-gradient(180deg, rgb(255 255 255 / 0.035), rgb(255 255 255 / 0.006));
+		transition:
+			border-color 0.35s ease,
+			background-color 0.35s ease;
+	}
+
+	.svc:hover,
+	.svc[data-liquid-active] {
+		border-color: var(--line-strong);
+		background-color: rgb(255 255 255 / 0.02);
+	}
+
+	.svc-top {
+		display: flex;
+		align-items: flex-start;
+		justify-content: space-between;
+		gap: 16px;
+	}
+
+	.svc-num {
+		font-size: var(--fs-xs);
+		letter-spacing: 0.12em;
 		text-transform: uppercase;
 		color: var(--text-dim);
 	}
 
-	.block-title {
-		font-size: clamp(2rem, 1.4rem + 2.2vw, 3.2rem);
-		line-height: 1;
-		letter-spacing: -0.04em;
+	.svc-slot {
+		display: grid;
+		place-items: center;
+		flex: none;
+		width: 132px;
+		height: 116px;
+		margin: -10px -10px 0 0;
 	}
 
-	.block-text {
-		max-width: 520px;
+	.svc-slot :global(.svc-icon) {
 		color: var(--text-muted);
-		font-size: 1.08rem;
+		transition:
+			opacity 0.4s ease,
+			transform 0.5s var(--ease-out);
 	}
 
-	.block-tags,
-	.chips {
+	:global(html.liquid-live) .svc[data-liquid-active] :global(.svc-icon) {
+		opacity: 0;
+		transform: scale(0.7);
+	}
+
+	.svc-title {
+		font-family: var(--font-display);
+		font-size: clamp(1.45rem, 1.15rem + 0.9vw, 1.95rem);
+		font-weight: 700;
+		line-height: 1.08;
+		letter-spacing: -0.035em;
+	}
+
+	.svc-text {
+		max-width: 46ch;
+		color: var(--text-muted);
+		font-size: var(--fs-small);
+	}
+
+	.svc-tags {
 		display: flex;
 		flex-wrap: wrap;
 		gap: 6px;
+		margin-top: auto;
+		padding-top: 6px;
 	}
 
-	.block .link-arrow {
-		margin-top: 6px;
-	}
-
-	.block-more {
-		display: grid;
-		gap: 14px;
-		padding-top: 40px;
-		border-top: 1px solid var(--line);
-	}
-
-	.block-more .label,
-	.tools .label {
-		font-size: 0.72rem;
-		font-weight: 600;
-		letter-spacing: 0.16em;
-		text-transform: uppercase;
-		color: var(--text-dim);
-	}
-
-	.step-title {
-		font-weight: 600;
-		font-size: 1.12rem;
-	}
-
-	.step-output {
+	.svc-more {
 		display: inline-flex;
 		align-items: center;
-		gap: 8px;
-		padding: 8px 12px;
-		border: 1px solid var(--line-strong);
-		border-radius: var(--radius-sm);
-		font-size: var(--fs-xs);
+		gap: 6px;
+		font-size: var(--fs-small);
+		font-weight: 550;
 		color: var(--text);
 	}
 
-	/* IA ------------------------------------------------------------------------- */
+	.svc-more :global(svg) {
+		transition: transform 0.35s var(--ease-out);
+	}
+
+	.svc:hover .svc-more :global(svg) {
+		transform: translate(2px, -2px);
+	}
+
+	.svc-cta {
+		justify-content: space-between;
+		gap: 22px;
+		color: var(--black);
+		background: var(--white);
+		border-color: var(--white);
+	}
+
+	.svc-cta:hover {
+		background: #e9e9e9;
+		border-color: #e9e9e9;
+	}
+
+	.svc-cta .svc-num {
+		color: #555;
+	}
+
+	.svc-cta .svc-more {
+		color: var(--black);
+	}
+
+	.svc-cta:hover .svc-more :global(svg) {
+		transform: translateX(3px);
+	}
+
+	/* 04 · Tipos de produto ---------------------------------------------------- */
+	.types {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 6px 0;
+	}
+
+	.types li {
+		display: inline-flex;
+		align-items: center;
+		gap: 22px;
+		padding-right: 22px;
+		font-family: var(--font-display);
+		font-size: clamp(1.5rem, 1rem + 2.2vw, 3rem);
+		font-weight: 450;
+		line-height: 1.25;
+		letter-spacing: -0.04em;
+		color: var(--text-quiet);
+		transition: color 0.3s ease;
+	}
+
+	.types li:hover,
+	.types li:nth-child(3n + 2) {
+		color: var(--text);
+	}
+
+	.types :global(.types-mark) {
+		color: var(--accent);
+		opacity: 0.5;
+	}
+
+	.types li:last-child :global(.types-mark) {
+		display: none;
+	}
+
+	/* 05 · IA ------------------------------------------------------------------ */
+	.ia {
+		display: grid;
+		gap: 8px;
+	}
+
+	.ia-slot {
+		width: min(220px, 60vw);
+		height: 160px;
+	}
+
 	.pillars {
 		display: grid;
 		gap: 0 32px;
@@ -672,8 +829,15 @@ const capabilities = [
 	}
 
 	.pillars li {
+		display: grid;
+		gap: 6px;
 		padding: 24px 0;
 		border-bottom: 1px solid var(--line);
+	}
+
+	.pillar-num {
+		font-size: var(--fs-xs);
+		color: var(--text-dim);
 	}
 
 	.pillars h3 {
@@ -682,7 +846,6 @@ const capabilities = [
 	}
 
 	.pillars p {
-		margin-top: 6px;
 		font-size: var(--fs-small);
 		color: var(--text-muted);
 	}
@@ -693,9 +856,52 @@ const capabilities = [
 		margin-top: 36px;
 	}
 
-	/* Formatos ------------------------------------------------------------------ */
+	.tools .label {
+		font-size: 0.72rem;
+		font-weight: 600;
+		letter-spacing: 0.16em;
+		text-transform: uppercase;
+		color: var(--text-dim);
+	}
+
+	.chips {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 6px;
+	}
+
+	@media (min-width: 960px) {
+		.ia {
+			grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+			gap: 64px;
+			align-items: start;
+		}
+
+		/* O código + IA fica parado enquanto o texto passa. */
+		.ia-stage {
+			position: sticky;
+			top: calc(var(--header-h) + 40px);
+		}
+
+		.ia-slot {
+			order: 0;
+			justify-self: stretch;
+			width: auto;
+			height: min(520px, calc(100vh - var(--header-h) - 120px));
+		}
+	}
+
+	/* 06 · Formatos ------------------------------------------------------------- */
 	.models {
 		margin-top: clamp(64px, 8vw, 120px);
+	}
+
+	.models .head-row {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: 12px 24px;
 	}
 
 	.models-grid {
@@ -742,11 +948,17 @@ const capabilities = [
 		margin-top: 48px;
 	}
 
-	/* Quem somos ---------------------------------------------------------------- */
+	/* 08 · Quem somos ------------------------------------------------------------ */
+	.soul {
+		display: grid;
+		gap: 48px;
+	}
+
 	.soul-copy {
 		display: grid;
 		gap: 22px;
-		max-width: 600px;
+		justify-items: start;
+		max-width: 620px;
 		margin-top: calc(-1 * clamp(20px, 3vw, 48px));
 		color: var(--text-muted);
 		font-size: 1.08rem;
@@ -761,12 +973,38 @@ const capabilities = [
 		color: var(--text);
 	}
 
+	.soul-bento {
+		display: grid;
+		border-top: 1px solid var(--line);
+		border-left: 1px solid var(--line);
+	}
+
+	.k-tile {
+		position: relative;
+		height: clamp(220px, 24vw, 300px);
+		border-right: 1px solid var(--line);
+		border-bottom: 1px solid var(--line);
+		background: radial-gradient(70% 90% at 50% 40%, rgb(255 255 255 / 0.04), transparent 70%);
+	}
+
+	.k-tile :global(.k-slot) {
+		position: absolute;
+		inset: 20px 20px 44px;
+	}
+
+	.k-caption {
+		position: absolute;
+		left: 20px;
+		bottom: 16px;
+		font-size: var(--fs-xs);
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		color: var(--text-dim);
+	}
+
 	.stats {
 		display: grid;
 		grid-template-columns: 1fr 1fr;
-		margin: 40px 0 32px;
-		border-top: 1px solid var(--line);
-		border-left: 1px solid var(--line);
 	}
 
 	.stat {
@@ -774,7 +1012,7 @@ const capabilities = [
 		flex-direction: column-reverse;
 		justify-content: flex-end;
 		gap: 10px;
-		padding: clamp(20px, 3vw, 28px);
+		padding: clamp(20px, 3vw, 30px);
 		border-right: 1px solid var(--line);
 		border-bottom: 1px solid var(--line);
 		background: rgb(0 0 0 / 0.35);
@@ -782,10 +1020,11 @@ const capabilities = [
 
 	.stat dd {
 		font-family: var(--font-display);
-		font-size: clamp(2rem, 1.5rem + 1.8vw, 3.2rem);
+		font-size: clamp(2.1rem, 1.6rem + 1.8vw, 3.2rem);
 		font-weight: 700;
 		line-height: 1;
 		letter-spacing: -0.05em;
+		color: var(--text);
 	}
 
 	.stat dt {
@@ -846,13 +1085,34 @@ const capabilities = [
 
 	/* Responsivo ---------------------------------------------------------------- */
 	@media (min-width: 720px) {
+		.bento,
 		.posts-grid,
-		.pillars {
-			grid-template-columns: repeat(2, 1fr);
-		}
-
+		.pillars,
 		.diffs {
 			grid-template-columns: repeat(2, 1fr);
+		}
+	}
+
+	@media (min-width: 900px) {
+		.pains {
+			grid-template-columns: repeat(3, 1fr);
+		}
+
+		.stages {
+			grid-template-columns: repeat(3, 1fr);
+			gap: 48px;
+		}
+
+		.stage-arrow {
+			position: absolute;
+			top: -12px;
+			right: -36px;
+			display: grid;
+			place-items: center;
+			width: 24px;
+			height: 24px;
+			color: var(--text-dim);
+			background: var(--bg);
 		}
 	}
 
@@ -880,16 +1140,36 @@ const capabilities = [
 	}
 
 	@media (min-width: 1024px) {
-		.block {
-			min-height: 58vh;
-		}
-
-		.step {
-			min-height: 50vh;
+		.soul {
+			grid-template-columns: minmax(0, 1fr) minmax(0, 0.92fr);
+			gap: 72px;
+			align-items: start;
 		}
 	}
 
 	@media (min-width: 1080px) {
+		.bento {
+			grid-template-columns: repeat(6, 1fr);
+		}
+
+		.span-2 {
+			grid-column: span 2;
+		}
+
+		.span-3 {
+			grid-column: span 3;
+		}
+
+		.span-4 {
+			grid-column: span 4;
+		}
+
+		.span-3 .svc-slot,
+		.span-4 .svc-slot {
+			width: 168px;
+			height: 148px;
+		}
+
 		.posts-grid,
 		.diffs {
 			grid-template-columns: repeat(3, 1fr);
