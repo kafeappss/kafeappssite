@@ -3,11 +3,12 @@
  * Trilho lateral (desktop), no estilo de uma régua: tracinhos de cima a baixo
  * da tela, com uma bolinha no começo de cada seção (marcada com data-rail="Nome").
  *
- * Perto da posição atual da página, os tracinhos crescem como uma lupa (com um
- * "vale" logo antes e depois, que destaca o volume); o tracinho da posição atual
- * fica grosso e claro, e os da seção atual ficam mais claros que os outros.
- * Com o mouse por cima, a lupa segue o cursor e mostra o nome da seção; clicar
- * leva até lá. Pelo teclado, cada seção é um botão (Tab) sobre a sua bolinha.
+ * Parada, a régua fica lisa e só o tracinho da posição atual se destaca. Durante
+ * a rolagem, os tracinhos perto da posição atual crescem como uma lupa (com um
+ * "vale" logo antes e depois, que destaca o volume) e os da seção atual ficam
+ * mais claros; pouco depois de parar, a lupa some. Com o mouse por cima, a lupa
+ * segue o cursor e mostra o nome da seção; clicar leva até lá. Pelo teclado,
+ * cada seção é um botão (Tab) sobre a sua bolinha.
  */
 ---
 
@@ -67,6 +68,11 @@
 		let owner: number[] = [];
 		/** Centro da lupa (em tracinhos), o alvo dela e a posição do mouse sobre a régua. */
 		let lens = 0;
+		/** Força da lupa: 1 durante a rolagem ou com o mouse por cima, 0 parada. */
+		let strength = 0;
+		let scrolledAt = -1e9;
+		/** Quanto tempo a lupa fica depois que a rolagem para (ms). */
+		const HOLD = 700;
 		let pointerAt: number | null = null;
 		let frame = 0;
 		let last = 0;
@@ -129,8 +135,8 @@
 			ticks.forEach((tick, index) => {
 				const d = index - lens;
 				// Lupa: cresce perto do centro e encolhe num "vale" logo antes e depois.
-				const bell = Math.exp(-((d / 3.2) ** 2));
-				const dip = Math.exp(-(((Math.abs(d) - 6.5) / 1.7) ** 2));
+				const bell = Math.exp(-((d / 3.2) ** 2)) * strength;
+				const dip = Math.exp(-(((Math.abs(d) - 6.5) / 1.7) ** 2)) * strength;
 				let length = 8 * (1 - 0.8 * dip) + 18 * bell;
 				let thickness = 1.5;
 				let alpha = 0.26 + 0.5 * bell;
@@ -147,7 +153,7 @@
 				if (owner[index] === active && bell > 0.05) alpha = Math.min(1, alpha + 0.25);
 				const isCurrent = index === current;
 				if (isCurrent) {
-					length = Math.max(length, 16);
+					length = Math.max(length, 12 + 4 * strength);
 					thickness = 3;
 					alpha = 1;
 				}
@@ -160,15 +166,20 @@
 		}
 
 		function step(time: number) {
-			const dt = last ? Math.min(0.05, (time - last) / 1000) : 1 / 60;
+			const dt = last ? Math.min(0.1, (time - last) / 1000) : 1 / 60;
 			last = time;
 			const target = pointerAt ?? position();
 			lens = reduced ? target : lens + (target - lens) * (1 - Math.exp(-dt * 9));
+			// A lupa aparece rápido e some devagar.
+			const scrolling = performance.now() - scrolledAt < HOLD;
+			const want = scrolling || pointerAt !== null ? 1 : 0;
+			strength = reduced ? want : strength + (want - strength) * (1 - Math.exp(-dt * (want > strength ? 12 : 4)));
 			draw();
-			if (Math.abs(target - lens) > 0.002) {
+			if (scrolling || Math.abs(target - lens) > 0.002 || Math.abs(want - strength) > 0.002) {
 				frame = requestAnimationFrame(step);
 			} else {
 				lens = target;
+				strength = want;
 				draw();
 				frame = 0;
 				last = 0;
@@ -215,7 +226,14 @@
 			window.scrollTo({ top: (pointerAt / (count - 1)) * maxScroll(), behavior: reduced ? 'auto' : 'smooth' });
 		});
 
-		window.addEventListener('scroll', kick, { passive: true });
+		window.addEventListener(
+			'scroll',
+			() => {
+				scrolledAt = performance.now();
+				kick();
+			},
+			{ passive: true },
+		);
 		window.addEventListener('resize', () => {
 			layout();
 			kick();
