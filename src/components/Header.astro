@@ -121,14 +121,28 @@ const whatsapp = whatsappLink();
 
 	if (header) {
 		let lastY = window.scrollY;
+		// Quanto a pessoa já rolou na mesma direção (positivo = descendo).
+		let travel = 0;
+		let hidden = false;
 		let ticking = false;
 
+		const setHidden = (value: boolean) => {
+			if (hidden === value) return;
+			hidden = value;
+			header.classList.toggle('is-hidden', value);
+		};
+
+		// Descendo, o menu sai do caminho. Ele só volta quando a pessoa rola para cima
+		// de verdade (ou chega perto do topo): parar ou desacelerar não o traz de volta.
 		const update = () => {
 			const y = window.scrollY;
+			const dy = y - lastY;
 			header.classList.toggle('is-scrolled', y > 12);
-			const menuOpen = header.classList.contains('is-open');
-			header.classList.toggle('is-hidden', !menuOpen && y > 240 && y > lastY + 4);
-			if (y < lastY - 4 || y < 240) header.classList.remove('is-hidden');
+			if ((dy > 0 && travel < 0) || (dy < 0 && travel > 0)) travel = 0;
+			travel += dy;
+			if (header.classList.contains('is-open') || y < 120) setHidden(false);
+			else if (travel > 16 && y > 240) setHidden(true);
+			else if (travel < -48) setHidden(false);
 			lastY = y;
 			ticking = false;
 		};
@@ -168,12 +182,14 @@ const whatsapp = whatsappLink();
 </script>
 
 <style>
+	/* Volta devagar, deslizando e aparecendo aos poucos. */
 	.site-header {
 		position: fixed;
 		inset: 0 0 auto;
 		z-index: 100;
 		transition:
-			transform 0.6s var(--ease-out),
+			transform 0.8s var(--ease-out),
+			opacity 0.6s ease,
 			background-color 0.4s ease;
 	}
 
@@ -193,8 +209,13 @@ const whatsapp = whatsappLink();
 		opacity: 1;
 	}
 
+	/* Sai mais rápido, para não atrapalhar a leitura. */
 	.site-header.is-hidden {
 		transform: translateY(-100%);
+		opacity: 0;
+		transition:
+			transform 0.45s cubic-bezier(0.4, 0, 1, 1),
+			opacity 0.35s ease;
 	}
 
 	.header-inner {
