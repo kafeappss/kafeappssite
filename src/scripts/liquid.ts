@@ -74,32 +74,6 @@ float dot2(vec2 v) {
 }
 `;
 
-/**
- * Fumaça e luz do fundo, desenhadas em baixa resolução (são suaves) numa
- * textura que o desenho principal usa. Assim a tela toda pode ser desenhada
- * na resolução real do aparelho sem pesar.
- */
-const SMOKE_SHADER = /* glsl */ `
-${COMMON}
-uniform vec2 uRes;
-uniform float uTime;
-uniform float uScroll;
-
-void main() {
-	vec2 uv = gl_FragCoord.xy / uRes;
-	float aspect = uRes.x / uRes.y;
-	vec2 p = (uv * 2.0 - 1.0) * vec2(aspect, 1.0);
-	vec2 q = p * 1.15 - vec2(0.0, uScroll * 0.25) + vec2(0.0, -uTime * 0.04);
-	float warp = fbm(q * 0.8 + vec2(uTime * 0.02, -uTime * 0.015));
-	float m = fbm(q + vec2(warp, warp * 0.6) * 1.5);
-	float region = smoothstep(0.25, 0.75, noise(p * 0.45 - vec2(0.0, uScroll * 0.12) + uTime * 0.012));
-	float smoke = smoothstep(0.38, 0.95, m) * (0.35 + 0.65 * region);
-	vec2 lamp = vec2(sin(uTime * 0.07) * 1.1, cos(uTime * 0.05 + uScroll * 0.35) * 0.7);
-	float lampGlow = exp(-dot2((p - lamp) * vec2(0.55, 0.8)) * 1.6);
-	gl_FragColor = vec4(smoke, lampGlow, 0.0, 1.0);
-}
-`;
-
 const FRAGMENT_SHADER = /* glsl */ `
 ${COMMON}
 #define SLOTS ${SLOTS}
@@ -127,7 +101,6 @@ uniform vec4 uBox;     // caixa que contém o líquido (min x, min y, max x, max
 uniform vec3 uTint;    // cor do líquido
 uniform vec3 uInk;     // cor clara: olhos, linha de luz do contorno e crista da onda
 uniform vec3 uBg;      // cor do fundo da página
-uniform sampler2D uSmoke;
 
 float smin(float a, float b, float k) {
 	float h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0);
@@ -248,11 +221,11 @@ float eyes(vec2 p) {
 	return min(left, right) * s;
 }
 
-// Fundo: só uma fumaça quente que flui devagar e uma luz que passeia, na cor do líquido.
-vec3 background(vec2 p, vec2 uv, float aura) {
-	vec2 sm = texture2D(uSmoke, uv).rg;
-	// Parte da cor de fundo da página, para o desenho não destoar dela.
-	vec3 col = uBg + vec3(0.92, 0.94, 1.0) * sm.r * (0.012 + 0.02 * aura) + uTint * 0.03 * sm.g;
+// Luz do fundo: uma luz que passeia, na cor do líquido. O fundo em si (as
+// letras, em src/scripts/ascii.ts) fica atrás desta tela, que é transparente.
+vec3 background(vec2 p) {
+	vec2 lamp = vec2(sin(uTime * 0.07) * 1.1, cos(uTime * 0.05 + uGrid.w * 0.35) * 0.7);
+	vec3 col = uTint * 0.03 * exp(-dot2((p - lamp) * vec2(0.55, 0.8)) * 1.6);
 	// Halo da cor-assinatura em volta do cursor.
 	col += uTint * exp(-dot2(p - uPtr.xy) * 5.0) * 0.035 * uPtr.z;
 	return col;
@@ -285,14 +258,18 @@ void main() {
 	// O mascote se funde com a superfície quando encosta nela.
 	float d = smin(dShape, dSurf, 0.08);
 	float aura = exp(-max(dShape, 0.0) * 6.0) * (1.0 - smoothstep(0.25, 0.45, near));
-	vec3 col = background(p, uv, aura);
+	// Cor já multiplicada pela cobertura (a): onde não há forma, só a luz.
+	vec3 col = background(p);
+	float a = 0.0;
 	float opacity = 0.2 + 0.8 * uDim * uDim;
 	// Brilho suave em volta (2D, como uma luz que vaza da forma).
 	col += uTint * aura * 0.1 * opacity;
 	// Sombra do mascote no chão (encolhe quando ele pula).
 	if (uShadow.w > 0.001) {
 		vec2 sp = (p - uShadow.xy) / vec2(uShadow.z, uShadow.z * 0.2);
-		col *= 1.0 - 0.35 * uShadow.w * (1.0 - smoothstep(0.15, 1.0, length(sp)));
+		float shade = 0.35 * uShadow.w * (1.0 - smoothstep(0.15, 1.0, length(sp)));
+		col *= 1.0 - shade;
+		a = shade;
 	}
 	float depth = uHorizon.x - p.y;
 	float band = max(uHorizon.x - uHorizon.y, 0.001);
@@ -336,6 +313,7 @@ void main() {
 		float coverage = 1.0 - smoothstep(-px, px, d);
 		float alpha = coverage * mix(opacity, 1.0 - smoothstep(band * 0.45, band, depth), isSurf);
 		col = mix(col, fill, alpha);
+		a = mix(a, 1.0, alpha);
 	}
 
 	// Olhos que brilham: degradê do claro (em cima) para a cor da forma, com halo.
@@ -344,11 +322,16 @@ void main() {
 		float t = clamp((p.y - uEye.xy.y) / (uEye.z * 0.5) + 0.5, 0.0, 1.0);
 		vec3 eyeCol = mix(uTint * 1.1, mix(uInk, vec3(1.0), 0.35), t);
 		col += uTint * exp(-max(ed, 0.0) / (uEye.z * 0.06)) * 0.35 * uEye.w * step(0.0, ed);
-		col = mix(col, eyeCol, (1.0 - smoothstep(-px, px, ed)) * uEye.w);
+		float eyeCover = (1.0 - smoothstep(-px, px, ed)) * uEye.w;
+		col = mix(col, eyeCol, eyeCover);
+		a = mix(a, 1.0, eyeCover);
 	}
 
-	col += (hash(gl_FragCoord.xy + fract(uTime * 7.0) * 100.0) - 0.5) / 255.0;
-	gl_FragColor = vec4(col, 1.0);
+	col = max(col + (hash(gl_FragCoord.xy + fract(uTime * 7.0) * 100.0) - 0.5) / 255.0, 0.0);
+	// A luz vira um véu da mesma cor (cobertura = a parte mais forte dela), o
+	// que mantém a cor válida para a mistura com o que está atrás da tela.
+	a = max(a, max(col.r, max(col.g, col.b)));
+	gl_FragColor = vec4(col, a);
 }
 `;
 
@@ -484,19 +467,19 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 	const solid = document.documentElement.dataset.liquidStyle !== 'liquid';
 	const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 
+	// Transparente: o fundo de letras (src/components/AsciiField.astro) fica atrás.
 	const gl = canvas.getContext('webgl', {
-		alpha: false,
+		alpha: true,
 		antialias: false,
 		depth: false,
 		stencil: false,
-		premultipliedAlpha: false,
+		premultipliedAlpha: true,
 		preserveDrawingBuffer: false,
 	});
 	if (!gl) return;
 
 	const program = createProgram(gl, FRAGMENT_SHADER);
-	const smokeProgram = createProgram(gl, SMOKE_SHADER);
-	if (!program || !smokeProgram) return;
+	if (!program) return;
 
 	const buffer = gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
@@ -506,30 +489,6 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 		const aPos = gl.getAttribLocation(target, 'aPos');
 		gl.enableVertexAttribArray(aPos);
 		gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
-	};
-
-	// Textura (em baixa resolução) onde a fumaça do fundo é desenhada.
-	const smokeTexture = gl.createTexture();
-	const smokeBuffer = gl.createFramebuffer();
-	let smokeW = 1;
-	let smokeH = 1;
-	function sizeSmoke(w: number, h: number) {
-		smokeW = Math.max(1, Math.round(w / 4));
-		smokeH = Math.max(1, Math.round(h / 4));
-		gl!.bindTexture(gl!.TEXTURE_2D, smokeTexture);
-		gl!.texImage2D(gl!.TEXTURE_2D, 0, gl!.RGBA, smokeW, smokeH, 0, gl!.RGBA, gl!.UNSIGNED_BYTE, null);
-		gl!.texParameteri(gl!.TEXTURE_2D, gl!.TEXTURE_MIN_FILTER, gl!.LINEAR);
-		gl!.texParameteri(gl!.TEXTURE_2D, gl!.TEXTURE_MAG_FILTER, gl!.LINEAR);
-		gl!.texParameteri(gl!.TEXTURE_2D, gl!.TEXTURE_WRAP_S, gl!.CLAMP_TO_EDGE);
-		gl!.texParameteri(gl!.TEXTURE_2D, gl!.TEXTURE_WRAP_T, gl!.CLAMP_TO_EDGE);
-		gl!.bindFramebuffer(gl!.FRAMEBUFFER, smokeBuffer);
-		gl!.framebufferTexture2D(gl!.FRAMEBUFFER, gl!.COLOR_ATTACHMENT0, gl!.TEXTURE_2D, smokeTexture, 0);
-		gl!.bindFramebuffer(gl!.FRAMEBUFFER, null);
-	}
-	const smokeUniforms = {
-		res: gl.getUniformLocation(smokeProgram, 'uRes'),
-		time: gl.getUniformLocation(smokeProgram, 'uTime'),
-		scroll: gl.getUniformLocation(smokeProgram, 'uScroll'),
 	};
 
 	const u = (name: string) => gl.getUniformLocation(program, name);
@@ -544,7 +503,6 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 		tint: u('uTint'),
 		ink: u('uInk'),
 		bg: u('uBg'),
-		smoke: u('uSmoke'),
 		light: u('uLight'),
 		a: u('uA[0]'),
 		b: u('uB[0]'),
@@ -860,7 +818,6 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 		if (nextWidth === width && nextHeight === height) return;
 		width = canvas.width = nextWidth;
 		height = canvas.height = nextHeight;
-		sizeSmoke(width, height);
 		if (reducedMotion) settle();
 	}
 
@@ -1907,22 +1864,8 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 		const scrollWorld = (window.scrollY / cssH) * 2;
 		const spacing = (30 / cssH) * 2;
 
-		// 1) Fumaça do fundo, em baixa resolução.
-		gl!.bindFramebuffer(gl!.FRAMEBUFFER, smokeBuffer);
-		gl!.viewport(0, 0, smokeW, smokeH);
-		drawWith(smokeProgram!);
-		gl!.uniform2f(smokeUniforms.res, smokeW, smokeH);
-		gl!.uniform1f(smokeUniforms.time, time);
-		gl!.uniform1f(smokeUniforms.scroll, scrollWorld);
-		gl!.drawArrays(gl!.TRIANGLES, 0, 3);
-
-		// 2) Tudo o mais, na resolução da tela.
-		gl!.bindFramebuffer(gl!.FRAMEBUFFER, null);
 		gl!.viewport(0, 0, width, height);
 		drawWith(program!);
-		gl!.activeTexture(gl!.TEXTURE0);
-		gl!.bindTexture(gl!.TEXTURE_2D, smokeTexture);
-		gl!.uniform1i(uniforms.smoke, 0);
 		gl!.uniform2f(uniforms.res, width, height);
 		gl!.uniform1f(uniforms.time, time);
 		gl!.uniform1f(uniforms.dim, globals.dim);
