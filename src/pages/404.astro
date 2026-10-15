@@ -2,7 +2,6 @@
 import Base from '../layouts/Base.astro';
 import Icon from '../components/Icon.astro';
 import Mascot from '../components/Mascot.astro';
-import Planet from '../components/Planet.astro';
 import { site } from '../data/site';
 ---
 
@@ -12,7 +11,7 @@ import { site } from '../data/site';
 		<div class="container nf-inner">
 			<div class="nf-copy">
 				<p class="eyebrow" data-reveal>Erro 404</p>
-				<h1 class="display" data-split>Essa página <em>saiu de órbita.</em></h1>
+				<h1 class="display" data-split>Esse café <em>esfriou.</em></h1>
 				<p class="lead" data-reveal style="--delay: 0.2s">
 					A página que você procura não existe ou mudou de endereço. Que tal recomeçar por aqui?
 				</p>
@@ -22,7 +21,7 @@ import { site } from '../data/site';
 				</div>
 			</div>
 			{
-				site.mascot ? (
+				site.mascot && (
 					<div class="nf-stage">
 						<div class="nf-mascot" data-liquid-anchor aria-hidden="true" />
 						<button class="talk-pill" type="button" data-mascot-talk>
@@ -34,10 +33,6 @@ import { site } from '../data/site';
 								Anima ele
 							</span>
 						</button>
-					</div>
-				) : (
-					<div class="nf-stage nf-space">
-						<Planet class="nf-planet" />
 					</div>
 				)
 			}
@@ -78,27 +73,10 @@ import { site } from '../data/site';
 		height: clamp(240px, 40vh, 460px);
 	}
 
-	/* Sem o mascote: o mesmo planeta da home, à deriva. */
-	.nf-space {
-		position: relative;
-		justify-self: stretch;
-		min-height: clamp(260px, 44vh, 480px);
-	}
 
-	.nf-space :global(.nf-planet) {
-		position: absolute;
-		top: 50%;
-		left: 50%;
-		width: min(130%, 640px);
-		transform: translate(-50%, -50%);
-	}
-
-	.not-found {
-		overflow-x: clip;
-	}
 
 	@media (min-width: 960px) {
-		.nf-inner {
+		.nf-inner:has(.nf-stage) {
 			grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
 		}
 	}

@@ -14,7 +14,7 @@ Feito com [Astro](https://astro.build), gera um site 100% estático (HTML, CSS e
 
 ### Ligar e desligar o mascote
 
-O mascote fica ligado em `mascot: true`, em `src/data/site.ts`. Com `false`, o topo da home mostra um planeta (`src/components/Planet.astro`) e as seções mostram telas de produto (`src/components/Figure.astro`, escolhidas em `src/data/figures.ts`); no pré-orçamento, a Kafeína fala dentro do cartão e um painel resume as respostas.
+Por enquanto o mascote e as formas de líquido estão **desligados** (`mascot: false` em `src/data/site.ts`): o site fica só com o texto, e no "(08) Quem somos" continua a tela de entregas. Todo o código continua no projeto; para trazer o mascote de volta (com o vidro, a onda e as transformações), troque para `mascot: true`. Sem o mascote, no pré-orçamento a Kafeína fala dentro do cartão e um painel resume as respostas.
 
 ## Destaques
 

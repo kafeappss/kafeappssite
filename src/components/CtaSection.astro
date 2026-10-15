@@ -1,6 +1,5 @@
 ---
 import Icon from './Icon.astro';
-import Figure from './Figure.astro';
 import { site, whatsappLink } from '../data/site';
 
 interface Props {
@@ -43,14 +42,8 @@ const whatsapp = whatsappLink();
 		<p class="cta-note" data-reveal style="--delay: 0.4s">
 			Pré-orçamento em poucos minutos com a <strong>Kafeína</strong>, a assistente de IA da Kafé.
 		</p>
-		<!-- Com o mascote, o líquido desenha a xícara aqui; sem ele, aparece o pré-orçamento. -->
-		{
-			site.mascot ? (
-				<div class="cta-cup" data-liquid-anchor aria-hidden="true" />
-			) : (
-				<Figure name="orcamento" class="cta-figure" />
-			)
-		}
+		<!-- Espaço da xícara: o líquido desenha o café aqui, sem encostar no texto. -->
+		{site.mascot && <div class="cta-cup" data-liquid-anchor aria-hidden="true" />}
 	</div>
 </section>
 

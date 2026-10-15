@@ -23,10 +23,10 @@ export const site = {
 	foundingYear: 2021,
 	/**
 	 * Mascote interativo: o líquido em WebGL com olhos "//", reações, falas e as
-	 * formas que ele vira em cada seção. Desligado (false), o topo da home mostra
-	 * um planeta e as seções mostram telas de produto.
+	 * formas que ele vira em cada seção. Desligado (false), o site fica só com o
+	 * texto, sem o mascote e sem as formas. Para trazê-lo de volta, use true.
 	 */
-	mascot: true,
+	mascot: false,
 	ceo: 'Danilo Fonseca',
 	location: {
 		city: 'Jaraguá do Sul',

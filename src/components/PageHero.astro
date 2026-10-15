@@ -17,7 +17,7 @@ interface Props {
 const { eyebrow, title, lead, breadcrumbs = [], liquid = 'page', rail } = Astro.props;
 
 // Formas livres ("page", "rest") ocupam a tela toda; as demais ganham um espaço ao lado do título.
-const hasSlot = !['page', 'rest', 'pool'].includes(liquid);
+const hasSlot = site.mascot && !['page', 'rest', 'pool'].includes(liquid);
 const trail = [{ label: 'Início', href: '/' }, ...breadcrumbs];
 const breadcrumbSchema = {
 	'@context': 'https://schema.org',
