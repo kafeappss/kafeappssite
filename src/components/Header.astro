@@ -543,9 +543,8 @@ const whatsapp = whatsappLink();
 		}
 	}
 
-	/* Telas largas: o mascotinho sai do cabeçalho e fica no meio do espaço entre
-	   o botão e a borda da tela; o botão abre um respiro para sobrar pelo menos
-	   64px para ele. */
+	/* Telas largas: o mascotinho vai para o canto da tela (alinhado com o
+	   trilho), e o botão abre um respiro para não encostar nele. */
 	@media (min-width: 1100px) {
 		.mini-slot {
 			display: none;
