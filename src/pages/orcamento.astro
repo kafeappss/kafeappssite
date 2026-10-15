@@ -309,9 +309,9 @@ const steps = ['Projeto', 'Problema', 'Escopo', 'Contato', 'Estimativa'];
 	}
 
 	.kf-steps li[aria-current] {
-		color: var(--ink);
-		background: var(--crema);
-		border-color: var(--crema);
+		color: var(--on-primary);
+		background: var(--primary);
+		border-color: var(--primary);
 	}
 
 	/* Cartão do formulário ------------------------------------------------------ */
@@ -321,7 +321,7 @@ const steps = ['Projeto', 'Problema', 'Escopo', 'Contato', 'Estimativa'];
 		padding: clamp(20px, 3vw, 34px);
 		border: 1px solid var(--line);
 		border-radius: var(--radius-lg);
-		background: linear-gradient(180deg, rgb(32 26 21 / 0.82), rgb(20 16 13 / 0.82));
+		background: linear-gradient(180deg, rgb(15 16 17 / 0.82), rgb(8 9 10 / 0.82));
 		backdrop-filter: blur(18px);
 		-webkit-backdrop-filter: blur(18px);
 	}
@@ -372,7 +372,7 @@ const steps = ['Projeto', 'Problema', 'Escopo', 'Contato', 'Estimativa'];
 		height: 38px;
 		margin-top: -2px;
 		border-radius: 50%;
-		background: var(--crema);
+		background: var(--primary);
 	}
 
 	/* Os olhinhos do mascote, inclinados como os recortes do K. */
@@ -380,7 +380,7 @@ const steps = ['Projeto', 'Problema', 'Escopo', 'Contato', 'Estimativa'];
 		width: 4px;
 		height: 11px;
 		border-radius: 1px;
-		background: var(--ink);
+		background: var(--on-primary);
 		transform: skewX(-16deg);
 		animation: kf-blink 4s infinite;
 	}
@@ -453,7 +453,7 @@ const steps = ['Projeto', 'Problema', 'Escopo', 'Contato', 'Estimativa'];
 	}
 
 	.kf-option-card:hover {
-		border-color: rgb(var(--brand-rgb) / 0.6);
+		border-color: rgb(var(--primary-rgb) / 0.6);
 		transform: translateY(-2px);
 	}
 
@@ -464,8 +464,8 @@ const steps = ['Projeto', 'Problema', 'Escopo', 'Contato', 'Estimativa'];
 		width: 46px;
 		height: 46px;
 		border-radius: var(--radius);
-		background: rgb(var(--brand-rgb) / 0.12);
-		color: var(--crema);
+		background: rgb(var(--primary-rgb) / 0.12);
+		color: var(--primary);
 	}
 
 	.kf-option-label {
@@ -480,8 +480,8 @@ const steps = ['Projeto', 'Problema', 'Escopo', 'Contato', 'Estimativa'];
 	}
 
 	.kf-option-card:has(input:checked) {
-		border-color: var(--crema);
-		background: rgb(var(--brand-rgb) / 0.12);
+		border-color: var(--primary);
+		background: rgb(var(--primary-rgb) / 0.12);
 	}
 
 	.kf-chip span {
@@ -514,12 +514,12 @@ const steps = ['Projeto', 'Problema', 'Escopo', 'Contato', 'Estimativa'];
 	}
 
 	.kf-chip:hover span {
-		border-color: rgb(var(--brand-rgb) / 0.6);
+		border-color: rgb(var(--primary-rgb) / 0.6);
 	}
 
 	.kf-chip:has(input:checked) span {
-		border-color: var(--crema);
-		background: rgb(var(--brand-rgb) / 0.14);
+		border-color: var(--primary);
+		background: rgb(var(--primary-rgb) / 0.14);
 		color: var(--text);
 	}
 
@@ -560,11 +560,11 @@ const steps = ['Projeto', 'Problema', 'Escopo', 'Contato', 'Estimativa'];
 	.kf-field textarea:focus,
 	.kf-field select:focus {
 		outline: none;
-		border-color: var(--crema);
+		border-color: var(--primary);
 	}
 
 	.kf-field [aria-invalid='true'] {
-		border-color: #f2a3a3;
+		border-color: #eb5757;
 	}
 
 	.kf-count {
@@ -609,14 +609,14 @@ const steps = ['Projeto', 'Problema', 'Escopo', 'Contato', 'Estimativa'];
 		font-size: clamp(1.6rem, 1.2rem + 1.2vw, 2.2rem);
 		font-weight: 700;
 		letter-spacing: -0.03em;
-		color: var(--crema);
+		color: var(--primary);
 	}
 
 	.kf-range input[type='range'] {
 		padding: 0;
 		border: 0;
 		background: transparent;
-		accent-color: var(--crema);
+		accent-color: var(--primary);
 		height: 28px;
 	}
 
@@ -645,9 +645,9 @@ const steps = ['Projeto', 'Problema', 'Escopo', 'Contato', 'Estimativa'];
 
 	.kf-error {
 		padding: 12px 14px;
-		border: 1px solid rgb(230 110 90 / 0.5);
+		border: 1px solid rgb(235 87 87 / 0.5);
 		border-radius: var(--radius-sm);
-		color: #f2a3a3;
+		color: #eb5757;
 		font-size: 0.92rem;
 	}
 
@@ -682,7 +682,7 @@ const steps = ['Projeto', 'Problema', 'Escopo', 'Contato', 'Estimativa'];
 		width: 10px;
 		height: 10px;
 		border-radius: 50%;
-		background: var(--crema);
+		background: var(--primary);
 		animation: kf-dot 1s infinite ease-in-out;
 	}
 
@@ -733,7 +733,7 @@ const steps = ['Projeto', 'Problema', 'Escopo', 'Contato', 'Estimativa'];
 
 	.kf-thinking-list :global(li[data-on])::before {
 		content: '● ';
-		color: var(--crema);
+		color: var(--primary);
 	}
 
 	/* Resultado ------------------------------------------------------------------ */
@@ -786,13 +786,13 @@ const steps = ['Projeto', 'Problema', 'Escopo', 'Contato', 'Estimativa'];
 		font-family: var(--font-display);
 		font-size: clamp(1.4rem, 1.1rem + 1vw, 1.9rem);
 		letter-spacing: -0.02em;
-		color: var(--crema);
+		color: var(--primary);
 	}
 
 	.kf-estimate :global(.kf-note) {
 		padding: 14px 16px;
-		border-left: 2px solid var(--crema);
-		background: rgb(var(--brand-rgb) / 0.08);
+		border-left: 2px solid var(--primary);
+		background: rgb(var(--primary-rgb) / 0.08);
 		color: var(--text-muted);
 	}
 
@@ -816,7 +816,7 @@ const steps = ['Projeto', 'Problema', 'Escopo', 'Contato', 'Estimativa'];
 		width: 6px;
 		height: 6px;
 		margin-top: 0.6em;
-		background: var(--crema);
+		background: var(--primary);
 	}
 
 	.kf-estimate :global(.kf-4ds) {
@@ -852,7 +852,7 @@ const steps = ['Projeto', 'Problema', 'Escopo', 'Contato', 'Estimativa'];
 		display: block;
 		height: 100%;
 		border-radius: inherit;
-		background: var(--crema);
+		background: var(--primary);
 		transform-origin: left;
 		animation: kf-grow 0.9s var(--ease-out) both;
 	}

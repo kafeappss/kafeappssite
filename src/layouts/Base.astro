@@ -75,7 +75,7 @@ const structuredData = [organization, ...schema];
 		<meta name="description" content={description} />
 		<link rel="canonical" href={canonical} />
 		{noindex && <meta name="robots" content="noindex, follow" />}
-		<meta name="theme-color" content="#100c0a" />
+		<meta name="theme-color" content="#08090a" />
 		<meta name="color-scheme" content="dark" />
 
 		<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
@@ -109,7 +109,6 @@ const structuredData = [organization, ...schema];
 	<body>
 		<a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
 		<LiquidCanvas />
-		<div class="grain" aria-hidden="true"></div>
 		<Header />
 		<main id="conteudo">
 			<slot />

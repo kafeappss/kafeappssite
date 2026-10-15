@@ -178,35 +178,17 @@ const cycle = (active: number): ShapeDef => ({
 
 export const shapes = {
 	/* --- Mascote: o próprio líquido ganha olhos ------------------------- */
+	// Uma forma só, como os personagens do Duolingo (os pezinhos entram pelo motor).
 	mascot: {
 		...organic,
 		eyes: true,
-		prims: [
-			circle(0, 0, 0.82),
-			circle(1.15, 0.5, 0.11),
-			circle(-1.1, -0.35, 0.08),
-			circle(0.9, -0.95, 0.13),
-			circle(-0.55, 1.05, 0.07),
-			circle(0.2, 1.25, 0.05),
-		],
+		prims: [circle(0, 0, 0.82)],
 		anim: (t, p) => {
 			const body = p[0];
 			body[1] += Math.sin(t * 1.3) * 0.04;
 			const breathe = Math.sin(t * 2.1) * 0.025;
 			body[2] *= 1 + breathe;
 			body[3] *= 1 - breathe;
-			const orbits = [
-				[1.55, 0.35, 0.5],
-				[1.5, -0.28, 2.6],
-				[1.65, 0.22, 4.4],
-				[1.45, -0.4, 1.6],
-				[1.75, 0.3, 3.4],
-			];
-			orbits.forEach(([radius, speed, phase], i) => {
-				const a = t * speed + phase;
-				p[i + 1][0] = Math.cos(a) * radius;
-				p[i + 1][1] = body[1] + Math.sin(a) * radius * 0.62;
-			});
 		},
 	},
 

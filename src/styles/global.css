@@ -1,53 +1,81 @@
 /* ==========================================================================
    Kafé Apps · sistema visual
-   Monocromático: preto, branco e uma escala de cinzas, como a marca.
+   Cores do Linear (linear.app), copiadas dos valores que o próprio site usa:
+   fundo quase preto, uma escala de cinzas frios, bordas brancas translúcidas,
+   botão principal claro em pílula e o roxo da marca nos detalhes.
    Para ajustar as cores, altere apenas os tokens abaixo.
    ========================================================================== */
 
 :root {
-	/* Identidade "Espresso & Crema": fundo de café, texto cor de leite e uma
-	   cor-assinatura (crema) que amarra mascote, líquido, destaques e botões. */
-	--espresso: #100c0a;
-	--milk: #f4eee6;
-	--crema: #f4a957;
-	--crema-strong: #ffbd73;
-	--ink: #1b120c;
-	--fg-rgb: 244 238 230;
-	--bg-rgb: 16 12 10;
-	--brand-rgb: 244 169 87;
+	/* Fundos (--color-bg-* do Linear) */
+	--bg: #08090a;
+	--bg-level-1: #0f1011;
+	--bg-level-2: #141516;
+	--bg-level-3: #191a1b;
+	--bg-secondary: #1c1c1f;
+	--bg-tertiary: #232326;
+	--bg-quaternary: #28282c;
 
-	--black: var(--espresso);
-	--white: var(--milk);
-	/* Cor do líquido (formas e mascote) e dos olhos do mascote. Use hex de 6 dígitos. */
-	--liquid: #f4a957;
-	--liquid-ink: #1b120c;
-	--gray-100: #efe8de;
-	--gray-200: #d8cfc3;
-	--gray-300: #b4aa9d;
-	--gray-400: #8e8478;
-	--gray-500: #6d645a;
-	--gray-600: #4e463e;
-	--gray-700: #2f2924;
-	--gray-800: #1f1a16;
-	--gray-900: #15110e;
+	/* Textos (--color-text-*). O Linear usa #62666d em rótulos minúsculos, mas
+	   ele não passa no contraste mínimo para texto; aqui ele fica só em detalhes. */
+	--text: #f7f8f8;
+	--text-secondary: #d0d6e0;
+	--text-tertiary: #8a8f98;
+	--text-quaternary: #62666d;
 
-	--bg: var(--espresso);
-	--bg-2: #140f0c;
-	--surface: #18130f;
-	--surface-2: #201a15;
-	--surface-3: #2c241e;
-	--line: rgb(var(--fg-rgb) / 0.1);
-	--line-strong: rgb(var(--fg-rgb) / 0.18);
+	/* Bordas e linhas */
+	--border-primary: #23252a;
+	--border-secondary: #34343a;
+	--border-tertiary: #3e3e44;
+	--line: rgb(255 255 255 / 0.08);
+	--line-strong: rgb(255 255 255 / 0.12);
 
-	--text: var(--milk);
-	--text-muted: rgb(var(--fg-rgb) / 0.74);
-	--text-dim: rgb(var(--fg-rgb) / 0.56);
-	/* Segunda cor das manchetes (o trecho entre <em>): a cor-assinatura. */
-	--text-quiet: var(--crema);
-	--accent: var(--crema);
+	/* Marca e destaque (--color-brand-bg, --color-accent, --color-link-primary) */
+	--brand: #5e6ad2;
+	--brand-rgb: 94 106 210;
+	--accent: #7170ff;
+	--accent-hover: #828fff;
+	--accent-tint: #18182f;
 
-	--gradient-metal: linear-gradient(100deg, var(--milk) 0%, #f8d3a4 45%, var(--crema) 100%);
-	--glow: 0 0 0 1px rgb(var(--brand-rgb) / 0.4), 0 20px 60px -20px rgb(var(--brand-rgb) / 0.5);
+	/* Botão principal: a pílula clara do "Sign up" (texto escuro) */
+	--primary: #e5e5e6;
+	--primary-hover: #ffffff;
+	--primary-rgb: 229 229 230;
+	--on-primary: #08090a;
+
+	--fg-rgb: 255 255 255;
+	--bg-rgb: 8 9 10;
+	--black: var(--bg);
+	--white: var(--text);
+
+	/* Mascote e ilustrações (o líquido): roxo da marca, com os olhos "//"
+	   no tom do fundo. Use hex de 6 dígitos. */
+	--liquid: #5e6ad2;
+	--liquid-ink: #08090a;
+	--liquid-bg: #08090a;
+
+	--gray-100: #f7f8f8;
+	--gray-200: #d0d6e0;
+	--gray-300: #8a8f98;
+	--gray-400: #62666d;
+	--gray-500: #3e3e44;
+	--gray-600: #34343a;
+	--gray-700: #28282c;
+	--gray-800: #1c1c1f;
+	--gray-900: #0f1011;
+
+	--bg-2: var(--bg-level-1);
+	--surface: var(--bg-level-2);
+	--surface-2: var(--bg-secondary);
+	--surface-3: var(--bg-quaternary);
+
+	--text-muted: var(--text-tertiary);
+	--text-dim: var(--text-tertiary);
+	/* Segunda cor das manchetes (o trecho entre <em>): o cinza, como no Linear. */
+	--text-quiet: var(--text-tertiary);
+
+	--gradient-metal: linear-gradient(100deg, var(--text) 0%, var(--text-secondary) 45%, var(--text-tertiary) 100%);
+	--glow: 0 0 0 1px rgb(255 255 255 / 0.1), 0 8px 24px -12px rgb(0 0 0 / 0.6);
 
 	/* Tipografia */
 	/* Inter no texto; Gilroy nos títulos (Figtree segura o lugar até os
@@ -70,9 +98,10 @@
 	--container-narrow: 820px;
 	--gutter: clamp(20px, 4.5vw, 56px);
 	--section-y: clamp(88px, 5rem + 5vw, 172px);
-	--radius-sm: 4px;
-	--radius: 6px;
-	--radius-lg: 10px;
+	--radius-sm: 6px;
+	--radius: 8px;
+	--radius-lg: 12px;
+	--radius-pill: 9999px;
 	--header-h: 76px;
 
 	/* Movimento */
@@ -405,8 +434,8 @@ ol[role='list'] {
    -------------------------------------------------------------------------- */
 
 .btn {
-	--btn-bg: var(--crema);
-	--btn-fg: var(--ink);
+	--btn-bg: var(--primary);
+	--btn-fg: var(--on-primary);
 	position: relative;
 	display: inline-flex;
 	align-items: center;
@@ -414,11 +443,11 @@ ol[role='list'] {
 	gap: 0.65em;
 	min-height: 52px;
 	padding: 0 28px;
-	border-radius: var(--radius-sm);
+	border-radius: var(--radius-pill);
 	background: var(--btn-bg);
 	color: var(--btn-fg);
 	font-size: 0.95rem;
-	font-weight: 550;
+	font-weight: 510;
 	letter-spacing: -0.005em;
 	white-space: nowrap;
 	isolation: isolate;
@@ -435,7 +464,7 @@ ol[role='list'] {
 	position: absolute;
 	inset: 0;
 	z-index: -1;
-	background: var(--crema-strong);
+	background: var(--primary-hover);
 	opacity: 0;
 	transition: opacity 0.4s ease;
 }
@@ -463,10 +492,12 @@ ol[role='list'] {
 	transform: translateX(4px);
 }
 
+/* Botão secundário do Linear: branco a 5% com um fio de luz por dentro. */
 .btn-ghost {
-	--btn-bg: rgb(var(--fg-rgb) / 0.06);
+	--btn-bg: rgb(var(--fg-rgb) / 0.05);
 	--btn-fg: var(--text);
-	border: 1px solid var(--line-strong);
+	border: 1px solid var(--line);
+	box-shadow: inset 0 1px 0 rgb(var(--fg-rgb) / 0.04);
 	backdrop-filter: blur(12px);
 	-webkit-backdrop-filter: blur(12px);
 }
@@ -476,8 +507,8 @@ ol[role='list'] {
 }
 
 .btn-ghost:hover {
-	box-shadow: none;
-	border-color: rgb(var(--fg-rgb) / 0.3);
+	box-shadow: inset 0 1px 0 rgb(var(--fg-rgb) / 0.04);
+	border-color: var(--line-strong);
 }
 
 .btn-sm {
@@ -522,7 +553,7 @@ ol[role='list'] {
 	gap: 10px;
 	padding: 11px 18px 11px 14px;
 	border-radius: 999px;
-	border: 1px solid rgb(var(--brand-rgb) / 0.35);
+	border: 1px solid var(--line-strong);
 	background: rgb(var(--bg-rgb) / 0.85);
 	color: var(--text);
 	font-size: 0.86rem;
@@ -536,8 +567,8 @@ ol[role='list'] {
 }
 
 .talk-pill:hover {
-	border-color: var(--crema);
-	background: rgb(var(--brand-rgb) / 0.12);
+	border-color: rgb(var(--fg-rgb) / 0.24);
+	background: rgb(var(--fg-rgb) / 0.06);
 }
 
 .talk-pill:active {
@@ -549,15 +580,15 @@ ol[role='list'] {
 	max-width: min(86vw, 360px);
 	padding: 12px 18px 12px 14px;
 	border-radius: 20px;
-	border-color: var(--crema);
-	background: var(--milk);
-	color: var(--ink);
+	border-color: var(--primary);
+	background: var(--text);
+	color: var(--on-primary);
 	line-height: 1.35;
 	text-align: left;
 }
 
 .talk-pill[data-talking] .talk-eyes i {
-	background: var(--ink);
+	background: var(--on-primary);
 }
 
 .talk-eyes {
@@ -570,7 +601,7 @@ ol[role='list'] {
 	width: 4px;
 	height: 11px;
 	border-radius: 1px;
-	background: var(--crema);
+	background: var(--accent);
 	transform: skewX(-16deg);
 	animation: talk-blink 4s infinite;
 }
@@ -597,7 +628,7 @@ ol[role='list'] {
 	border-radius: var(--radius);
 	background:
 		radial-gradient(420px circle at var(--mx) var(--my), rgb(var(--fg-rgb) / 0.05), transparent 60%),
-		linear-gradient(180deg, rgb(32 26 21 / 0.78), rgb(20 16 13 / 0.78));
+		linear-gradient(180deg, rgb(15 16 17 / 0.8), rgb(8 9 10 / 0.8));
 	border: 1px solid var(--line);
 	backdrop-filter: blur(18px);
 	-webkit-backdrop-filter: blur(18px);
@@ -750,34 +781,6 @@ ol[role='list'] {
 	border-radius: 6px;
 	background: var(--surface-2);
 	color: var(--text);
-}
-
-/* --------------------------------------------------------------------------
-   Atmosfera: grão de filme sobre o líquido (abaixo do conteúdo)
-   -------------------------------------------------------------------------- */
-
-.grain {
-	position: fixed;
-	inset: -50%;
-	z-index: -1;
-	pointer-events: none;
-	opacity: 0.075;
-	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-
-@media (prefers-reduced-motion: no-preference) {
-	.grain {
-		animation: grain 1.2s steps(6) infinite;
-	}
-}
-
-@keyframes grain {
-	0% { transform: translate(0, 0); }
-	20% { transform: translate(-4%, 3%); }
-	40% { transform: translate(3%, -5%); }
-	60% { transform: translate(-6%, -2%); }
-	80% { transform: translate(5%, 4%); }
-	100% { transform: translate(0, 0); }
 }
 
 /* --------------------------------------------------------------------------

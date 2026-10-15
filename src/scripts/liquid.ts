@@ -24,7 +24,7 @@ const SLOTS = 14;
 const BALL = 11;
 const NECK = 12;
 const BLOB = 13;
-/** Os pezinhos do mascote (aparecem quando ele bate o pé de alegria). */
+/** Os pezinhos do mascote (sempre à mostra; batem quando ele fica feliz). */
 const FOOT_L = 6;
 const FOOT_R = 7;
 const STORAGE_KEY = 'kafe:liquid:v3';
@@ -126,6 +126,7 @@ uniform vec4 uHorizon; // faixa de café: topo (y), fundo (y), x do mascote, ond
 uniform vec4 uBox;     // caixa que contém o líquido (min x, min y, max x, max y)
 uniform vec3 uTint;    // cor do líquido
 uniform vec3 uInk;     // cor dos olhos
+uniform vec3 uBg;      // cor do fundo da página
 uniform sampler2D uSmoke;
 
 float smin(float a, float b, float k) {
@@ -247,13 +248,12 @@ float eyes(vec2 p) {
 	return min(left, right) * s;
 }
 
-// Fundo: só uma fumaça quente que flui devagar e uma luz que passeia, na cor do líquido.
+// Fundo: a cor lisa da página, com uma névoa fria quase invisível e uma luz que passeia.
 vec3 background(vec2 p, vec2 uv, float aura) {
 	vec2 sm = texture2D(uSmoke, uv).rg;
-	vec3 warm = mix(vec3(1.0, 0.94, 0.86), uTint, 0.35);
-	vec3 col = warm * sm.r * (0.07 + 0.04 * aura) + uTint * 0.07 * sm.g;
-	// Halo da cor-assinatura em volta do cursor.
-	col += uTint * exp(-dot2(p - uPtr.xy) * 5.0) * 0.035 * uPtr.z;
+	vec3 col = uBg + vec3(0.92, 0.94, 1.0) * sm.r * (0.006 + 0.008 * aura) + uTint * 0.01 * sm.g;
+	// Halo discreto da cor da marca em volta do cursor.
+	col += uTint * exp(-dot2(p - uPtr.xy) * 5.0) * 0.02 * uPtr.z;
 	return col;
 }
 
@@ -269,6 +269,10 @@ float surface(vec2 p) {
 	float top = uHorizon.x + wave + bump;
 	// Uma faixa que termina no fim da seção: o café nunca fica atrás do texto seguinte.
 	return max(p.y - top, uHorizon.y - p.y);
+}
+// Tudo o que é desenhado: as formas e a faixa de líquido do fim da abertura.
+float scene(vec2 p, float near) {
+	return smin(near < 0.45 ? field(p) : 8.0, surface(p), 0.08);
 }
 
 void main() {
@@ -287,11 +291,13 @@ void main() {
 	vec3 col = background(p, uv, aura);
 	float opacity = 0.2 + 0.8 * uDim * uDim;
 	// Brilho suave em volta (2D, como uma luz que vaza da forma).
-	col += uTint * aura * 0.1 * opacity;
-	// Sombra do mascote no chão (encolhe quando ele pula).
+	col += uTint * aura * 0.035 * opacity;
+	// Sombra do mascote no chão: uma pílula chapada, como nas ilustrações do
+	// Duolingo (no fundo quase preto, ela aparece como um degrau de cinza).
 	if (uShadow.w > 0.001) {
-		vec2 sp = (p - uShadow.xy) / vec2(uShadow.z, uShadow.z * 0.2);
-		col *= 1.0 - 0.55 * uShadow.w * (1.0 - smoothstep(0.15, 1.0, length(sp)));
+		float hh = uShadow.z * 0.11;
+		float ds = sdRBox(p - uShadow.xy, vec2(uShadow.z, hh), hh);
+		col = mix(col, uBg + vec3(0.06, 0.062, 0.068), (1.0 - smoothstep(-px, px, ds)) * uShadow.w);
 	}
 	float depth = uHorizon.x - p.y;
 	float band = max(uHorizon.x - uHorizon.y, 0.001);
@@ -301,30 +307,21 @@ void main() {
 	if (d < px * 2.0) {
 		// 2D bem acabado: cor chapada, um degradê de cima para baixo e uma
 		// borda de luz do lado de cima (e sombra leve embaixo). Sem volume 3D.
-		float edgeW = uCss * 5.0;
-		float boxH = max(uBox.w - uBox.y, 0.001);
-		float top = clamp((p.y - uBox.y) / boxH, 0.0, 1.0);
 		// Quanto do ponto é superfície (e não forma): define o degradê e o sumiço para baixo.
 		float isSurf = smoothstep(-0.03, 0.03, dShape - dSurf);
-		vec3 fill = uTint * mix(0.84 + 0.16 * top, 1.0 - 0.4 * smoothstep(0.0, band, depth), isSurf);
-		float reach = uExpr2.z > 0.01 ? 4.0 : 1.5;
-		if (d > -edgeW * reach) {
-			float e = px;
-			float dx = smin(near < 0.45 ? field(p + vec2(e, 0.0)) : 8.0, surface(p + vec2(e, 0.0)), 0.08);
-			float dy = smin(near < 0.45 ? field(p + vec2(0.0, e)) : 8.0, surface(p + vec2(0.0, e)), 0.08);
-			vec2 grad = vec2(dx - d, dy - d);
-			vec2 n = grad / max(length(grad), 1e-5);
-			float facing = dot(n, normalize(vec2(-0.45 + uLight.x * 0.3, 0.9)));
-			float rim = 1.0 - smoothstep(0.0, edgeW, -d);
-			fill += vec3(0.16) * max(facing, 0.0) * rim;
-			fill *= 1.0 - 0.16 * max(-facing, 0.0) * rim;
-			// Gotas, mascote e café ganham o reflexo curvo de desenho animado, rente à borda de cima.
-			float glossy = max(uExpr2.z, isSurf);
-			if (glossy > 0.01) {
-				float inside = -d;
-				float shine = smoothstep(edgeW * 1.2, edgeW * 1.8, inside) * (1.0 - smoothstep(edgeW * 2.4, edgeW * 3.4, inside));
-				fill = mix(fill, vec3(1.0, 0.97, 0.92), shine * smoothstep(0.6, 0.95, facing) * 0.6 * glossy);
-			}
+		vec3 fill = uTint * mix(1.0, 1.0 - 0.4 * smoothstep(0.0, band, depth), isSurf);
+		// Estilo Duolingo: cor chapada com duas faixas de tom, sem degradê.
+		// Uma sombra larga rente à borda de baixo à direita e uma luz fina rente
+		// à borda de cima à esquerda (o desenho deslocado diz onde cada faixa fica).
+		float shadeW = uCss * 11.0;
+		float lightW = uCss * 5.0;
+		if (d > -shadeW * 1.6) {
+			float dShade = scene(p + vec2(0.55, -0.84) * shadeW, near);
+			float dLight = scene(p + vec2(-0.55, 0.84) * lightW, near);
+			float shade = smoothstep(-px, px, dShade) * (1.0 - isSurf * 0.7);
+			float light = smoothstep(-px, px, dLight) * (1.0 - shade);
+			fill = mix(fill, uTint * 0.76, shade);
+			fill = mix(fill, mix(uTint, vec3(1.0), 0.3), light);
 		}
 		float alpha = (1.0 - smoothstep(-px, px, d)) * mix(opacity, 1.0 - smoothstep(band * 0.55, band, depth), isSurf);
 		col = mix(col, fill, alpha);
@@ -335,8 +332,6 @@ void main() {
 		col = mix(col, uInk, (1.0 - smoothstep(-px, px, ed)) * uEye.w);
 	}
 
-	vec2 vv = uv - 0.5;
-	col *= 1.0 - dot(vv, vv) * 0.5;
 	col += (hash(gl_FragCoord.xy + fract(uTime * 7.0) * 100.0) - 0.5) / 255.0;
 	gl_FragColor = vec4(col, 1.0);
 }
@@ -533,6 +528,7 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 		box: u('uBox'),
 		tint: u('uTint'),
 		ink: u('uInk'),
+		bg: u('uBg'),
 		smoke: u('uSmoke'),
 		light: u('uLight'),
 		a: u('uA[0]'),
@@ -561,6 +557,7 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 	let quality = 1;
 	let tint = cssColor('--liquid', [1, 1, 1]);
 	let ink = cssColor('--liquid-ink', [0.02, 0.02, 0.02]);
+	const pageBg = cssColor('--liquid-bg', [0.03, 0.035, 0.04]);
 	let time = 0;
 	let running = false;
 	let frame = 0;
@@ -1210,23 +1207,25 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 				target[1] -= 0.05 * R0;
 				target[3] *= 0.95;
 			}
-			// Pezinhos: com o mouse num botão de contato, ele bate o pé de alegria
-			// (um pé fica plantado, o outro bate com a ponta para cima, e o corpo quica).
+			// Pezinhos sempre à mostra, soltos do corpo (como os personagens do Duolingo).
+			// Com o mouse num botão de contato, ele bate o pé de alegria: um pé fica
+			// plantado, o outro bate com a ponta para cima, e o corpo quica.
 			const wantTap = mascot.lookMood === 'tap' && !mascot.dragging && !mascot.sleeping ? 1 : 0;
 			mascot.tap += (wantTap - mascot.tap) * Math.min(1, dt * (wantTap ? 7 : 9));
-			if (mascot.tap > 0.01) {
+			const feet = eye.alpha;
+			if (feet > 0.01) {
 				const k = mascot.tap;
 				const beat = Math.max(0, Math.sin(time * Math.PI * 2 * 2.4));
 				const lift = beat * beat;
-				// Sapatinhos logo abaixo do corpo (com uma fresta mínima, sem se fundir a ele).
-				// Eles acompanham o corpo, menos a quicada: o pé plantado fica no chão.
+				// Logo abaixo do corpo, com uma fresta (sem se fundir a ele). Eles
+				// acompanham o corpo, menos a quicada: o pé plantado fica no chão.
 				const bounce = 0.035 * R0 * lift * k;
-				const fw = 0.2 * R0 * k;
-				const fh = 0.11 * R0 * k;
-				const sole = body[1] - bounce - Math.max(body[3], R0 * 0.5) - 0.03 * R0 - fh;
+				const fw = 0.2 * R0 * feet;
+				const fh = 0.11 * R0 * feet;
+				const sole = body[1] - bounce - Math.max(body[3], R0 * 0.5) - 0.04 * R0 - fh;
 				target[1] += bounce;
 				out[FOOT_L] = { v: [body[0] - 0.33 * R0, sole, fw, fh, fh, -0.08, 0], op: 1 };
-				out[FOOT_R] = { v: [body[0] + 0.33 * R0, sole + 0.15 * R0 * lift * k, fw, fh, fh, 0.08 + 0.5 * lift * k, 0], op: 1 };
+				out[FOOT_R] = { v: [body[0] + 0.33 * R0, sole + 0.1 * R0 * lift * k, fw, fh, fh, 0.08 + 0.45 * lift * k, 0], op: 1 };
 			}
 			if (active === 'party') target[1] += Math.abs(Math.sin(time * 9)) * 0.1 * R0;
 			if (mascot.sleeping) {
@@ -1424,7 +1423,8 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 		if (solid && visibleMascot) {
 			const R = 0.82 * lastPlace.s;
 			const lift = clamp((body[1] - restY) / Math.max(R, 0.01), 0, 1.5);
-			mascot.shadow = [body[0], restY - R * 1.12, R * 0.8 * (1 - lift * 0.3), eye.alpha * (1 - lift * 0.45)];
+			// Na altura da sola dos pezinhos.
+			mascot.shadow = [body[0], restY - R * 1.29, R * 0.62 * (1 - lift * 0.3), eye.alpha * (1 - lift * 0.45)];
 		} else {
 			mascot.shadow[3] += (0 - mascot.shadow[3]) * Math.min(1, dt * 6);
 		}
@@ -1740,7 +1740,7 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 		springK[0] = bodyK;
 		springC[0] = bodyC;
 		springK[BLOB] = mascot.dragging ? 140 : mascot.snapping ? 110 : 6.5;
-		if (mascot.tap > 0.01) {
+		if (formation.def.eyes && eye.alpha > 0.01) {
 			springK[FOOT_L] = springK[FOOT_R] = 320;
 			springC[FOOT_L] = springC[FOOT_R] = 34;
 		}
@@ -1916,6 +1916,7 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 		gl!.uniform4f(uniforms.box, ...liquidBox());
 		gl!.uniform3f(uniforms.tint, ...tint);
 		gl!.uniform3f(uniforms.ink, ...ink);
+		gl!.uniform3f(uniforms.bg, ...pageBg);
 		gl!.uniform2f(uniforms.light, pointer.lightX, pointer.lightY);
 		gl!.uniform4fv(uniforms.a, dataA);
 		gl!.uniform4fv(uniforms.b, dataB);
