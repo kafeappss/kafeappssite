@@ -125,7 +125,7 @@ uniform vec3 uPtr;     // cursor x, y, ativo
 uniform vec4 uHorizon; // faixa de café: topo (y), fundo (y), x do mascote, onda extra embaixo dele
 uniform vec4 uBox;     // caixa que contém o líquido (min x, min y, max x, max y)
 uniform vec3 uTint;    // cor do líquido
-uniform vec3 uInk;     // cor dos olhos
+uniform vec3 uInk;     // cor clara: olhos, linha de luz do contorno e crista da onda
 uniform vec3 uBg;      // cor do fundo da página
 uniform sampler2D uSmoke;
 
@@ -292,48 +292,59 @@ void main() {
 	// Sombra do mascote no chão (encolhe quando ele pula).
 	if (uShadow.w > 0.001) {
 		vec2 sp = (p - uShadow.xy) / vec2(uShadow.z, uShadow.z * 0.2);
-		col *= 1.0 - 0.55 * uShadow.w * (1.0 - smoothstep(0.15, 1.0, length(sp)));
+		col *= 1.0 - 0.35 * uShadow.w * (1.0 - smoothstep(0.15, 1.0, length(sp)));
 	}
 	float depth = uHorizon.x - p.y;
 	float band = max(uHorizon.x - uHorizon.y, 0.001);
 	float surfOn = step(uHorizon.y + 0.001, uHorizon.x);
-	col += uTint * exp(-abs(p.y - uHorizon.x) * 9.0) * 0.12 * surfOn * step(-0.02, -depth);
+	col += uTint * exp(-abs(p.y - uHorizon.x) * 7.0) * 0.18 * surfOn * step(-0.02, -depth);
+
+	// Halo de luz em volta das formas (o vidro "acende" o fundo de leve).
+	col += uTint * exp(-max(d, 0.0) / (uCss * 18.0)) * 0.07 * opacity * step(0.0, d);
 
 	if (d < px * 2.0) {
-		// 2D bem acabado: cor chapada, um degradê de cima para baixo e uma
-		// borda de luz do lado de cima (e sombra leve embaixo). Sem volume 3D.
-		float edgeW = uCss * 5.0;
-		float boxH = max(uBox.w - uBox.y, 0.001);
-		float top = clamp((p.y - uBox.y) / boxH, 0.0, 1.0);
-		// Quanto do ponto é superfície (e não forma): define o degradê e o sumiço para baixo.
+		// Vidro escuro, no estilo do Zirtuno: corpo quase preto e translúcido, que
+		// clareia perto da borda, uma linha fina de luz no contorno, um reflexo
+		// suave em cima e, embaixo, a onda de luz em que o mascote fica mergulhado.
+		float inside = max(-d, 0.0);
 		float isSurf = smoothstep(-0.03, 0.03, dShape - dSurf);
-		vec3 fill = uTint * mix(0.84 + 0.16 * top, 1.0 - 0.4 * smoothstep(0.0, band, depth), isSurf);
-		float reach = uExpr2.z > 0.01 ? 4.0 : 1.5;
-		if (d > -edgeW * reach) {
+		// Direção da borda (para a luz bater mais em cima, à esquerda).
+		float facing = 0.0;
+		if (inside < uCss * 40.0) {
 			float e = px;
 			float dx = smin(near < 0.45 ? field(p + vec2(e, 0.0)) : 8.0, surface(p + vec2(e, 0.0)), 0.08);
 			float dy = smin(near < 0.45 ? field(p + vec2(0.0, e)) : 8.0, surface(p + vec2(0.0, e)), 0.08);
-			vec2 grad = vec2(dx - d, dy - d);
-			vec2 n = grad / max(length(grad), 1e-5);
-			float facing = dot(n, normalize(vec2(-0.45 + uLight.x * 0.3, 0.9)));
-			float rim = 1.0 - smoothstep(0.0, edgeW, -d);
-			fill += vec3(0.16) * max(facing, 0.0) * rim;
-			fill *= 1.0 - 0.16 * max(-facing, 0.0) * rim;
-			// Gotas, mascote e café ganham o reflexo curvo de desenho animado, rente à borda de cima.
-			float glossy = max(uExpr2.z, isSurf);
-			if (glossy > 0.01) {
-				float inside = -d;
-				float shine = smoothstep(edgeW * 1.2, edgeW * 1.8, inside) * (1.0 - smoothstep(edgeW * 2.4, edgeW * 3.4, inside));
-				fill = mix(fill, vec3(1.0, 0.97, 0.92), shine * smoothstep(0.6, 0.95, facing) * 0.6 * glossy);
-			}
+			vec2 n = vec2(dx - d, dy - d);
+			n /= max(length(n), 1e-5);
+			facing = dot(n, normalize(vec2(-0.5 + uLight.x * 0.3, 0.86)));
 		}
-		float alpha = (1.0 - smoothstep(-px, px, d)) * mix(opacity, 1.0 - smoothstep(band * 0.55, band, depth), isSurf);
+		float fresnel = exp(-inside / (uCss * 30.0));
+		vec3 glass = uBg + uTint * (0.035 + 0.2 * fresnel) + vec3(0.015, 0.016, 0.02) * (1.0 - fresnel);
+		// Reflexo largo e suave do lado de cima.
+		glass += uTint * 0.12 * smoothstep(0.2, 0.95, facing) * exp(-inside / (uCss * 60.0));
+		// Linha de luz no contorno (mais forte em cima).
+		float rimLine = 1.0 - smoothstep(uCss * 0.7, uCss * 2.6, inside);
+		glass = mix(glass, uInk, rimLine * (0.45 + 0.4 * max(facing, 0.0)));
+
+		// A onda: líquido de luz, mais claro na crista, com reflexos que correm.
+		float crest = exp(-max(depth, 0.0) * 10.0);
+		float ripple = 0.5 + 0.5 * sin(p.x * 9.0 - uTime * 1.1 + sin(p.x * 3.1 + uTime * 0.6) * 1.8);
+		vec3 wave = uTint * (0.28 + 0.5 * crest + 0.18 * ripple * smoothstep(0.0, 0.2, depth) * (1.0 - smoothstep(0.2, 0.5, depth)));
+		wave = mix(wave, uInk, crest * 0.55 * (0.6 + 0.4 * ripple));
+		vec3 fill = mix(glass, wave, isSurf);
+
+		float coverage = 1.0 - smoothstep(-px, px, d);
+		float alpha = coverage * mix(opacity, 1.0 - smoothstep(band * 0.45, band, depth), isSurf);
 		col = mix(col, fill, alpha);
 	}
 
-	if (uEye.w > 0.01 && length(p - uEye.xy) < uEye.z * 1.4) {
+	// Olhos que brilham: degradê do claro (em cima) para a cor da forma, com halo.
+	if (uEye.w > 0.01 && length(p - uEye.xy) < uEye.z * 1.6) {
 		float ed = eyes(p);
-		col = mix(col, uInk, (1.0 - smoothstep(-px, px, ed)) * uEye.w);
+		float t = clamp((p.y - uEye.xy.y) / (uEye.z * 0.5) + 0.5, 0.0, 1.0);
+		vec3 eyeCol = mix(uTint * 1.1, mix(uInk, vec3(1.0), 0.35), t);
+		col += uTint * exp(-max(ed, 0.0) / (uEye.z * 0.06)) * 0.35 * uEye.w * step(0.0, ed);
+		col = mix(col, eyeCol, (1.0 - smoothstep(-px, px, ed)) * uEye.w);
 	}
 
 	col += (hash(gl_FragCoord.xy + fract(uTime * 7.0) * 100.0) - 0.5) / 255.0;
@@ -1842,16 +1853,20 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 
 	/** Faixa de café no fim da seção marcada com data-horizon (o mascote nasce dela). */
 	function horizon(): [number, number, number, number] {
-		if (!horizonEl || solid) return [0, 0, 0, 0];
-		const r = horizonEl.getBoundingClientRect();
-		if (r.bottom < -40 || r.top > cssH) return [0, 0, 0, 0];
+		// No estilo sólido, a onda de luz fica só na abertura da home.
+		if (!horizonEl || (solid && !horizonEl.classList.contains('hero'))) return [0, 0, 0, 0];
 		const portrait = aspect < 0.9;
+		// No celular, a onda fica logo embaixo do mascote (data-horizon-anchor), e não no fim da seção.
+		const anchorEl = portrait ? horizonEl.querySelector<HTMLElement>('[data-horizon-anchor]') : null;
+		const r = (anchorEl ?? horizonEl).getBoundingClientRect();
+		if (r.bottom < -40 || r.top > cssH) return [0, 0, 0, 0];
 		const bottom = 1 - (r.bottom / cssH) * 2;
 		// data-horizon="0.1": altura da faixa (em unidades do WebGL) acima do fim da seção.
 		const custom = horizonEl.dataset.horizon;
 		const lift = custom ? Number(custom) : portrait ? 0.2 : 0.22;
 		const mascotHere = Boolean(formation.def.eyes) && eye.alpha > 0.05;
-		const bump = mascotHere ? 0.07 * eye.alpha : 0;
+		// A onda sobe um pouco embaixo do mascote, que fica mergulhado nela.
+		const bump = mascotHere ? 0.08 * eye.alpha : 0;
 		return [bottom + lift, bottom, mascotHere ? slots[0].v[0] : 0, bump];
 	}
 

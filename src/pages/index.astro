@@ -6,6 +6,7 @@ import Marquee from '../components/Marquee.astro';
 import Mascot from '../components/Mascot.astro';
 import LiquidSlot from '../components/LiquidSlot.astro';
 import Planet from '../components/Planet.astro';
+import Figure from '../components/Figure.astro';
 import MethodSteps from '../components/MethodSteps.astro';
 import Testimonials from '../components/Testimonials.astro';
 import Clients from '../components/Clients.astro';
@@ -101,7 +102,7 @@ const capabilities = [
 			<!-- Mascote ou planeta: ao lado do texto no computador, logo abaixo do título no celular. -->
 			{
 				site.mascot ? (
-					<div class="hero-stage">
+					<div class="hero-stage" data-horizon-anchor>
 						<div class="hero-mascot" data-liquid-anchor aria-hidden="true" />
 						<button class="talk-pill" type="button" data-mascot-talk>
 							<span class="talk-eyes" aria-hidden="true">
@@ -348,7 +349,7 @@ const capabilities = [
 	</section>
 
 	<!-- 08 · Quem somos: o K -->
-	<section class="section" id="sobre" data-liquid="k" data-rail="Sobre">
+	<section class="section" id="sobre" data-liquid="rest" data-rail="Sobre">
 		<div class="container soul">
 			<div class="soul-text">
 				<SectionHead
@@ -370,7 +371,7 @@ const capabilities = [
 			</div>
 			<div class="soul-bento">
 				<div class="k-tile">
-					<LiquidSlot class="k-slot" icon="k" iconSize={64} shape="k" />
+					<Figure name="entregas" class="figure-slot k-slot" />
 					<span class="k-caption label">Kafé Apps · desde {site.foundingYear}</span>
 				</div>
 				<dl class="stats">
@@ -539,8 +540,25 @@ const capabilities = [
 			gap: 24px;
 		}
 
+		/* Como no Zirtuno: o mascote fica baixo, com a parte de baixo mergulhada na
+		   onda de luz do fim da abertura, e o "Diga oi" vai para cima da onda. */
+		.hero-stage:not(.has-planet) {
+			position: relative;
+			align-self: stretch;
+		}
+
 		.hero-mascot {
-			height: clamp(340px, 52vh, 560px);
+			position: absolute;
+			right: 0;
+			bottom: calc(-1 * clamp(120px, 17vh, 190px));
+			left: 0;
+			height: clamp(360px, 56vh, 600px);
+		}
+
+		.hero-stage .talk-pill {
+			position: absolute;
+			right: 0;
+			bottom: calc(-1 * clamp(96px, 13vh, 150px));
 		}
 
 		.has-planet {

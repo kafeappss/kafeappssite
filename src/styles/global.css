@@ -48,10 +48,11 @@
 	--black: var(--bg);
 	--white: var(--text);
 
-	/* Mascote (desligado por padrão: veja "mascot" em src/data/site.ts): cor do
-	   corpo e dos olhos "//", e o fundo desenhado pelo WebGL. Hex de 6 dígitos. */
-	--liquid: #f4a957;
-	--liquid-ink: #1b120c;
+	/* Mascote e formas, em vidro escuro como o do Zirtuno (ligue ou desligue em
+	   src/data/site.ts): a cor da luz do vidro e da onda, e a cor clara dos olhos
+	   "//", do contorno e da crista da onda. Hex de 6 dígitos. */
+	--liquid: #7c7cff;
+	--liquid-ink: #c9cbff;
 	--liquid-bg: #08090a;
 
 	--gray-100: #f7f8f8;
@@ -640,7 +641,7 @@ ol[role='list'] {
 	width: 4px;
 	height: 11px;
 	border-radius: 1px;
-	background: var(--text);
+	background: var(--accent);
 	transform: skewX(-16deg);
 	animation: talk-blink 4s infinite;
 }
