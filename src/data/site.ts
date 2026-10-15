@@ -165,6 +165,14 @@ export const technologies: string[] = [
 	'Tailwind CSS',
 	'OpenAI',
 	'Anthropic',
+	// TODO: confirmar as linguagens e ferramentas abaixo (incluídas com as logos da home).
+	'TypeScript',
+	'JavaScript',
+	'Node.js',
+	'Python',
+	'PostgreSQL',
+	'Figma',
+	'GitHub',
 ];
 
 /** Tipos de produto que a Kafé constrói. */

@@ -7,6 +7,7 @@ import Mascot from '../components/Mascot.astro';
 import LiquidSlot from '../components/LiquidSlot.astro';
 import Figure from '../components/Figure.astro';
 import MethodSteps from '../components/MethodSteps.astro';
+import ToolsOrbit from '../components/ToolsOrbit.astro';
 import Testimonials from '../components/Testimonials.astro';
 import Clients from '../components/Clients.astro';
 import BlogCard from '../components/BlogCard.astro';
@@ -77,14 +78,15 @@ const capabilities = [
 	description="A Kafé Apps cria aplicativos, plataformas, sistemas e soluções de IA sob medida, em código e com engenharia acelerada por IA. Software house de Jaraguá do Sul (SC) que atende todo o Brasil."
 >
 	<!-- Início: o mascote (no celular, como no Zirtuno: título curto, mascote grande e "Diga oi") -->
-	<section class="hero" data-liquid="mascot" data-rail="Início" data-horizon data-ascii-strong>
+	<section class:list={['hero', { 'hero-solo': !site.mascot }]} data-liquid="mascot" data-rail="Início" data-horizon data-ascii-strong>
 		<div class="container hero-inner">
 			<div class="hero-copy">
 				<p class="eyebrow" data-reveal>Seu time de engenharia, de {site.location.state} para o Brasil</p>
 				<h1 class="display hero-title" data-split>Mais negócio, <em>menos software.</em></h1>
 				<p class="lead hero-lead" data-reveal style="--delay: 0.35s">
 					A Kafé Apps cria aplicativos, plataformas, sistemas e soluções de IA sob medida, em código e com
-					engenheiros acelerados por inteligência artificial. Do MVP ao produto em escala, sem desperdício.
+					engenheiros acelerados por inteligência artificial.{' '}
+					<span class="hero-lead-more">Do MVP ao produto em escala, sem desperdício.</span>
 				</p>
 				<div class="btn-row" data-reveal style="--delay: 0.5s">
 					<a class="btn" href={site.contact.briefUrl} data-mascot-look="nod">
@@ -274,11 +276,7 @@ const capabilities = [
 					technologies.length > 0 && (
 						<div class="tools" data-reveal>
 							<p class="label">Ferramentas do dia a dia</p>
-							<ul role="list" class="chips">
-								{technologies.map((tech) => (
-									<li class="tag">{tech}</li>
-								))}
-							</ul>
+							<ToolsOrbit />
 						</div>
 					)
 				}
@@ -623,6 +621,48 @@ const capabilities = [
 		.hero-proof {
 			order: 6;
 			justify-content: center;
+		}
+
+		/*
+		 * Sem o mascote: a abertura fica só do tamanho do conteúdo (o começo da
+		 * próxima parte aparece embaixo e convida a rolar), com menos texto: só a
+		 * primeira frase do texto de apoio.
+		 */
+		.hero-solo {
+			min-height: auto;
+			padding-top: calc(var(--header-h) + 28px);
+			padding-bottom: 40px;
+		}
+
+		.hero-solo .hero-inner {
+			gap: 14px;
+		}
+
+		.hero-solo .hero-lead {
+			margin-top: 2px;
+		}
+
+		.hero-solo .hero-lead-more {
+			display: none;
+		}
+
+		/* Os selos, mais juntinhos, logo abaixo dos botões. */
+		.hero-solo .hero-proof {
+			gap: 8px 18px;
+			margin-top: 4px;
+			font-size: var(--fs-xs);
+		}
+	}
+
+	/* Celular baixinho: menos respiro, para a próxima parte ainda aparecer. */
+	@media (max-aspect-ratio: 9/10) and (max-height: 720px) {
+		.hero-solo {
+			padding-top: calc(var(--header-h) + 12px);
+			padding-bottom: 26px;
+		}
+
+		.hero-solo .hero-title {
+			font-size: 2.75rem;
 		}
 	}
 
@@ -971,12 +1011,6 @@ const capabilities = [
 		letter-spacing: 0.16em;
 		text-transform: uppercase;
 		color: var(--text-dim);
-	}
-
-	.chips {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 6px;
 	}
 
 	@media (min-width: 960px) {

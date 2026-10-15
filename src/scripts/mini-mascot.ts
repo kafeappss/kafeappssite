@@ -3,7 +3,9 @@
  * mudam de forma conforme o humor e o círculo se mexe.
  *
  * Interações (as mesmas do mascote antigo, num formato pequeno):
- * - os olhos seguem o cursor e piscam de tempos em tempos;
+ * - os olhos seguem o cursor e piscam de tempos em tempos; no celular (sem
+ *   mouse), ele dá uma olhadinha de leve para os lados de vez em quando e
+ *   olha para onde a pessoa toca;
  * - clique (ou ⌘K / Ctrl+K): abre o painel de busca e atalhos
  *   (src/scripts/mini-panel.ts), e ele fica olhando para o que a pessoa digita;
  *   cliques demais em sequência: fica tonto, depois bravo;
@@ -204,6 +206,47 @@ if (root && face && bubble && panelNode && eyes.length === 2) {
 		},
 		{ passive: true },
 	);
+
+	// Celular (sem mouse): de vez em quando, uma olhadinha de leve para um lado
+	// (às vezes para os dois), e um olhar rápido para onde a pessoa toca.
+	if (!fine && !reduced) {
+		const setLook = (x: number, y: number) => {
+			root.style.setProperty('--look-x', `${x.toFixed(2)}px`);
+			root.style.setProperty('--look-y', `${y.toFixed(2)}px`);
+		};
+		const calm = () => !looking && !sleeping && !document.hidden && (mood === 'idle' || mood === 'happy' || mood === 'sad');
+		let lookTimer = 0;
+		const lookFor = (x: number, y: number, ms: number) => {
+			setLook(x, y);
+			clearTimeout(lookTimer);
+			lookTimer = window.setTimeout(() => !looking && setLook(0, 0), ms);
+		};
+		const glance = () => {
+			if (calm()) {
+				const side = Math.random() < 0.5 ? -1 : 1;
+				const x = side * (1.6 + Math.random() * 0.9);
+				const y = (Math.random() - 0.35) * 2;
+				lookFor(x, y, 1000 + Math.random() * 900);
+				// Às vezes confere o outro lado também.
+				if (Math.random() < 0.3) setTimeout(() => calm() && lookFor(-x, y * 0.5, 900), 900);
+			}
+			setTimeout(glance, 4000 + Math.random() * 5000);
+		};
+		setTimeout(glance, 3500);
+		window.addEventListener(
+			'touchstart',
+			(event) => {
+				const touch = event.touches[0];
+				if (!touch || !calm()) return;
+				const rect = face.getBoundingClientRect();
+				const dx = touch.clientX - (rect.left + rect.width / 2);
+				const dy = touch.clientY - (rect.top + rect.height / 2);
+				const d = Math.hypot(dx, dy) || 1;
+				lookFor((dx / d) * 2.4, (dy / d) * 2, 1300);
+			},
+			{ passive: true },
+		);
+	}
 
 	// Mouse por cima: rápido = cócegas; devagar = carinho.
 	let hoverStart = { x: 0, y: 0, t: 0 };

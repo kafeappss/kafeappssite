@@ -1,0 +1,207 @@
+---
+/**
+ * "Ferramentas do dia a dia": as logos das tecnologias correndo devagar sobre
+ * dois arcos (inspirado na seção de integrações da Stackr), no jeito do site:
+ * círculos escuros e discretos, logos em uma cor só e linhas finas como a da
+ * metodologia. De tempos em tempos, um pulso de luz (o mesmo do "Acelerado por
+ * IA.") percorre um dos arcos e cada logo acende na cor da marca quando ele passa.
+ *
+ * A lista vem de `technologies` (src/data/site.ts) e os desenhos de
+ * src/data/tech-logos.ts. O movimento fica em src/scripts/orbit.ts.
+ */
+import { technologies } from '../data/site';
+import { techLogos } from '../data/tech-logos';
+
+const items = technologies.filter((name) => techLogos[name]).map((name) => ({ name, ...techLogos[name] }));
+// Alterna entre os dois arcos, para cada um ter de tudo um pouco.
+const rings = [
+	{ ring: 'outer', logos: items.filter((_, index) => index % 2 === 0) },
+	{ ring: 'inner', logos: items.filter((_, index) => index % 2 === 1) },
+];
+---
+
+<div class="orbit" data-orbit>
+	<svg class="orbit-arcs" aria-hidden="true">
+		<defs>
+			<linearGradient id="orbit-fade" x1="0" x2="1" y1="0" y2="0">
+				<stop offset="0" stop-color="currentColor" stop-opacity="0"></stop>
+				<stop offset="0.16" stop-color="currentColor" stop-opacity="1"></stop>
+				<stop offset="0.84" stop-color="currentColor" stop-opacity="1"></stop>
+				<stop offset="1" stop-color="currentColor" stop-opacity="0"></stop>
+			</linearGradient>
+		</defs>
+		<path class="orbit-arc" data-arc="outer"></path>
+		<path class="orbit-arc" data-arc="inner"></path>
+		<g class="orbit-pulse" data-orbit-pulse></g>
+	</svg>
+	{
+		rings.map(({ ring, logos }) => (
+			<ul role="list" class="orbit-ring">
+				{logos.map((logo, index) => (
+					<li
+						class="orbit-logo"
+						data-ring={ring}
+						data-phase={(index / logos.length).toFixed(4)}
+						style={`--brand: ${logo.color}`}
+						tabindex="-1"
+					>
+						<svg viewBox={logo.viewBox} fill="currentColor" aria-hidden="true" set:html={logo.svg} />
+						<span class="orbit-name">{logo.name}</span>
+					</li>
+				))}
+			</ul>
+		))
+	}
+</div>
+
+<script>
+	import { initOrbit } from '../scripts/orbit';
+
+	document.querySelectorAll<HTMLElement>('[data-orbit]').forEach(initOrbit);
+</script>
+
+<style>
+	.orbit {
+		--logo: 52px;
+		position: relative;
+		height: clamp(210px, 24vw, 310px);
+		margin-top: 8px;
+		color: rgb(var(--fg-rgb) / 0.14);
+	}
+
+	.orbit-arcs {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		overflow: visible;
+		pointer-events: none;
+	}
+
+	.orbit-arc {
+		fill: none;
+		stroke: url(#orbit-fade);
+		stroke-width: 1;
+	}
+
+	.orbit-pulse {
+		fill: none;
+		stroke-width: 1.5;
+		filter: drop-shadow(0 0 4px rgb(var(--brand-rgb) / 0.9));
+	}
+
+	.orbit-ring {
+		display: contents;
+	}
+
+	.orbit-logo {
+		position: absolute;
+		top: 0;
+		left: 0;
+		display: grid;
+		place-items: center;
+		width: var(--logo);
+		height: var(--logo);
+		border: 1px solid rgb(var(--fg-rgb) / 0.12);
+		border-radius: 50%;
+		background: rgb(11 12 14 / 0.94);
+		color: rgb(var(--fg-rgb) / 0.78);
+		box-shadow: 0 10px 24px -12px rgb(0 0 0 / 0.8);
+		will-change: transform, opacity;
+		transition:
+			color 0.5s ease,
+			border-color 0.5s ease,
+			box-shadow 0.5s ease;
+	}
+
+	/* Antes do script posicionar: escondidas (sem JS, ficam numa fileira). */
+	:global(.js) .orbit-logo:not([data-placed]) {
+		opacity: 0;
+	}
+
+	.orbit-logo svg {
+		width: 44%;
+		height: 44%;
+		transition: filter 0.5s ease;
+	}
+
+	/* O pulso passou (ou o mouse está em cima): acende na cor da marca. */
+	.orbit-logo.is-lit,
+	.orbit-logo:hover,
+	.orbit-logo:focus {
+		color: var(--brand);
+		border-color: color-mix(in srgb, var(--brand) 45%, transparent);
+		box-shadow:
+			0 0 0 1px color-mix(in srgb, var(--brand) 18%, transparent),
+			0 0 26px -4px color-mix(in srgb, var(--brand) 55%, transparent);
+		transition-duration: 0.15s;
+		outline: none;
+	}
+
+	.orbit-logo.is-lit svg,
+	.orbit-logo:hover svg,
+	.orbit-logo:focus svg {
+		filter: drop-shadow(0 0 6px color-mix(in srgb, var(--brand) 70%, transparent));
+	}
+
+	/* Nome da ferramenta, ao passar o mouse (ou tocar, no celular). */
+	.orbit-name {
+		position: absolute;
+		top: calc(100% + 8px);
+		left: 50%;
+		padding: 4px 10px;
+		border: 1px solid var(--line-strong);
+		border-radius: 999px;
+		background: rgb(var(--bg-rgb) / 0.9);
+		color: var(--text);
+		font-size: 0.66rem;
+		font-weight: 600;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		pointer-events: none;
+		/* Fora do layout até aparecer (nas pontas, não pode alargar a página). */
+		display: none;
+		transform: translate(-50%, 0);
+	}
+
+	.orbit-logo:hover,
+	.orbit-logo:focus {
+		z-index: 2;
+	}
+
+	.orbit-logo:hover .orbit-name,
+	.orbit-logo:focus .orbit-name {
+		display: block;
+		animation: orbit-name-in 0.3s var(--ease-out);
+	}
+
+	@keyframes orbit-name-in {
+		from {
+			opacity: 0;
+			transform: translate(-50%, -4px);
+		}
+	}
+
+	@media (max-width: 640px) {
+		.orbit {
+			--logo: 42px;
+		}
+	}
+
+	/* Sem JS: as logos numa fileira, sem os arcos. */
+	:global(html:not(.js)) .orbit {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 10px;
+		height: auto;
+	}
+
+	:global(html:not(.js)) .orbit-arcs {
+		display: none;
+	}
+
+	:global(html:not(.js)) .orbit-logo {
+		position: relative;
+	}
+</style>
