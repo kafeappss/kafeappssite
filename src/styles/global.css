@@ -354,22 +354,24 @@ ol[role='list'] {
 }
 
 /* --------------------------------------------------------------------------
-   Divisões de cor entre as seções: faixas um pouco mais claras, um painel no
-   tom da marca, um painel de vidro e um azul-marinho. As faixas e os painéis
-   de marca e de vidro são translúcidos, para as letras do fundo continuarem
-   aparecendo; o azul-marinho é quase sólido.
+   Divisões de cor entre as seções, retas e de ponta a ponta da tela: faixas
+   um pouco mais claras, uma faixa no tom da marca, uma de vidro e uma
+   azul-marinho, separadas por linhas finas. As de marca e de vidro são
+   translúcidas, para as letras do fundo continuarem aparecendo; a
+   azul-marinho é quase sólida.
    -------------------------------------------------------------------------- */
 
-.tone-band {
-	background: rgb(255 255 255 / 0.025);
+:is(.tone-band, .tone-brand, .tone-glass, .tone-navy) {
 	border-block: 1px solid var(--line);
 }
 
-/* Painel: um bloco arredondado, solto das bordas da tela. */
-.panel {
-	margin: 10px;
-	border: 1px solid rgb(255 255 255 / 0.07);
-	border-radius: 28px;
+/* Duas divisões seguidas: uma linha só entre elas. */
+:is(.tone-band, .tone-brand, .tone-glass, .tone-navy) + :is(.tone-band, .tone-brand, .tone-glass, .tone-navy) {
+	border-top: 0;
+}
+
+.tone-band {
+	background: rgb(255 255 255 / 0.025);
 }
 
 .tone-brand {
@@ -390,13 +392,6 @@ ol[role='list'] {
 		radial-gradient(70% 60% at 85% 0%, rgb(var(--brand-rgb) / 0.3), transparent 70%),
 		radial-gradient(50% 50% at 0% 100%, rgb(155 108 240 / 0.14), transparent 70%),
 		rgb(11 13 31 / 0.92);
-}
-
-@media (max-width: 639px) {
-	.panel {
-		margin: 6px;
-		border-radius: 22px;
-	}
 }
 
 /* --------------------------------------------------------------------------

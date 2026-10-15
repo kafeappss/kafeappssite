@@ -10,7 +10,7 @@ Feito com [Astro](https://astro.build), gera um site 100% estático (HTML, CSS e
 - O cinza `#62666d`, que o Linear usa em rótulos minúsculos, não passa no contraste mínimo para texto; aqui ele fica só em detalhes, e os textos secundários usam `#8a8f98`.
 - **Mascote e ilustrações em vidro escuro** (desligados por enquanto; veja abaixo), no mesmo design do mascote do Zirtuno: corpo quase preto e translúcido que clareia perto da borda, uma linha fina de luz no contorno, reflexo suave em cima, olhos "//" que brilham com halo e, na abertura da home, uma onda de luz roxa em que o mascote fica mergulhado (com o "Diga oi" por cima dela). As formas que ele vira em cada seção usam o mesmo vidro.
 - No "(08) Quem somos" da home, no lugar da forma do líquido, fica a tela "Entregas em produção desde 2021" (`src/components/Figure.astro`).
-- **Divisões de cor entre as seções** (classes em `src/styles/global.css`): faixas um pouco mais claras (`tone-band`, em "A virada" e no blog), um painel no tom da marca (`tone-brand panel`, em "O que dá para construir"), um painel de vidro (`tone-glass panel`, na IA) e um painel azul-marinho (`tone-navy panel`, em "Quem confia"). Os painéis são blocos arredondados, soltos das bordas da tela; as faixas e os painéis de marca e de vidro são translúcidos, para as letras do fundo continuarem aparecendo.
+- **Divisões de cor entre as seções** (classes em `src/styles/global.css`): faixas um pouco mais claras (`tone-band`, em "A virada" e no blog), uma faixa no tom da marca (`tone-brand`, em "O que dá para construir"), uma de vidro (`tone-glass`, na IA) e uma azul-marinho (`tone-navy`, em "Quem confia"). Todas são retas, de ponta a ponta da tela, separadas por linhas finas; as de marca e de vidro são translúcidas, para as letras do fundo continuarem aparecendo.
 - **Convite final**: um painel índigo arredondado, com raios de luz subindo da borda de baixo, que se esticam na direção do cursor (`src/components/CtaSection.astro` e `src/scripts/rays.ts`). Com o mascote ligado, ele descansa nos cantos enquanto o convite está na tela.
 - **Rodapé**: azul-marinho, arredondado e solto das bordas da tela (`src/components/Footer.astro`).
 - Cores do vidro no topo de `src/styles/global.css`: `--liquid` (luz do vidro e da onda, `#7c7cff`), `--liquid-ink` (olhos, contorno e crista da onda, `#c9cbff`) e `--liquid-bg` (base do vidro, igual a `--bg`).
@@ -66,7 +66,7 @@ npm run check    # verificação de tipos
 | Artigos do blog | `src/content/blog/*.md` |
 | Cases | `src/content/cases/*.md` (use `_modelo-de-case.md` como base) |
 | Cores (as do Linear), fontes e espaçamentos | `src/styles/global.css` (variáveis no topo) |
-| Divisões de cor entre as seções | classes `tone-band`, `tone-brand`, `tone-glass`, `tone-navy` e `panel` em `src/styles/global.css`, aplicadas nas seções de `src/pages/index.astro` |
+| Divisões de cor entre as seções | classes `tone-band`, `tone-brand`, `tone-glass` e `tone-navy` em `src/styles/global.css`, aplicadas nas seções de `src/pages/index.astro` |
 | Convite final (painel índigo e raios de luz) | `src/components/CtaSection.astro` e `src/scripts/rays.ts` |
 | Logos (KAFÉ APPS e o símbolo K) | `src/assets/brand/` e `public/favicon.svg` |
 | Arquivos da marca para download (K e logo, branco e preto, sem fundo) | `public/brand/` |
