@@ -1,0 +1,25 @@
+---
+/** Fundo de letras que acendem em manchas (ver src/scripts/ascii.ts). */
+---
+
+<canvas class="ascii" aria-hidden="true" data-ascii-canvas></canvas>
+
+<script>
+	import { initAscii } from '../scripts/ascii';
+
+	const canvas = document.querySelector<HTMLCanvasElement>('[data-ascii-canvas]');
+	if (canvas) initAscii(canvas);
+</script>
+
+<style>
+	.ascii {
+		position: fixed;
+		inset: 0;
+		z-index: -3;
+		width: 100%;
+		height: 100vh;
+		height: 100lvh;
+		pointer-events: none;
+		background: var(--bg);
+	}
+</style>

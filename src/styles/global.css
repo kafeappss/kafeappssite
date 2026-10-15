@@ -55,6 +55,11 @@
 	--liquid-ink: #c9cbff;
 	--liquid-bg: #08090a;
 
+	/* Fundo de letras (src/scripts/ascii.ts): a cor das letras apagadas e a cor
+	   que acende numa parte das manchas. Hex de 6 dígitos. */
+	--ascii-ink: #ffffff;
+	--ascii-glow: #7170ff;
+
 	--gray-100: #f7f8f8;
 	--gray-200: #d0d6e0;
 	--gray-300: #8a8f98;

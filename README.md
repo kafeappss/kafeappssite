@@ -10,7 +10,7 @@ Feito com [Astro](https://astro.build), gera um site 100% estático (HTML, CSS e
 - O cinza `#62666d`, que o Linear usa em rótulos minúsculos, não passa no contraste mínimo para texto; aqui ele fica só em detalhes, e os textos secundários usam `#8a8f98`.
 - **Mascote e ilustrações em vidro escuro**, no mesmo design do mascote do Zirtuno: corpo quase preto e translúcido que clareia perto da borda, uma linha fina de luz no contorno, reflexo suave em cima, olhos "//" que brilham com halo e, na abertura da home, uma onda de luz roxa em que o mascote fica mergulhado (com o "Diga oi" por cima dela). As formas que ele vira em cada seção usam o mesmo vidro.
 - No "(08) Quem somos" da home, no lugar da forma do líquido, fica a tela "Entregas em produção desde 2021" (`src/components/Figure.astro`).
-- Cores do vidro no topo de `src/styles/global.css`: `--liquid` (luz do vidro e da onda, `#7c7cff`), `--liquid-ink` (olhos, contorno e crista da onda, `#c9cbff`) e `--liquid-bg` (fundo desenhado pelo WebGL, igual a `--bg`).
+- Cores do vidro no topo de `src/styles/global.css`: `--liquid` (luz do vidro e da onda, `#7c7cff`), `--liquid-ink` (olhos, contorno e crista da onda, `#c9cbff`) e `--liquid-bg` (base do vidro, igual a `--bg`).
 
 ### Ligar e desligar o mascote
 
@@ -30,7 +30,7 @@ O mascote fica ligado em `mascot: true`, em `src/data/site.ts`. Com `false`, o t
   - digitar "café" em qualquer lugar: festa; copiar um texto: piscadinha; voltar ao topo depois de ler tudo: carinho;
   - cumprimenta conforme a hora do dia. No celular, a fala aparece dentro do botão "Diga oi".
   Falas em `src/scripts/mascot.ts`; expressões e movimentos em `src/scripts/liquid.ts`.
-- **Fundo calmo**: só uma fumaça quente que flui devagar e o brilho da cor-assinatura em volta das formas.
+- **Fundo de letras**: uma grade de letras e números em fonte mono, quase apagada, que acende em manchas que vagam devagar pela tela (e sobem um pouco ao rolar a página). De tempos em tempos uma letra troca por outra, e uma parte das manchas acende na cor da marca. O mascote e as formas ficam por cima, com o brilho da cor-assinatura em volta. Código em `src/scripts/ascii.ts`; tamanho da letra e da grade no topo do arquivo.
 - **Trilho de seções**: à direita (telas largas), uma régua compacta de tracinhos com uma bolinha no começo de cada seção. Parada, ela fica lisa e só o tracinho da posição atual se destaca; durante a rolagem, os tracinhos perto da posição atual crescem como uma lupa, que some pouco depois de parar. Com o mouse por cima, a lupa segue o cursor e mostra o nome da seção; clicar leva até lá (pelo teclado, cada seção é um botão).
 - **Acessível e leve**: respeita "reduzir movimento" do sistema, tem fundo estático quando não há WebGL, reduz a qualidade em aparelhos mais modestos e economiza bateria quando a página está parada.
 - **Conteúdo para SEO**: página para cada serviço, blog com artigos originais, dados estruturados (schema.org), sitemap, `robots.txt` e imagem de compartilhamento.
@@ -57,6 +57,7 @@ npm run check    # verificação de tipos
 | Falas e reações do mascote | `src/scripts/mascot.ts` |
 | Expressões do mascote, fundo e física do líquido | `src/scripts/liquid.ts` |
 | Cor do líquido e dos olhos do mascote | `--liquid` e `--liquid-ink` em `src/styles/global.css` |
+| Fundo de letras (cor das letras e da parte que acende) | `--ascii-ink` e `--ascii-glow` em `src/styles/global.css`; o desenho em `src/scripts/ascii.ts` |
 | Serviços (cards e páginas `/servicos/...`) | `src/data/services.ts` |
 | Método, formatos de trabalho, comparativo e perguntas frequentes | `src/data/method.ts` |
 | Artigos do blog | `src/content/blog/*.md` |
