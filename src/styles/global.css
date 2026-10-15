@@ -1,18 +1,12 @@
 /* ==========================================================================
    Kafé Apps · sistema visual
-   Dois temas, escolhidos em src/data/site.ts (theme):
-   - "claro" (padrão): visual de software house B2B, na linha da Stripe e da
-     Vercel. Fundo cinza bem claro, cartões brancos com sombra suave, texto
-     quase preto, botão principal preto em pílula e o índigo da marca nos
-     detalhes.
-   - "escuro": as cores do Linear (linear.app), com o fundo de letras e, se
-     ligado, o mascote.
-   Os tokens de :root são os do tema escuro; o bloco html[data-theme='claro']
-   logo abaixo troca só as cores. Para ajustar as cores, altere só os tokens.
+   Cores do Linear (linear.app), copiadas dos valores que o próprio site usa:
+   fundo quase preto, uma escala de cinzas frios, bordas brancas translúcidas,
+   botão principal claro em pílula e o roxo da marca nos detalhes.
+   Para ajustar as cores, altere apenas os tokens abaixo.
    ========================================================================== */
 
-:root,
-.theme-dark {
+:root {
 	/* Fundos (--color-bg-* do Linear) */
 	--bg: #08090a;
 	--bg-level-1: #0f1011;
@@ -66,14 +60,6 @@
 	--ascii-ink: #ffffff;
 	--ascii-glow: #7170ff;
 
-	/* Cartões e sombras */
-	--card-bg: linear-gradient(180deg, rgb(15 16 17 / 0.8), rgb(8 9 10 / 0.8));
-	--card-blur: 18px;
-	--shadow-sm: none;
-	--shadow-md: 0 8px 24px -12px rgb(0 0 0 / 0.6);
-	--shadow-lg: 0 40px 90px -30px rgb(0 0 0 / 0.85);
-	--header-bg: rgb(var(--bg-rgb) / 0.62);
-
 	--gray-100: #f7f8f8;
 	--gray-200: #d0d6e0;
 	--gray-300: #8a8f98;
@@ -97,11 +83,7 @@
 
 	--gradient-metal: linear-gradient(100deg, var(--text) 0%, var(--text-secondary) 45%, var(--text-tertiary) 100%);
 	--glow: 0 0 0 1px rgb(255 255 255 / 0.1), 0 8px 24px -12px rgb(0 0 0 / 0.6);
-	color-scheme: dark;
-}
 
-/* Tipografia, layout e movimento (iguais nos dois temas) */
-:root {
 	/* Tipografia */
 	/* Inter no texto; Gilroy nos títulos (Figtree segura o lugar até os
 	   arquivos licenciados da Gilroy entrarem em public/fonts/gilroy). */
@@ -133,106 +115,7 @@
 	--ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 	--ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
 
-}
-
-/* Ilha escura dentro do tema claro (convite final, rodapé): a classe
-   .theme-dark devolve as cores do tema escuro só para aquele bloco. */
-.theme-dark {
-	color: var(--text);
-}
-
-/* No tema claro, as ilhas escuras são azul-marinho (como as seções escuras da
-   Stripe), e não pretas. */
-html[data-theme='claro'] .theme-dark {
-	--bg: #0b0d1f;
-	--bg-level-1: #11142b;
-	--bg-level-2: #161a35;
-	--bg-level-3: #1b1f3d;
-	--bg-secondary: #1f2444;
-	--bg-tertiary: #262b4f;
-	--bg-quaternary: #2e345b;
-	--bg-rgb: 11 13 31;
-	--text-tertiary: #aab3c5;
-	--text-quaternary: #7d86a3;
-	--text-quiet: #9aa3ba;
-	--card-bg: linear-gradient(180deg, rgb(255 255 255 / 0.045), rgb(255 255 255 / 0.015));
-	--card-blur: 0px;
-	--shadow-lg: 0 40px 90px -30px rgb(0 0 0 / 0.6);
-}
-
-/* Tema claro (padrão): B2B, limpo e objetivo. */
-html[data-theme='claro'] {
-	--bg: #f6f6f8;
-	--bg-level-1: #ffffff;
-	--bg-level-2: #fbfbfc;
-	--bg-level-3: #f1f1f4;
-	--bg-secondary: #ececf0;
-	--bg-tertiary: #e4e4ea;
-	--bg-quaternary: #dcdce3;
-
-	/* Texto em três níveis, como na Stripe: títulos quase pretos (azulados),
-	   texto corrido num cinza escuro único e detalhes num cinza mais claro. */
-	--text: #0b1222;
-	--text-secondary: #3c4257;
-	--text-tertiary: #4f5b6e;
-	--text-quaternary: #8792a2;
-
-	--border-primary: #e3e3e8;
-	--border-secondary: #d6d6dd;
-	--border-tertiary: #c9c9d1;
-	--line: rgb(11 18 34 / 0.08);
-	--line-strong: rgb(11 18 34 / 0.14);
-
-	/* O índigo da marca; o destaque é um tom mais escuro, para ler bem no claro. */
-	--brand: #5e6ad2;
-	--brand-rgb: 94 106 210;
-	--accent: #5359d0;
-	--accent-hover: #4348c4;
-	--accent-tint: #ecedfd;
-
-	/* Botão principal: pílula preta, texto branco. */
-	--primary: #0b1222;
-	--primary-hover: #283044;
-	--primary-rgb: 11 18 34;
-	--on-primary: #ffffff;
-
-	--fg-rgb: 11 18 34;
-	--bg-rgb: 246 246 248;
-
-	--card-bg: #ffffff;
-	--card-blur: 0px;
-	--shadow-sm: 0 1px 2px rgb(12 12 16 / 0.05);
-	--shadow-md: 0 1px 2px rgb(12 12 16 / 0.04), 0 14px 34px -18px rgb(12 12 16 / 0.18);
-	--shadow-lg: 0 2px 6px rgb(12 12 16 / 0.04), 0 40px 80px -36px rgb(12 12 16 / 0.28);
-	--header-bg: rgb(255 255 255 / 0.78);
-
-	--gray-100: #0c0c10;
-	--gray-200: #33343b;
-	--gray-300: #6a6c75;
-	--gray-400: #9496a0;
-	--gray-500: #c9c9d1;
-	--gray-600: #d6d6dd;
-	--gray-700: #e4e4ea;
-	--gray-800: #ececf0;
-	--gray-900: #f6f6f8;
-
-	/* Segunda cor das manchetes (o trecho entre <em>): cinza-azulado, como a
-	   segunda frase do topo da Stripe. O índigo fica para rótulos e links. */
-	--text-quiet: #7a869a;
-	--gradient-metal: linear-gradient(100deg, #0b1222 0%, #3c4257 55%, #7a869a 100%);
-	--glow: 0 12px 28px -14px rgb(12 12 16 / 0.45);
-
-	--radius-sm: 8px;
-	--radius: 14px;
-	--radius-lg: 20px;
-
-	/* Degradê animado do topo (src/scripts/gradient.ts), na linha da Stripe. Hex de 6 dígitos. */
-	--grad-1: #5e6ad2;
-	--grad-2: #9b6cf0;
-	--grad-3: #f472b6;
-	--grad-4: #fb923c;
-
-	color-scheme: light;
+	color-scheme: dark;
 }
 
 /* --------------------------------------------------------------------------
@@ -468,125 +351,6 @@ ol[role='list'] {
 
 .section-head .lead {
 	max-width: 640px;
-}
-
-/* --------------------------------------------------------------------------
-   Ritmo de cores das seções (tema claro), como na Stripe e na AbacatePay:
-   branco, cinza claro, um tom da marca e painéis azul-marinho arredondados.
-   No tema escuro essas classes não mudam nada.
-   -------------------------------------------------------------------------- */
-
-/* Tipografia no claro: títulos um pouco mais leves e rótulos ("eyebrows") no
-   índigo da marca, sem caixa alta, como os da Stripe. */
-html[data-theme='claro'] :is(h1, h2, h3, h4, .display, .h1, .h2, .h3, .font-display) {
-	font-weight: 600;
-}
-
-html[data-theme='claro'] .eyebrow {
-	gap: 0.45em;
-	font-size: 0.95rem;
-	font-weight: 600;
-	letter-spacing: -0.005em;
-	text-transform: none;
-	color: var(--accent);
-}
-
-html[data-theme='claro'] .eyebrow::before {
-	display: none;
-}
-
-html[data-theme='claro'] .eyebrow .num {
-	font-variant-numeric: tabular-nums;
-	color: var(--text-quaternary);
-}
-
-html[data-theme='claro'] .theme-dark .eyebrow {
-	color: #a5aaff;
-}
-
-html[data-theme='claro'] .link-arrow {
-	color: var(--accent);
-	border-color: rgb(var(--brand-rgb) / 0.3);
-}
-
-/* Imagens conceituais (src/components/Art.astro) nos espaços das seções. */
-.art.art-slot {
-	order: 0;
-	justify-self: stretch;
-	width: 100%;
-	height: clamp(240px, 62vw, 340px);
-}
-
-@media (min-width: 960px) {
-	.head-split .art.art-slot,
-	.art.art-slot.page-hero-slot {
-		height: clamp(300px, 30vw, 440px);
-	}
-}
-
-.art.art-slot.turn-slot {
-	justify-self: center;
-	width: min(100%, 880px);
-	height: clamp(200px, 24vw, 320px);
-	margin-bottom: clamp(16px, 3vw, 40px);
-}
-
-.art.art-slot.ia-slot {
-	height: clamp(300px, 70vw, 420px);
-}
-
-/* Cartões no claro: brancos e limpos; a luz do cursor só aparece com o mouse
-   por cima, em índigo bem fraco, e o cartão ganha sombra. */
-html[data-theme='claro'] .card {
-	background: var(--card-bg);
-}
-
-html[data-theme='claro'] .card:hover {
-	background:
-		radial-gradient(420px circle at var(--mx) var(--my), rgb(var(--brand-rgb) / 0.06), transparent 60%),
-		var(--card-bg);
-	box-shadow: var(--shadow-md);
-}
-
-html[data-theme='claro'] .card::before {
-	background: radial-gradient(260px circle at var(--mx) var(--my), rgb(var(--brand-rgb) / 0.55), transparent 70%);
-}
-
-html[data-theme='claro'] .tone-white {
-	background: var(--bg-level-1);
-	border-block: 1px solid var(--line);
-}
-
-html[data-theme='claro'] .tone-soft {
-	background: var(--bg);
-}
-
-/* Painel: um bloco arredondado, solto das bordas da tela. */
-html[data-theme='claro'] .panel {
-	margin: 10px;
-	border-radius: 28px;
-}
-
-html[data-theme='claro'] .tone-brand {
-	background:
-		radial-gradient(60% 80% at 100% 0%, rgb(var(--brand-rgb) / 0.14), transparent 70%),
-		radial-gradient(50% 70% at 0% 100%, rgb(244 114 182 / 0.08), transparent 70%),
-		#f1f1fd;
-}
-
-html[data-theme='claro'] .tone-dark {
-	background:
-		radial-gradient(70% 60% at 85% 0%, rgb(var(--brand-rgb) / 0.28), transparent 70%),
-		radial-gradient(50% 50% at 0% 100%, rgb(155 108 240 / 0.14), transparent 70%),
-		var(--bg);
-	color: var(--text);
-}
-
-@media (max-width: 639px) {
-	html[data-theme='claro'] .panel {
-		margin: 6px;
-		border-radius: 22px;
-	}
 }
 
 /* --------------------------------------------------------------------------
@@ -908,15 +672,13 @@ html[data-theme='claro'] .tone-dark {
 	position: relative;
 	border-radius: var(--radius);
 	background:
-		radial-gradient(420px circle at var(--mx) var(--my), rgb(var(--fg-rgb) / 0.04), transparent 60%),
-		var(--card-bg);
+		radial-gradient(420px circle at var(--mx) var(--my), rgb(var(--fg-rgb) / 0.05), transparent 60%),
+		linear-gradient(180deg, rgb(15 16 17 / 0.8), rgb(8 9 10 / 0.8));
 	border: 1px solid var(--line);
-	box-shadow: var(--shadow-sm);
-	backdrop-filter: blur(var(--card-blur));
-	-webkit-backdrop-filter: blur(var(--card-blur));
+	backdrop-filter: blur(18px);
+	-webkit-backdrop-filter: blur(18px);
 	transition:
 		border-color 0.4s ease,
-		box-shadow 0.5s var(--ease-out),
 		transform 0.6s var(--ease-out);
 }
 

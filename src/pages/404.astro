@@ -3,17 +3,12 @@ import Base from '../layouts/Base.astro';
 import Icon from '../components/Icon.astro';
 import Mascot from '../components/Mascot.astro';
 import Planet from '../components/Planet.astro';
-import Art from '../components/Art.astro';
 import { site } from '../data/site';
 ---
 
 <Base title="Página não encontrada" description="A página que você procura não existe ou mudou de endereço." noindex>
 	<!-- O mascote aparece tristinho aqui (data-mascot-mood="sad") e tenta animar a pessoa. -->
-	<section
-		class:list={['not-found', { 'nf-panel': !site.mascot && site.theme === 'claro' }]}
-		data-liquid="mascot"
-		data-mascot-mood="sad"
-	>
+	<section class="not-found" data-liquid="mascot" data-mascot-mood="sad">
 		<div class="container nf-inner">
 			<div class="nf-copy">
 				<p class="eyebrow" data-reveal>Erro 404</p>
@@ -40,15 +35,13 @@ import { site } from '../data/site';
 							</span>
 						</button>
 					</div>
-				) : site.theme === 'escuro' ? (
+				) : (
 					<div class="nf-stage nf-space">
 						<Planet class="nf-planet" />
 					</div>
-				) : null
+				)
 			}
 		</div>
-		<!-- Tema claro: a mesma fita de fios do topo da home. -->
-		{!site.mascot && site.theme === 'claro' && <Art kind="fios" class="nf-fios" />}
 		{site.mascot && <Mascot />}
 	</section>
 </Base>
@@ -112,41 +105,5 @@ import { site } from '../data/site';
 
 	.not-found .lead {
 		max-width: 520px;
-	}
-
-	.nf-panel {
-		position: relative;
-		isolation: isolate;
-		overflow: hidden;
-		background: var(--bg-level-1);
-		border-bottom: 1px solid var(--line);
-	}
-
-	.nf-panel .nf-inner {
-		position: relative;
-		z-index: 1;
-	}
-
-	.nf-panel :global(.nf-fios) {
-		position: absolute;
-		inset: 0;
-		z-index: 0;
-	}
-
-	/* Tela em pé: a fita vira uma faixa logo abaixo do texto. */
-	@media (max-aspect-ratio: 9/10) {
-		.nf-panel {
-			flex-direction: column;
-			align-items: stretch;
-			padding-bottom: 0;
-		}
-
-		.nf-panel :global(.nf-fios) {
-			--fios-forma: faixa;
-			position: relative;
-			inset: auto;
-			height: clamp(200px, 30svh, 260px);
-			margin-top: 24px;
-		}
 	}
 </style>
