@@ -11,6 +11,9 @@
  * As letras ficam mais fortes no topo da página (o elemento marcado com
  * data-ascii-strong: o início da home, o topo das páginas internas) e mais
  * fracas no resto, com uma passagem suave na borda de baixo do topo.
+ *
+ * Com o mouse por cima, as letras perto do cursor acendem de leve, com um
+ * rastro curto que se apaga sozinho (só com mouse; no celular não há cursor).
  */
 
 /** Tamanho de cada letra e da casa dela na grade, em pixels CSS. */
@@ -24,6 +27,14 @@ const STRONG = 1.6;
 const WEAK = 0.7;
 /** Altura da passagem entre as duas forças, em pixels CSS. */
 const FADE = 160;
+/** Mouse: raio da luz (em linhas da grade), quanto as letras acendem, força
+ *  com o cursor parado e quanto tempo o rastro leva para apagar (segundos). */
+const TOUCH_RADIUS = 7;
+const TOUCH_BOOST = 1.0;
+const TOUCH_REST = 0.55;
+const TRAIL_LIFE = 0.8;
+/** Pontos no rastro (o primeiro é o próprio cursor). */
+const TRAIL = 8;
 const ATLAS_SLOTS = 64;
 
 const VERTEX = /* glsl */ `
@@ -47,6 +58,8 @@ ${COMMON}
 uniform float uTime;
 uniform float uScroll; // rolagem da página, em linhas da grade
 uniform float uAspect; // largura / altura da casa
+uniform vec3 uTrail[${TRAIL}]; // cursor e rastro: coluna, linha e força (0 = apagado)
+uniform float uTouchRadius;  // raio da luz do cursor, em linhas
 
 float hash(vec2 p) {
 	p = fract(p * vec2(123.34, 456.21));
@@ -102,6 +115,20 @@ void main() {
 
 	// A cor da marca acende numa parte das manchas e passeia devagar.
 	float glow = smoothstep(0.56, 0.74, fbm(q * 0.55 + vec2(-t * 0.05, t * 0.02) + 9.0));
+
+	// Mouse: perto do cursor (e do rastro dele), as letras acendem de leve, e
+	// algumas aparecem bem fracas onde não há mancha.
+	float touch = 0.0;
+	for (int i = 0; i < ${TRAIL}; i++) {
+		vec3 p = uTrail[i];
+		if (p.z <= 0.0) continue;
+		float d = length((cell + 0.5 - p.xy) * vec2(uAspect, 1.0));
+		touch = max(touch, p.z * (1.0 - smoothstep(uTouchRadius * 0.2, uTouchRadius, d)));
+	}
+	if (touch > 0.0) {
+		bright = bright * (1.0 + touch * ${TOUCH_BOOST.toFixed(2)}) + touch * 0.13 * level * step(0.55, hash(cell + 17.1));
+		glow = max(glow, touch * 0.3);
+	}
 
 	gl_FragColor = vec4(bright, glow, glyph / 255.0, 1.0);
 }
@@ -206,6 +233,8 @@ export function initAscii(canvas: HTMLCanvasElement) {
 		time: gl.getUniformLocation(cellsProgram, 'uTime'),
 		scroll: gl.getUniformLocation(cellsProgram, 'uScroll'),
 		aspect: gl.getUniformLocation(cellsProgram, 'uAspect'),
+		trail: gl.getUniformLocation(cellsProgram, 'uTrail'),
+		touchRadius: gl.getUniformLocation(cellsProgram, 'uTouchRadius'),
 	};
 	const u = (name: string) => gl.getUniformLocation(screenProgram, name);
 	const screenUniforms = {
@@ -239,6 +268,24 @@ export function initAscii(canvas: HTMLCanvasElement) {
 	let frame = 0;
 	let last = 0;
 	let scrolled = false;
+
+	// Mouse: a posição do cursor e o rastro (pontos em pixels CSS, com a hora).
+	const fineMouse = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+	const cursor = { x: 0, y: 0, inside: false };
+	const trail: { x: number; y: number; at: number }[] = [];
+	const trailData = new Float32Array(TRAIL * 3);
+
+	function updateTrail() {
+		const now = performance.now() / 1000;
+		while (trail.length && now - trail[0].at > TRAIL_LIFE) trail.shift();
+		trailData.fill(0);
+		if (!cursor.inside) return;
+		trailData.set([(cursor.x * dpr) / cellW, (cursor.y * dpr) / cellH, TOUCH_REST], 0);
+		trail.slice(-(TRAIL - 1)).forEach((point, i) => {
+			const life = 1 - (now - point.at) / TRAIL_LIFE;
+			trailData.set([(point.x * dpr) / cellW, (point.y * dpr) / cellH, Math.max(0, life) * 0.9], (i + 1) * 3);
+		});
+	}
 
 	/** Desenha todas as letras numa tira, uma por casa, no tamanho real da tela. */
 	function drawAtlas() {
@@ -293,6 +340,9 @@ export function initAscii(canvas: HTMLCanvasElement) {
 		gl!.uniform1f(cellsUniforms.time, time);
 		gl!.uniform1f(cellsUniforms.scroll, reducedMotion ? 0 : window.scrollY / CELL_H);
 		gl!.uniform1f(cellsUniforms.aspect, cellW / cellH);
+		updateTrail();
+		gl!.uniform3fv(cellsUniforms.trail, trailData);
+		gl!.uniform1f(cellsUniforms.touchRadius, TOUCH_RADIUS);
 		gl!.drawArrays(gl!.TRIANGLES, 0, 3);
 
 		// 2) A tela inteira, copiando as letras da tira.
@@ -322,7 +372,7 @@ export function initAscii(canvas: HTMLCanvasElement) {
 		frame = requestAnimationFrame(loop);
 		const dt = last ? (now - last) / 1000 : 0;
 		// O movimento é lento: 30 quadros por segundo bastam e poupam bateria
-		// (mas, rolando a página, a borda do topo acompanha a cada quadro).
+		// (mas, rolando a página ou mexendo o mouse, desenha a cada quadro).
 		if (last && dt < 1 / 32 && !scrolled) return;
 		last = now;
 		time += Math.min(dt, 0.1);
@@ -352,6 +402,26 @@ export function initAscii(canvas: HTMLCanvasElement) {
 		draw();
 	}).observe(canvas);
 	document.addEventListener('visibilitychange', () => (document.hidden ? stop() : start()));
+	if (fineMouse && !reducedMotion) {
+		window.addEventListener(
+			'pointermove',
+			(event) => {
+				if (event.pointerType !== 'mouse') return;
+				cursor.x = event.clientX;
+				cursor.y = event.clientY;
+				cursor.inside = true;
+				const now = performance.now() / 1000;
+				const lastPoint = trail[trail.length - 1];
+				if (!lastPoint || Math.hypot(cursor.x - lastPoint.x, cursor.y - lastPoint.y) > 12 || now - lastPoint.at > 0.05) {
+					trail.push({ x: cursor.x, y: cursor.y, at: now });
+					if (trail.length > TRAIL * 2) trail.shift();
+				}
+				scrolled = true;
+			},
+			{ passive: true },
+		);
+		document.documentElement.addEventListener('pointerleave', () => (cursor.inside = false));
+	}
 	window.addEventListener(
 		'scroll',
 		() => {
