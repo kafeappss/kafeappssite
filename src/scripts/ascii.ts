@@ -12,10 +12,12 @@
  * data-ascii-strong: o início da home, o topo das páginas internas) e mais
  * fracas no resto, com uma passagem suave na borda de baixo do topo.
  *
- * De tempos em tempos (MAP_EVERY), as manchas se reorganizam no formato do
- * mapa-múndi, bem abstrato, com as bordas esfareladas pelo próprio ruído;
- * ficam assim alguns segundos e se desfazem. A máscara do mapa está em
- * src/data/world-map.ts.
+ * De tempos em tempos (MAP_EVERY), o mapa-múndi se forma letra a letra: nasce
+ * em Jaraguá do Sul e se espalha pelo mundo como uma onda; cada letra que
+ * chega embaralha (como num terminal), acende na cor da marca e assenta em
+ * cinza, enquanto as manchas somem aos poucos. Fica formado alguns segundos e
+ * se desfaz: as letras embaralham e caem em ordem aleatória, e as manchas
+ * voltam. A máscara do mapa está em src/data/world-map.ts.
  */
 import { WORLD_MAP } from '../data/world-map';
 
@@ -31,20 +33,24 @@ const STRONG = 1.6;
 const WEAK = 0.7;
 /** Altura da passagem entre as duas forças, em pixels CSS. */
 const FADE = 160;
-/** Mapa-múndi: a cada quantos segundos aparece, quanto tempo leva para se
- *  formar (e para se desfazer) e quanto tempo fica formado. */
+/** Mapa-múndi: a cada quantos segundos aparece, quanto tempo a onda leva
+ *  para formar o mapa, quanto tempo ele fica formado e quanto leva para se
+ *  desfazer. */
 const MAP_EVERY = 32;
-const MAP_MORPH = 3.5;
+const MAP_FORM = 5.5;
 const MAP_HOLD = 6;
+const MAP_UNFORM = 3;
 /** O primeiro mapa aparece este tanto de segundos depois de abrir a página. */
 const MAP_FIRST = 5;
-/** Largura máxima do mapa (fração da tela) e posição vertical do centro. */
-const MAP_WIDTH = 0.92;
-const MAP_CENTER_Y = 0.5;
-/** Tela em pé (celular): o mapa fica grande, com 42% da altura da tela, e
- *  centrado no Brasil (fração da largura do mapa que fica no meio da tela). */
-const MAP_PORTRAIT_HEIGHT = 0.42;
+/** Tamanho do mapa: fração da altura da tela (deitada e em pé) e qual ponto
+ *  do mapa (fração da largura) fica no meio da tela. Maior que a tela, ele
+ *  passa das bordas. */
+const MAP_HEIGHT = 0.86;
+const MAP_FOCUS = 0.5;
+const MAP_PORTRAIT_HEIGHT = 0.62;
 const MAP_PORTRAIT_FOCUS = 0.36;
+/** De onde a onda parte: Jaraguá do Sul (longitude, latitude). */
+const MAP_ORIGIN = [-49.07, -26.48];
 const ATLAS_SLOTS = 64;
 
 const VERTEX = /* glsl */ `
@@ -68,9 +74,10 @@ ${COMMON}
 uniform float uTime;
 uniform float uScroll; // rolagem da página, em linhas da grade
 uniform float uAspect; // largura / altura da casa
-uniform sampler2D uMap; // máscara do mapa-múndi (1 = terra)
-uniform vec4 uMapRect;  // onde o mapa fica na grade: coluna, linha, largura e altura (em casas)
-uniform float uMapAmount; // 0 = só as manchas; 1 = mapa formado
+uniform sampler2D uMap;  // máscara do mapa-múndi (1 = terra)
+uniform vec4 uMapRect;   // onde o mapa fica na grade: coluna, linha, largura e altura (em casas)
+uniform vec2 uMapStage;  // x: a onda formando o mapa (0 a 1); y: o mapa se desfazendo (0 a 1)
+uniform vec4 uMapOrigin; // de onde a onda parte (u, v no mapa), largura/altura do mapa e o alcance da onda
 
 float hash(vec2 p) {
 	p = fract(p * vec2(123.34, 456.21));
@@ -112,17 +119,6 @@ void main() {
 	float f = fbm(q + warp * 1.7 + vec2(t * 0.012, t * 0.025));
 	float mask = smoothstep(0.44, 0.66, f);
 
-	// Mapa-múndi: a terra vira mancha, com a borda roída pelo ruído. A troca
-	// não é de uma vez: cada região passa para o mapa num momento diferente.
-	if (uMapAmount > 0.0) {
-		vec2 uv = (cell + 0.5 - uMapRect.xy) / uMapRect.zw;
-		float inside = step(0.0, uv.x) * step(uv.x, 1.0) * step(0.0, uv.y) * step(uv.y, 1.0);
-		float land = texture2D(uMap, clamp(uv, 0.0, 1.0)).r * inside;
-		float map = smoothstep(0.35, 0.75, land + (f - 0.5) * 0.55);
-		float k = smoothstep(0.0, 1.0, uMapAmount * 1.5 - 0.25 - (f - 0.5) * 1.2);
-		mask = mix(mask, map * (0.82 + 0.18 * smoothstep(0.3, 0.7, f)), k);
-	}
-
 	// Cada letra troca por outra de tempos em tempos (a cada 2 a 7 segundos).
 	float slot = floor(t * (0.14 + 0.36 * hash(cell + 3.7)) + hash(cell + 8.1) * 10.0);
 	vec2 seed = cell + slot * vec2(1.37, 0.71);
@@ -137,6 +133,35 @@ void main() {
 
 	// A cor da marca acende numa parte das manchas e passeia devagar.
 	float glow = smoothstep(0.56, 0.74, fbm(q * 0.55 + vec2(-t * 0.05, t * 0.02) + 9.0));
+
+	// Mapa-múndi, formado letra a letra.
+	if (uMapStage.x > 0.0) {
+		vec2 uv = (cell + 0.5 - uMapRect.xy) / uMapRect.zw;
+		float inside = step(0.0, uv.x) * step(uv.x, 1.0) * step(0.0, uv.y) * step(uv.y, 1.0);
+		float land = texture2D(uMap, clamp(uv, 0.0, 1.0)).r * inside;
+		// Costa esfarelada: perto da borda, algumas casas entram e outras não.
+		float isLand = step(0.5, land + (hash(cell + 2.9) - 0.5) * 0.5);
+		// Cada casa de terra chega numa hora: a onda parte de Jaraguá do Sul
+		// (mais perto, mais cedo), com um pouco de sorteio.
+		float reach = length((uv - uMapOrigin.xy) * vec2(uMapOrigin.z, 1.0)) / uMapOrigin.w;
+		float arrive = clamp(reach, 0.0, 1.0) * 0.8 + hash(cell + 5.1) * 0.18;
+		// Ao se desfazer, cada letra sai numa hora sorteada.
+		float leave = 0.04 + hash(cell + 7.7) * 0.92;
+		float since = uMapStage.x - arrive;
+		float until = leave - uMapStage.y;
+		float on = isLand * step(0.0, since) * step(0.0, until);
+		// Recém-chegada (frente da onda) ou prestes a sair: embaralha e acende.
+		float wave = on * (1.0 - smoothstep(0.0, 0.08, since));
+		float going = on * (1.0 - smoothstep(0.0, 0.07, until)) * step(0.001, uMapStage.y);
+		float mapLevel = (0.45 + 0.55 * hash(seed + 4.2)) * step(0.16, hash(cell + 13.7));
+		float mapBright = on * mapLevel * 0.5 * (1.0 + wave * 1.6 + going * 0.8);
+		// As manchas saem aos poucos enquanto o mapa se forma e voltam quando ele se desfaz.
+		float away = step(hash(cell + 3.3) * 0.85, uMapStage.x) * (1.0 - step(0.1 + hash(cell + 6.1) * 0.88, uMapStage.y));
+		bright = max(bright * (1.0 - away), mapBright);
+		if (wave + going > 0.0) glyph = floor(hash(cell + floor(t * 24.0) * 0.37) * ${GLYPHS.length.toFixed(1)});
+		// Frente da onda na cor da marca; o mapa formado fica em cinza.
+		glow = max(glow * (1.0 - on), max(wave, going * 0.6));
+	}
 
 	gl_FragColor = vec4(bright, glow, glyph / 255.0, 1.0);
 }
@@ -243,7 +268,8 @@ export function initAscii(canvas: HTMLCanvasElement) {
 		aspect: gl.getUniformLocation(cellsProgram, 'uAspect'),
 		map: gl.getUniformLocation(cellsProgram, 'uMap'),
 		mapRect: gl.getUniformLocation(cellsProgram, 'uMapRect'),
-		mapAmount: gl.getUniformLocation(cellsProgram, 'uMapAmount'),
+		mapStage: gl.getUniformLocation(cellsProgram, 'uMapStage'),
+		mapOrigin: gl.getUniformLocation(cellsProgram, 'uMapOrigin'),
 	};
 	const u = (name: string) => gl.getUniformLocation(screenProgram, name);
 	const screenUniforms = {
@@ -281,19 +307,31 @@ export function initAscii(canvas: HTMLCanvasElement) {
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 	}
 	// Começa de modo que o primeiro mapa se forme MAP_FIRST segundos depois.
-	let mapClock = MAP_EVERY - MAP_MORPH * 2 - MAP_HOLD - MAP_FIRST;
+	const MAP_START = MAP_EVERY - MAP_FORM - MAP_HOLD - MAP_UNFORM;
+	let mapClock = MAP_START - MAP_FIRST;
 
-	/** 0 a 1: quanto o mapa está formado agora (com entrada e saída suaves). */
-	function mapAmount() {
-		if (reducedMotion) return 0;
-		const t = mapClock % MAP_EVERY;
-		const start = MAP_EVERY - MAP_MORPH * 2 - MAP_HOLD;
-		const ease = (x: number) => x * x * (3 - 2 * x);
-		if (t < start) return 0;
-		if (t < start + MAP_MORPH) return ease((t - start) / MAP_MORPH);
-		if (t < start + MAP_MORPH + MAP_HOLD) return 1;
-		return ease(1 - (t - start - MAP_MORPH - MAP_HOLD) / MAP_MORPH);
+	/** [onda formando o mapa, mapa se desfazendo], de 0 a 1; [0, 0] = sem mapa. */
+	function mapStage(): [number, number] {
+		if (reducedMotion) return [0, 0];
+		const t = (mapClock % MAP_EVERY) - MAP_START;
+		if (t < 0) return [0, 0];
+		// A onda sai devagar de Jaraguá, acelera pelo mundo e desacelera no fim.
+		const form = Math.min(1, t / MAP_FORM);
+		const unform = Math.min(1, Math.max(0, (t - MAP_FORM - MAP_HOLD) / MAP_UNFORM));
+		return [Math.max(0.0001, form * form * (3 - 2 * form)), unform >= 1 ? 0.9999 : unform];
 	}
+
+	// De onde a onda parte, no mapa, e o alcance dela (até o canto mais longe).
+	const originU = (MAP_ORIGIN[0] + 180) / 360;
+	const originV = (80 - MAP_ORIGIN[1]) / 136;
+	const reach = Math.max(
+		...[
+			[0, 0],
+			[1, 0],
+			[0, 1],
+			[1, 1],
+		].map(([u, v]) => Math.hypot((u - originU) * WORLD_MAP.aspect, v - originV)),
+	);
 
 	let dpr = 0;
 	let cellW = CELL_W;
@@ -358,22 +396,15 @@ export function initAscii(canvas: HTMLCanvasElement) {
 		gl!.uniform1f(cellsUniforms.time, time);
 		gl!.uniform1f(cellsUniforms.scroll, reducedMotion ? 0 : window.scrollY / CELL_H);
 		gl!.uniform1f(cellsUniforms.aspect, cellW / cellH);
-		// Tela deitada: o mapa ocupa até MAP_WIDTH da largura (e 80% da altura),
-		// centralizado. Em pé: maior que a tela, centrado no Brasil.
+		// O mapa ocupa MAP_HEIGHT da altura da tela (em pé, MAP_PORTRAIT_HEIGHT) e
+		// passa das bordas quando é mais largo que ela.
 		const portrait = canvas.height > canvas.width;
-		const mapH = portrait
-			? canvas.height * MAP_PORTRAIT_HEIGHT
-			: Math.min(canvas.width * MAP_WIDTH, canvas.height * 0.8 * WORLD_MAP.aspect) / WORLD_MAP.aspect;
+		const mapH = canvas.height * (portrait ? MAP_PORTRAIT_HEIGHT : MAP_HEIGHT);
 		const mapW = mapH * WORLD_MAP.aspect;
-		const mapX = portrait ? canvas.width / 2 - mapW * MAP_PORTRAIT_FOCUS : (canvas.width - mapW) / 2;
-		gl!.uniform4f(
-			cellsUniforms.mapRect,
-			mapX / cellW,
-			(canvas.height * MAP_CENTER_Y - mapH / 2) / cellH,
-			mapW / cellW,
-			mapH / cellH,
-		);
-		gl!.uniform1f(cellsUniforms.mapAmount, mapAmount());
+		const mapX = canvas.width / 2 - mapW * (portrait ? MAP_PORTRAIT_FOCUS : MAP_FOCUS);
+		gl!.uniform4f(cellsUniforms.mapRect, mapX / cellW, (canvas.height - mapH) / 2 / cellH, mapW / cellW, mapH / cellH);
+		gl!.uniform2f(cellsUniforms.mapStage, ...mapStage());
+		gl!.uniform4f(cellsUniforms.mapOrigin, originU, originV, WORLD_MAP.aspect, reach);
 		gl!.activeTexture(gl!.TEXTURE2);
 		gl!.bindTexture(gl!.TEXTURE_2D, mapTexture);
 		gl!.uniform1i(cellsUniforms.map, 2);
@@ -448,7 +479,7 @@ export function initAscii(canvas: HTMLCanvasElement) {
 	);
 	// Para testar no console: __ascii.map() forma o mapa agora.
 	(window as unknown as { __ascii: unknown }).__ascii = {
-		map: () => (mapClock = Math.floor(mapClock / MAP_EVERY) * MAP_EVERY + (MAP_EVERY - MAP_MORPH * 2 - MAP_HOLD)),
+		map: () => (mapClock = Math.floor(mapClock / MAP_EVERY) * MAP_EVERY + MAP_START),
 	};
 	canvas.addEventListener('webglcontextlost', (event) => {
 		event.preventDefault();
