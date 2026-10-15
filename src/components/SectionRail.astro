@@ -32,14 +32,13 @@
 		/** Linha da tela (45% da altura) que define em qual seção a página está. */
 		const LINE = 0.45;
 		const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
-		const numberOf = (index: number) => String(index + 1).padStart(2, '0');
 
 		const buttons = sections.map((section, index) => {
 			const item = document.createElement('li');
 			const button = document.createElement('button');
 			button.type = 'button';
 			button.className = 'rail-dot';
-			button.setAttribute('aria-label', `${numberOf(index)}. ${section.dataset.rail}`);
+			button.setAttribute('aria-label', section.dataset.rail ?? '');
 			button.addEventListener('click', () => go(index));
 			button.addEventListener('focus', () => {
 				// Só pelo teclado: com o mouse, a lupa já segue o cursor.
@@ -191,7 +190,7 @@
 		}
 
 		function showTip(section: number, tick: number) {
-			tip!.textContent = `${numberOf(section)} · ${sections[section].dataset.rail ?? ''}`;
+			tip!.textContent = sections[section].dataset.rail ?? '';
 			tip!.style.top = `${ruler!.offsetTop + tick * gap}px`;
 			tip!.classList.add('is-visible');
 		}
