@@ -7,6 +7,7 @@ import Mascot from '../components/Mascot.astro';
 import LiquidSlot from '../components/LiquidSlot.astro';
 import Figure from '../components/Figure.astro';
 import MethodSteps from '../components/MethodSteps.astro';
+import ToolsOrbit from '../components/ToolsOrbit.astro';
 import Testimonials from '../components/Testimonials.astro';
 import Clients from '../components/Clients.astro';
 import BlogCard from '../components/BlogCard.astro';
@@ -274,11 +275,7 @@ const capabilities = [
 					technologies.length > 0 && (
 						<div class="tools" data-reveal>
 							<p class="label">Ferramentas do dia a dia</p>
-							<ul role="list" class="chips">
-								{technologies.map((tech) => (
-									<li class="tag">{tech}</li>
-								))}
-							</ul>
+							<ToolsOrbit />
 						</div>
 					)
 				}
@@ -971,12 +968,6 @@ const capabilities = [
 		letter-spacing: 0.16em;
 		text-transform: uppercase;
 		color: var(--text-dim);
-	}
-
-	.chips {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 6px;
 	}
 
 	@media (min-width: 960px) {
