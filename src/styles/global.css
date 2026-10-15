@@ -935,7 +935,7 @@ ol[role='list'] {
 	transform: none;
 }
 
-@media (prefers-reduced-motion: reduce) {
+/*@media (prefers-reduced-motion: reduce) {
 	*,
 	*::before,
 	*::after {
@@ -951,7 +951,7 @@ ol[role='list'] {
 		transform: none;
 		filter: none;
 	}
-}
+} */
 
 /* --------------------------------------------------------------------------
    Transição suave entre páginas (navegadores compatíveis)
