@@ -7,6 +7,10 @@
  * por letra (brilho, cor e qual letra), e depois a tela inteira, copiando cada
  * letra de uma tira de letras desenhada uma vez no início. Assim o fundo pesa
  * quase nada. Sem WebGL fica o fundo liso; com "reduzir movimento", parado.
+ *
+ * As letras ficam mais fortes no topo da página (o elemento marcado com
+ * data-ascii-strong: o início da home, o topo das páginas internas) e mais
+ * fracas no resto, com uma passagem suave na borda de baixo do topo.
  */
 
 /** Tamanho de cada letra e da casa dela na grade, em pixels CSS. */
@@ -15,6 +19,11 @@ const CELL_W = 7;
 const CELL_H = 14;
 /** Minúsculas primeiro: o sorteio favorece as letras do começo da lista. */
 const GLYPHS = 'abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+/** Força das letras no topo da página e no resto (1 = a força original). */
+const STRONG = 1.6;
+const WEAK = 0.7;
+/** Altura da passagem entre as duas forças, em pixels CSS. */
+const FADE = 160;
 const ATLAS_SLOTS = 64;
 
 const VERTEX = /* glsl */ `
@@ -109,6 +118,7 @@ uniform sampler2D uAtlas;
 uniform vec3 uBg;
 uniform vec3 uInk;
 uniform vec3 uGlow;
+uniform vec4 uZone;     // fim do topo (y), meia altura da passagem, força no topo, força no resto
 
 void main() {
 	vec2 fc = vec2(gl_FragCoord.x, uRes.y - gl_FragCoord.y);
@@ -119,7 +129,9 @@ void main() {
 	float ink = texture2D(uAtlas, vec2((index + local.x) / ${ATLAS_SLOTS.toFixed(1)}, local.y)).a;
 	// Cinza bem apagado; na cor da marca, a letra acende mais.
 	vec3 color = mix(uInk * 0.2, uGlow * 0.6, c.g);
-	gl_FragColor = vec4(uBg + color * ink * c.r, 1.0);
+	// Mais forte no topo da página, mais fraco no resto.
+	float power = mix(uZone.w, uZone.z, 1.0 - smoothstep(uZone.x - uZone.y, uZone.x + uZone.y, fc.y));
+	gl_FragColor = vec4(uBg + color * ink * c.r * power, 1.0);
 }
 `;
 
@@ -205,7 +217,9 @@ export function initAscii(canvas: HTMLCanvasElement) {
 		bg: u('uBg'),
 		ink: u('uInk'),
 		glow: u('uGlow'),
+		zone: u('uZone'),
 	};
+	const strongZone = document.querySelector<HTMLElement>('[data-ascii-strong]');
 
 	const bg = cssColor('--bg', [0.03, 0.035, 0.04]);
 	const ink = cssColor('--ascii-ink', [1, 1, 1]);
@@ -224,6 +238,7 @@ export function initAscii(canvas: HTMLCanvasElement) {
 	let time = 0;
 	let frame = 0;
 	let last = 0;
+	let scrolled = false;
 
 	/** Desenha todas as letras numa tira, uma por casa, no tamanho real da tela. */
 	function drawAtlas() {
@@ -296,14 +311,19 @@ export function initAscii(canvas: HTMLCanvasElement) {
 		gl!.uniform3f(screenUniforms.bg, ...bg);
 		gl!.uniform3f(screenUniforms.ink, ...ink);
 		gl!.uniform3f(screenUniforms.glow, ...glow);
+		// Onde termina o topo da página na tela (se ele já saiu, tudo fica fraco).
+		const zoneEnd = strongZone ? strongZone.getBoundingClientRect().bottom * dpr : -1e5;
+		gl!.uniform4f(screenUniforms.zone, zoneEnd, FADE * dpr * 0.5, STRONG, WEAK);
 		gl!.drawArrays(gl!.TRIANGLES, 0, 3);
+		scrolled = false;
 	}
 
 	function loop(now: number) {
 		frame = requestAnimationFrame(loop);
 		const dt = last ? (now - last) / 1000 : 0;
-		// O movimento é lento: 30 quadros por segundo bastam e poupam bateria.
-		if (last && dt < 1 / 32) return;
+		// O movimento é lento: 30 quadros por segundo bastam e poupam bateria
+		// (mas, rolando a página, a borda do topo acompanha a cada quadro).
+		if (last && dt < 1 / 32 && !scrolled) return;
 		last = now;
 		time += Math.min(dt, 0.1);
 		draw();
@@ -332,6 +352,15 @@ export function initAscii(canvas: HTMLCanvasElement) {
 		draw();
 	}).observe(canvas);
 	document.addEventListener('visibilitychange', () => (document.hidden ? stop() : start()));
+	window.addEventListener(
+		'scroll',
+		() => {
+			scrolled = true;
+			// Parado ("reduzir movimento"): redesenha só para a borda do topo acompanhar.
+			if (!frame) draw();
+		},
+		{ passive: true },
+	);
 	canvas.addEventListener('webglcontextlost', (event) => {
 		event.preventDefault();
 		stop();
