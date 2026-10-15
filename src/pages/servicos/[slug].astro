@@ -9,7 +9,7 @@ import Faq from '../../components/Faq.astro';
 import CtaSection from '../../components/CtaSection.astro';
 import Icon from '../../components/Icon.astro';
 import { services, type Service } from '../../data/services';
-import { site } from '../../data/site';
+import { site, whatsappLink } from '../../data/site';
 
 export const getStaticPaths = (() =>
 	services.map((service) => ({ params: { slug: service.slug }, props: { service } }))) satisfies GetStaticPaths;
@@ -43,7 +43,7 @@ const serviceSchema = {
 		breadcrumbs={[{ label: 'Serviços', href: '/servicos' }, { label: service.title }]}
 	>
 		<div class="btn-row" data-reveal style="--delay: 0.3s">
-			<a class="btn" href={site.contact.briefUrl}>Pedir uma proposta <Icon name="arrow" class="arrow" /></a>
+			<a class="btn" href={whatsappLink()} target="_blank" rel="noopener">Pedir uma proposta <Icon name="arrow" class="arrow" /></a>
 			<a class="btn btn-ghost" href="#entregas">O que está incluído</a>
 		</div>
 	</PageHero>

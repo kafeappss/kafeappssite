@@ -103,10 +103,10 @@ Para testar no console do navegador: `__liquid.show('rocket')` mostra uma forma,
 
 Em `src/data/site.ts`, dentro de `contact`:
 
-- `briefUrl`: o pré-orçamento com a Kafeína (`/orcamento`, veja abaixo). Os botões principais ("Tirar minha ideia do papel", "Começar meu projeto", "Pedir uma proposta") levam para lá, e a página de contato o destaca acima do formulário.
+- `briefUrl`: o pré-orçamento com a Kafeína (`/orcamento`, veja abaixo), disponível como alternativa para quem prefere estimar o projeto antes de conversar.
 - `kafeinaEndpoint`: endereço do serviço da Kafeína (pasta `workers/kafeina`), que escreve o resumo do projeto com IA e repassa o pedido ao CRM.
 - `formEndpoint`: endereço de um serviço que recebe formulários (Formspree, Web3Forms, Getform ou um endpoint próprio). Quando preenchido, as mensagens são enviadas direto do site.
-- `whatsapp`: número só com dígitos, com DDI e DDD (ex.: `5547999999999`). Ativa o botão flutuante e, se não houver `formEndpoint`, o formulário abre o WhatsApp com a mensagem pronta.
+- `whatsapp`: número só com dígitos, com DDI e DDD (ex.: `5547999999999`). Ativa os CTAs comerciais, o ícone discreto do WhatsApp no desktop e, se não houver `formEndpoint`, o formulário abre o WhatsApp com a mensagem pronta.
 - `email`: usado nos links de e-mail e como último recurso do formulário.
 
 ### Pré-orçamento com a Kafeína (`/orcamento`)

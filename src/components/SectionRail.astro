@@ -26,7 +26,6 @@
 	const sections = Array.from(document.querySelectorAll<HTMLElement>('[data-rail]'));
 
 	if (nav && ruler && list && tip && sections.length >= 3) {
-		const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 		/** Distância entre os tracinhos (px). */
 		const SPACING = 11;
 		/** Linha da tela (45% da altura) que define em qual seção a página está. */
@@ -168,11 +167,11 @@
 			const dt = last ? Math.min(0.1, (time - last) / 1000) : 1 / 60;
 			last = time;
 			const target = pointerAt ?? position();
-			lens = reduced ? target : lens + (target - lens) * (1 - Math.exp(-dt * 9));
+			lens += (target - lens) * (1 - Math.exp(-dt * 9));
 			// A lupa aparece rápido e some devagar.
 			const scrolling = performance.now() - scrolledAt < HOLD;
 			const want = scrolling || pointerAt !== null ? 1 : 0;
-			strength = reduced ? want : strength + (want - strength) * (1 - Math.exp(-dt * (want > strength ? 12 : 4)));
+			strength += (want - strength) * (1 - Math.exp(-dt * (want > strength ? 12 : 4)));
 			draw();
 			if (scrolling || Math.abs(target - lens) > 0.002 || Math.abs(want - strength) > 0.002) {
 				frame = requestAnimationFrame(step);
@@ -200,7 +199,7 @@
 		}
 
 		function go(section: number) {
-			sections[section].scrollIntoView({ behavior: reduced ? 'auto' : 'smooth' });
+			sections[section].scrollIntoView({ behavior: 'smooth' });
 		}
 
 		// Mouse sobre a régua: a lupa segue o cursor e mostra a seção daquele ponto.
@@ -222,7 +221,7 @@
 			if ((event.target as HTMLElement).closest('button') || pointerAt === null) return;
 			const near = dotAt.findIndex((dot) => Math.abs(dot - pointerAt!) <= 1.5);
 			if (near >= 0) return go(near);
-			window.scrollTo({ top: (pointerAt / (count - 1)) * maxScroll(), behavior: reduced ? 'auto' : 'smooth' });
+			window.scrollTo({ top: (pointerAt / (count - 1)) * maxScroll(), behavior: 'smooth' });
 		});
 
 		window.addEventListener(

@@ -7,8 +7,15 @@ const href = whatsappLink();
 
 {
 	href && (
-		<a class="wa-float" href={href} target="_blank" rel="noopener" aria-label="Conversar pelo WhatsApp">
-			<Icon name="whatsapp" size={26} />
+		<a
+			class="wa-float"
+			href={href}
+			target="_blank"
+			rel="noopener"
+			aria-label="Conversar pelo WhatsApp"
+			title="WhatsApp"
+		>
+			<Icon name="whatsapp" size={19} />
 		</a>
 	)
 }
@@ -16,26 +23,37 @@ const href = whatsappLink();
 <style>
 	.wa-float {
 		position: fixed;
-		right: clamp(16px, 3vw, 28px);
-		bottom: clamp(16px, 3vw, 28px);
+		right: 22px;
+		bottom: 22px;
 		z-index: 90;
-		display: grid;
-		place-items: center;
-		width: 56px;
-		height: 56px;
-		border-radius: var(--radius-sm);
-		color: var(--bg);
-		background: var(--white);
-		box-shadow:
-			0 12px 32px -8px rgb(var(--bg-rgb) / 0.6),
-			0 0 0 6px rgb(var(--fg-rgb) / 0.08);
+		display: none;
+		width: 38px;
+		height: 38px;
+		align-items: center;
+		justify-content: center;
+		border: 1px solid rgb(255 255 255 / 0.1);
+		border-radius: 50%;
+		color: #a4a7ad;
+		background: rgb(18 19 22 / 0.8);
+		opacity: 0.62;
 		transition:
-			transform 0.5s var(--ease-out),
-			background-color 0.3s ease;
+			opacity 0.2s ease,
+			color 0.2s ease,
+			border-color 0.2s ease,
+			transform 0.2s ease;
 	}
 
-	.wa-float:hover {
-		transform: translateY(-3px) scale(1.04);
-		background: var(--text);
+	.wa-float:hover,
+	.wa-float:focus-visible {
+		color: #d1d3d6;
+		border-color: rgb(255 255 255 / 0.22);
+		opacity: 1;
+		transform: translateY(-2px);
+	}
+
+	@media (min-width: 1024px) {
+		.wa-float {
+			display: flex;
+		}
 	}
 </style>

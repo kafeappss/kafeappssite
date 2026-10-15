@@ -459,7 +459,6 @@ function placementOf(place: Placement, aspect: number, isMascot: boolean): Place
 }
 
 export function initLiquid(canvas: HTMLCanvasElement) {
-	const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 	/**
 	 * Estilo (em <html data-liquid-style>): "solid" = formas sólidas que se montam
 	 * como peças; "liquid" = gotas que se fundem e escorrem.
@@ -601,7 +600,7 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 	// ------------------------------------------------------------ formações
 	// Com mouse, os cartões (data-liquid-hover) mudam a forma ao passar o mouse.
 	// Em telas de toque, eles entram na fila normal: vale o que estiver no meio da tela.
-	const hoverMode = finePointer && !reducedMotion;
+	const hoverMode = finePointer;
 	const targetEls = Array.from(document.querySelectorAll<HTMLElement>('[data-liquid], [data-liquid-hover]')).filter(
 		(el) => el.hasAttribute('data-liquid') || !hoverMode,
 	);
@@ -633,10 +632,6 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 			}, 700);
 		}
 		lastInteraction = performance.now();
-		if (reducedMotion) {
-			settle();
-			render();
-		}
 	}
 
 	const ownAnchors = new WeakMap<HTMLElement, HTMLElement[]>();
@@ -793,20 +788,6 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 		globals.settle += (goal - globals.settle) * Math.min(1, dt * (goal > globals.settle ? 2.5 : 8));
 	}
 
-	function settle() {
-		const place = currentPlacement();
-		lastPlace = place;
-		const out = targets(time, place);
-		out.forEach(({ v, op }, i) => {
-			slots[i].v = [...v];
-			slots[i].vel = [0, 0, 0, 0, 0, 0, 0];
-			slots[i].op = op || slots[i].op;
-		});
-		globals.settle = 1;
-		applyGlobals(place, 1);
-		eye.alpha = formation.def.eyes ? 1 : 0;
-	}
-
 	function resize() {
 		const rect = canvas.getBoundingClientRect();
 		cssW = Math.max(rect.width, 1);
@@ -818,7 +799,6 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 		if (nextWidth === width && nextHeight === height) return;
 		width = canvas.width = nextWidth;
 		height = canvas.height = nextHeight;
-		if (reducedMotion) settle();
 	}
 
 	// ----------------------------------------------------- continuidade entre páginas
@@ -895,60 +875,58 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 		mascot.lastInput = performance.now();
 	};
 
-	if (!reducedMotion) {
-		window.addEventListener(
-			'pointermove',
-			(event) => {
-				const now = performance.now();
-				const world = toWorld(event.clientX, event.clientY);
-				const dt = Math.max((now - pointer.lastMove) / 1000, 0.008);
-				const speed = Math.hypot(world.x - pointer.x, world.y - pointer.y) / dt;
-				pointer.speed = pointer.active ? Math.min(speed, 12) : 0;
-				pointer.x = world.x;
-				pointer.y = world.y;
-				pointer.active = finePointer || event.pointerType === 'mouse';
-				pointer.lastMove = now;
-				lastInteraction = now;
-				markInput();
-			},
-			{ passive: true },
-		);
-		document.documentElement.addEventListener('pointerleave', () => {
-			pointer.active = false;
-			// O cursor saiu da página: ele fica tristinho.
-			// (Soltar o mascote fora da janela não conta: ele ainda está balançando.)
-			if (finePointer && eye.alpha > 0.5 && time > mascot.awayReadyAt && !mascot.sleeping && !mascot.dragging && time > mascot.snapUntil) {
-				mascot.away = true;
-				// Balança a cabeça que não: "não vai embora!".
-				react('shake');
-				emit('away');
-			}
-		});
-		document.documentElement.addEventListener('pointerenter', () => {
-			if (!mascot.away) return;
-			mascot.away = false;
-			mascot.awayReadyAt = time + 20;
-			if (eye.alpha > 0.5) {
-				react('happy');
-				emit('return');
-			}
-		});
-		// Clique em qualquer lugar: ele dá uma olhadinha.
-		window.addEventListener(
-			'pointerdown',
-			(event) => {
-				if (hit && hit.contains(event.target as Node)) return;
-				const world = toWorld(event.clientX, event.clientY);
-				mascot.glanceX = world.x;
-				mascot.glanceY = world.y;
-				mascot.glanceUntil = time + 1.4;
-			},
-			{ passive: true },
-		);
-		window.addEventListener('scroll', markInput, { passive: true });
-		window.addEventListener('keydown', markInput);
-		window.addEventListener('pointerdown', markInput, { passive: true });
-	}
+	window.addEventListener(
+		'pointermove',
+		(event) => {
+			const now = performance.now();
+			const world = toWorld(event.clientX, event.clientY);
+			const dt = Math.max((now - pointer.lastMove) / 1000, 0.008);
+			const speed = Math.hypot(world.x - pointer.x, world.y - pointer.y) / dt;
+			pointer.speed = pointer.active ? Math.min(speed, 12) : 0;
+			pointer.x = world.x;
+			pointer.y = world.y;
+			pointer.active = finePointer || event.pointerType === 'mouse';
+			pointer.lastMove = now;
+			lastInteraction = now;
+			markInput();
+		},
+		{ passive: true },
+	);
+	document.documentElement.addEventListener('pointerleave', () => {
+		pointer.active = false;
+		// O cursor saiu da página: ele fica tristinho.
+		// (Soltar o mascote fora da janela não conta: ele ainda está balançando.)
+		if (finePointer && eye.alpha > 0.5 && time > mascot.awayReadyAt && !mascot.sleeping && !mascot.dragging && time > mascot.snapUntil) {
+			mascot.away = true;
+			// Balança a cabeça que não: "não vai embora!".
+			react('shake');
+			emit('away');
+		}
+	});
+	document.documentElement.addEventListener('pointerenter', () => {
+		if (!mascot.away) return;
+		mascot.away = false;
+		mascot.awayReadyAt = time + 20;
+		if (eye.alpha > 0.5) {
+			react('happy');
+			emit('return');
+		}
+	});
+	// Clique em qualquer lugar: ele dá uma olhadinha.
+	window.addEventListener(
+		'pointerdown',
+		(event) => {
+			if (hit && hit.contains(event.target as Node)) return;
+			const world = toWorld(event.clientX, event.clientY);
+			mascot.glanceX = world.x;
+			mascot.glanceY = world.y;
+			mascot.glanceUntil = time + 1.4;
+		},
+		{ passive: true },
+	);
+	window.addEventListener('scroll', markInput, { passive: true });
+	window.addEventListener('keydown', markInput);
+	window.addEventListener('pointerdown', markInput, { passive: true });
 
 	// ----------------------------------------------------------- mascote
 	function burst(strength: number) {
@@ -1041,13 +1019,12 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 				burst(5 * R);
 				break;
 		}
-		if (reducedMotion) render();
 	}
 
 	window.addEventListener('kafe:mascot-react', (event) => react(String((event as CustomEvent).detail)));
 
 	// Arrastar o mascote (com mouse): ele estica como goma e volta com um "boing".
-	if (hit && !reducedMotion) {
+	if (hit) {
 		// Toque longo (celular): ele enche de ar e volta.
 		hit.addEventListener('pointerdown', (event) => {
 			if (event.pointerType !== 'touch') return;
@@ -1451,7 +1428,7 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 	}
 
 	function checkMorph(previous: Place) {
-		if (!solid || reducedMotion) return;
+		if (!solid) return;
 		const family = familyOf(formation);
 		if (family === morph.family) return;
 		morph.family = family;
@@ -1926,7 +1903,7 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 	}
 
 	function start() {
-		if (running || reducedMotion) return;
+		if (running) return;
 		running = true;
 		lastFrame = 0;
 		frame = requestAnimationFrame(loop);
@@ -1940,9 +1917,7 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 	// --------------------------------------------------------------- início
 	resize();
 	const restored = restore();
-	if (reducedMotion) {
-		settle();
-	} else if (!restored) {
+	if (!restored) {
 		// Primeira visita: as peças brotam e sobem até a posição inicial.
 		targets(0).forEach(({ v, op }, i) => {
 			slots[i].v = [v[0], v[1] - 0.5, 0, 0, 0, v[5], v[6]];
@@ -1958,7 +1933,6 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 
 	new ResizeObserver(() => {
 		resize();
-		if (reducedMotion) render();
 	}).observe(canvas);
 
 	document.addEventListener('visibilitychange', () => {
@@ -1979,18 +1953,6 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 	});
 
 	window.addEventListener('pagehide', save);
-
-	if (reducedMotion) {
-		// Sem animação, a forma ancorada e o horizonte só precisam ser redesenhados ao rolar.
-		window.addEventListener(
-			'scroll',
-			() => {
-				settle();
-				render();
-			},
-			{ passive: true },
-		);
-	}
 
 	canvas.addEventListener('webglcontextlost', (event) => {
 		event.preventDefault();

@@ -5,7 +5,7 @@
  * leque inteiro gira devagar e se inclina para o lado do cursor.
  *
  * Desenhado em canvas (nítido em telas retina), só anima com o convite na
- * tela e para com a aba em segundo plano; com "reduzir movimento", fica parado.
+ * tela e para com a aba em segundo plano.
  */
 
 const TAU = Math.PI * 2;
@@ -28,7 +28,6 @@ export function initRays(canvas: HTMLCanvasElement) {
 	const ctx = canvas.getContext('2d');
 	if (!ctx) return;
 
-	const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 	const pointer = { x: 0.5, y: 0.5, tx: 0.5, ty: 0.5 };
 	/** Cada raio: direção na meia esfera de cima (x, y, z), comprimento e brilho da ponta. */
 	let rays: { x: number; y: number; z: number; len: number; tip: number; phase: number }[] = [];
@@ -141,7 +140,7 @@ export function initRays(canvas: HTMLCanvasElement) {
 	}
 
 	function start() {
-		if (frame || reduced || !visible || document.hidden) return;
+		if (frame || !visible || document.hidden) return;
 		last = 0;
 		frame = requestAnimationFrame(loop);
 	}

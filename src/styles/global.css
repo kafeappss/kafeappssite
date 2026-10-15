@@ -141,12 +141,6 @@ html {
 	scrollbar-width: thin;
 }
 
-/*@media (prefers-reduced-motion: no-preference) {
-	html {
-		scroll-behavior: smooth;
-	}
-}*/
-
 body {
 	min-height: 100vh;
 	font-family: var(--font-sans);
@@ -934,24 +928,6 @@ ol[role='list'] {
 	filter: blur(0);
 	transform: none;
 }
-
-/*@media (prefers-reduced-motion: reduce) {
-	*,
-	*::before,
-	*::after {
-		animation-duration: 0.01ms !important;
-		animation-iteration-count: 1 !important;
-		transition-duration: 0.01ms !important;
-		transition-delay: 0s !important;
-	}
-
-	.js [data-reveal],
-	.js [data-split] .w {
-		opacity: 1;
-		transform: none;
-		filter: none;
-	}
-} */
 
 /* --------------------------------------------------------------------------
    Transição suave entre páginas (navegadores compatíveis)
