@@ -152,9 +152,9 @@ html[data-theme='claro'] .theme-dark {
 	--bg-tertiary: #262b4f;
 	--bg-quaternary: #2e345b;
 	--bg-rgb: 11 13 31;
-	--text-tertiary: #9a9fb5;
-	--text-quaternary: #6d7290;
-	--text-quiet: #a5aaff;
+	--text-tertiary: #aab3c5;
+	--text-quaternary: #7d86a3;
+	--text-quiet: #9aa3ba;
 	--card-bg: linear-gradient(180deg, rgb(255 255 255 / 0.045), rgb(255 255 255 / 0.015));
 	--card-blur: 0px;
 	--shadow-lg: 0 40px 90px -30px rgb(0 0 0 / 0.6);
@@ -170,16 +170,18 @@ html[data-theme='claro'] {
 	--bg-tertiary: #e4e4ea;
 	--bg-quaternary: #dcdce3;
 
-	--text: #0c0c10;
-	--text-secondary: #33343b;
-	--text-tertiary: #5d5f68;
-	--text-quaternary: #9496a0;
+	/* Texto em três níveis, como na Stripe: títulos quase pretos (azulados),
+	   texto corrido num cinza escuro único e detalhes num cinza mais claro. */
+	--text: #0b1222;
+	--text-secondary: #3c4257;
+	--text-tertiary: #4f5b6e;
+	--text-quaternary: #8792a2;
 
 	--border-primary: #e3e3e8;
 	--border-secondary: #d6d6dd;
 	--border-tertiary: #c9c9d1;
-	--line: rgb(12 12 16 / 0.08);
-	--line-strong: rgb(12 12 16 / 0.14);
+	--line: rgb(11 18 34 / 0.08);
+	--line-strong: rgb(11 18 34 / 0.14);
 
 	/* O índigo da marca; o destaque é um tom mais escuro, para ler bem no claro. */
 	--brand: #5e6ad2;
@@ -189,12 +191,12 @@ html[data-theme='claro'] {
 	--accent-tint: #ecedfd;
 
 	/* Botão principal: pílula preta, texto branco. */
-	--primary: #0c0c10;
-	--primary-hover: #2a2b33;
-	--primary-rgb: 12 12 16;
+	--primary: #0b1222;
+	--primary-hover: #283044;
+	--primary-rgb: 11 18 34;
 	--on-primary: #ffffff;
 
-	--fg-rgb: 12 12 16;
+	--fg-rgb: 11 18 34;
 	--bg-rgb: 246 246 248;
 
 	--card-bg: #ffffff;
@@ -214,9 +216,10 @@ html[data-theme='claro'] {
 	--gray-800: #ececf0;
 	--gray-900: #f6f6f8;
 
-	/* Segunda cor das manchetes (o trecho entre <em>): o índigo da marca. */
-	--text-quiet: var(--accent);
-	--gradient-metal: linear-gradient(100deg, #0c0c10 0%, #3a3b45 55%, #7c7e88 100%);
+	/* Segunda cor das manchetes (o trecho entre <em>): cinza-azulado, como a
+	   segunda frase do topo da Stripe. O índigo fica para rótulos e links. */
+	--text-quiet: #7a869a;
+	--gradient-metal: linear-gradient(100deg, #0b1222 0%, #3c4257 55%, #7a869a 100%);
 	--glow: 0 12px 28px -14px rgb(12 12 16 / 0.45);
 
 	--radius-sm: 8px;
@@ -472,6 +475,65 @@ ol[role='list'] {
    branco, cinza claro, um tom da marca e painéis azul-marinho arredondados.
    No tema escuro essas classes não mudam nada.
    -------------------------------------------------------------------------- */
+
+/* Tipografia no claro: títulos um pouco mais leves e rótulos ("eyebrows") no
+   índigo da marca, sem caixa alta, como os da Stripe. */
+html[data-theme='claro'] :is(h1, h2, h3, h4, .display, .h1, .h2, .h3, .font-display) {
+	font-weight: 600;
+}
+
+html[data-theme='claro'] .eyebrow {
+	gap: 0.45em;
+	font-size: 0.95rem;
+	font-weight: 600;
+	letter-spacing: -0.005em;
+	text-transform: none;
+	color: var(--accent);
+}
+
+html[data-theme='claro'] .eyebrow::before {
+	display: none;
+}
+
+html[data-theme='claro'] .eyebrow .num {
+	font-variant-numeric: tabular-nums;
+	color: var(--text-quaternary);
+}
+
+html[data-theme='claro'] .theme-dark .eyebrow {
+	color: #a5aaff;
+}
+
+html[data-theme='claro'] .link-arrow {
+	color: var(--accent);
+	border-color: rgb(var(--brand-rgb) / 0.3);
+}
+
+/* Imagens conceituais (src/components/Art.astro) nos espaços das seções. */
+.art.art-slot {
+	order: 0;
+	justify-self: stretch;
+	width: 100%;
+	height: clamp(240px, 62vw, 340px);
+}
+
+@media (min-width: 960px) {
+	.head-split .art.art-slot,
+	.art.art-slot.page-hero-slot {
+		height: clamp(300px, 30vw, 440px);
+	}
+}
+
+.art.art-slot.turn-slot {
+	justify-self: center;
+	width: min(100%, 880px);
+	height: clamp(200px, 24vw, 320px);
+	margin-bottom: clamp(16px, 3vw, 40px);
+}
+
+.art.art-slot.ia-slot {
+	height: clamp(300px, 70vw, 420px);
+}
 
 /* Cartões no claro: brancos e limpos; a luz do cursor só aparece com o mouse
    por cima, em índigo bem fraco, e o cartão ganha sombra. */

@@ -5,7 +5,7 @@ import SectionHead from '../components/SectionHead.astro';
 import Marquee from '../components/Marquee.astro';
 import Mascot from '../components/Mascot.astro';
 import LiquidSlot from '../components/LiquidSlot.astro';
-import GradientBand from '../components/GradientBand.astro';
+import Art from '../components/Art.astro';
 import PaletteToy from '../components/PaletteToy.astro';
 import Figure from '../components/Figure.astro';
 import MethodSteps from '../components/MethodSteps.astro';
@@ -79,7 +79,7 @@ const capabilities = [
 	description="A Kafé Apps cria aplicativos, plataformas, sistemas e soluções de IA sob medida, em código e com engenharia acelerada por IA. Software house de Jaraguá do Sul (SC) que atende todo o Brasil."
 >
 	<!-- Início: o mascote (no celular, como no Zirtuno: título curto, mascote grande e "Diga oi") -->
-	<section class:list={['hero', { 'hero-panel': !site.mascot }]} data-liquid="mascot" data-rail="Início" data-horizon>
+	<section class:list={['hero', { 'hero-open': !site.mascot }]} data-liquid="mascot" data-rail="Início" data-horizon>
 		<div class="container hero-inner">
 			<div class="hero-copy">
 				<p class="eyebrow" data-reveal>Software house · Código + IA · {site.location.city}, {site.location.state}</p>
@@ -118,11 +118,11 @@ const capabilities = [
 				)
 			}
 		</div>
-		<!-- Sem o mascote: o degradê fluido no fundo do topo, como na Stripe. -->
+		<!-- Sem o mascote: a fita de fios que flui no topo, como na Stripe. -->
 		{
 			!site.mascot && (
 				<>
-					<GradientBand class="hero-gradient" />
+					<Art kind="fios" class="hero-fios" />
 					<PaletteToy class="hero-palette" />
 				</>
 			)
@@ -377,7 +377,7 @@ const capabilities = [
 			</div>
 			<div class="soul-bento">
 				<div class="k-tile">
-					<Figure name="entregas" class="figure-slot k-slot" />
+					{site.theme === 'claro' ? <Art kind="globo" class="k-slot" /> : <Figure name="entregas" class="figure-slot k-slot" />}
 					<span class="k-caption label">Kafé Apps · desde {site.foundingYear}</span>
 				</div>
 				<dl class="stats">
@@ -538,49 +538,49 @@ const capabilities = [
 		transform: translate(-46%, -50%);
 	}
 
-	/* Topo sem o mascote: um painel arredondado com o degradê fluido no fundo.
-	   As cores ficam claras atrás do texto e vivas do outro lado. */
-	.hero-panel {
+	/* Topo sem o mascote: tela inteira em branco, texto à esquerda e a fita de
+	   fios fluindo à direita, passando por trás do menu (como na Stripe). */
+	.hero-open {
 		isolation: isolate;
-		margin: 10px 10px 0;
-		border-radius: 28px;
 		overflow: hidden;
+		background: var(--bg-level-1);
+		border-bottom: 1px solid var(--line);
 	}
 
-	.hero-panel .hero-inner {
+	.hero-open .hero-inner {
 		position: relative;
 		z-index: 1;
 	}
 
-	.hero-panel .hero-copy {
-		max-width: 780px;
+	.hero-open .hero-copy {
+		max-width: 760px;
 	}
 
-	.hero-panel :global(.hero-gradient) {
+	.hero-open :global(.hero-fios) {
 		position: absolute;
 		inset: 0;
 		z-index: 0;
 	}
 
-	.hero-panel .eyebrow {
-		padding: 7px 14px 7px 12px;
-		border: 1px solid rgb(var(--fg-rgb) / 0.08);
+	.hero-open .eyebrow {
+		padding: 6px 14px 6px 12px;
+		border: 1px solid var(--line);
 		border-radius: var(--radius-pill);
-		background: rgb(255 255 255 / 0.6);
-		backdrop-filter: blur(8px);
-		-webkit-backdrop-filter: blur(8px);
-		letter-spacing: 0.14em;
+		background: rgb(255 255 255 / 0.7);
+		text-transform: none;
+		letter-spacing: 0;
+		font-size: var(--fs-xs);
+		font-weight: 500;
+		color: var(--text-secondary);
 	}
 
-	.hero-panel .eyebrow::before {
+	.hero-open .eyebrow::before {
+		width: 6px;
+		height: 6px;
 		border-radius: 50%;
 	}
 
-	.hero-panel .btn-ghost {
-		background: rgb(255 255 255 / 0.55);
-	}
-
-	.hero-panel :global(.hero-palette) {
+	.hero-open :global(.hero-palette) {
 		position: absolute;
 		right: clamp(16px, 3vw, 40px);
 		bottom: clamp(16px, 3vw, 36px);
@@ -716,30 +716,29 @@ const capabilities = [
 			justify-content: center;
 		}
 
-		.hero-panel {
-			margin: 6px 6px 0;
-			border-radius: 22px;
-			padding-bottom: 96px;
+		.hero-open {
+			flex-direction: column;
+			padding-bottom: 0;
 		}
 
-		.hero-panel .hero-title {
+		.hero-open .hero-title {
 			max-width: none;
 			font-size: clamp(2.3rem, 10.2vw, 3.1rem);
 		}
 
-		.hero-panel :global(.hero-palette) {
-			right: 50%;
-			bottom: 22px;
-			transform: translateX(50%);
+		/* No celular, a fita fica numa faixa logo abaixo do texto. */
+		.hero-open :global(.hero-fios) {
+			--fios-forma: faixa;
+			position: relative;
+			inset: auto;
+			height: clamp(200px, 32svh, 280px);
+			margin-inline: calc(-1 * var(--gutter));
 		}
 
-		.hero-panel .eyebrow {
-			padding: 0;
-			border: 0;
-			background: none;
-			backdrop-filter: none;
-			-webkit-backdrop-filter: none;
-			letter-spacing: 0.12em;
+		.hero-open :global(.hero-palette) {
+			right: 50%;
+			bottom: 16px;
+			transform: translateX(50%);
 		}
 	}
 

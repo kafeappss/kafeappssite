@@ -1,7 +1,7 @@
 ---
 import Icon from './Icon.astro';
 import Figure from './Figure.astro';
-import GradientBand from './GradientBand.astro';
+import Art from './Art.astro';
 import { site, whatsappLink } from '../data/site';
 
 interface Props {
@@ -20,8 +20,11 @@ const {
 const whatsapp = whatsappLink();
 ---
 
-<section class:list={['section cta', { 'cta-panel panel': !site.mascot && site.theme === 'claro' }]} data-liquid="cup bottom" data-rail={rail}>
-	{!site.mascot && site.theme === 'claro' && <GradientBand class="cta-gradient" mode="bottom" />}
+<section
+	class:list={['section cta', { 'cta-panel panel theme-dark': !site.mascot && site.theme === 'claro' }]}
+	data-liquid="cup bottom"
+	data-rail={rail}
+>
 	<div class="container cta-inner">
 		<p class="eyebrow" data-reveal>Próximo passo</p>
 		<h2 class="h1" data-split set:html={title} />
@@ -45,10 +48,13 @@ const whatsapp = whatsappLink();
 		<p class="cta-note" data-reveal style="--delay: 0.4s">
 			Pré-orçamento em poucos minutos com a <strong>Kafeína</strong>, a assistente de IA da Kafé.
 		</p>
-		<!-- Com o mascote, o líquido desenha a xícara aqui; sem ele, aparece o pré-orçamento. -->
+		<!-- Com o mascote, o líquido desenha a xícara aqui; sem ele, aparecem os raios de
+		     luz (tema claro) ou o pré-orçamento (tema escuro). -->
 		{
 			site.mascot ? (
 				<div class="cta-cup" data-liquid-anchor aria-hidden="true" />
+			) : site.theme === 'claro' ? (
+				<Art kind="raios" class="cta-art" />
 			) : (
 				<Figure name="orcamento" class="cta-figure" />
 			)
@@ -87,41 +93,67 @@ const whatsapp = whatsappLink();
 		margin-top: 12px;
 	}
 
-	/* Tema claro: um painel grande com o degradê do topo, vivo embaixo, como o
-	   convite final da AbacatePay. */
+	/* Tema claro: um painel índigo com os raios de luz subindo da borda de
+	   baixo, como o convite final da AbacatePay. */
 	.cta-panel {
 		isolation: isolate;
 		overflow: hidden;
 		margin-bottom: 10px;
 		padding-bottom: 0;
-	}
-
-	.cta-panel :global(.cta-gradient) {
-		position: absolute;
-		inset: 0;
-		z-index: -1;
+		background:
+			radial-gradient(80% 60% at 50% 100%, rgb(167 139 250 / 0.45), transparent 70%),
+			linear-gradient(180deg, #2b2d8f 0%, #4045c8 55%, #5b5fe0 100%);
 	}
 
 	.cta-panel .cta-inner {
 		position: relative;
 	}
 
+	.cta-panel h2 :global(em) {
+		color: rgb(255 255 255 / 0.66);
+	}
+
+	.cta-panel .lead {
+		color: rgb(255 255 255 / 0.82);
+	}
+
+	.cta-panel .eyebrow {
+		color: rgb(255 255 255 / 0.82);
+	}
+
+	.cta-panel .eyebrow::before {
+		background: #fff;
+	}
+
+	/* Botões claros sobre o índigo. */
+	.cta-panel .btn:not(.btn-ghost) {
+		--btn-bg: #fff;
+		--btn-fg: #1e1f6b;
+	}
+
+	.cta-panel .btn:not(.btn-ghost)::before {
+		background: #eef0ff;
+	}
+
 	.cta-panel .btn-ghost {
-		background: rgb(255 255 255 / 0.6);
+		--btn-fg: #fff;
+		border-color: rgb(255 255 255 / 0.35);
+		background: rgb(255 255 255 / 0.08);
 	}
 
-	/* A conversa da Kafeína sobe da borda de baixo do painel. */
-	.cta-panel :global(.cta-figure) {
-		--tilt: none;
-		width: min(100%, 620px);
-		margin-top: clamp(32px, 5vw, 56px);
-		margin-bottom: -2px;
+	.cta-panel .cta-note {
+		color: rgb(255 255 255 / 0.72);
 	}
 
-	.cta-panel :global(.cta-figure .win) {
-		border-bottom-left-radius: 0;
-		border-bottom-right-radius: 0;
-		border-bottom: 0;
+	.cta-panel .cta-note strong {
+		color: #fff;
+	}
+
+	.cta-panel :global(.cta-art) {
+		justify-self: stretch;
+		height: clamp(220px, 26vw, 360px);
+		margin-top: clamp(8px, 2vw, 24px);
+		margin-inline: calc(-1 * var(--gutter));
 	}
 
 	.cta-note {
