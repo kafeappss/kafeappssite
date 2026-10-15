@@ -1,20 +1,23 @@
 /**
- * Borda com pulso de luz em volta de uma frase de destaque (elementos com
- * data-pulse, como o "Acelerado por IA." da home), no estilo da linha que liga
- * as etapas da metodologia: uma linha fina e apagada contorna a frase e, de
- * tempos em tempos, um pulso (branco na frente, depois a cor da marca, depois
- * cinza) dá uma volta rápida por ela, acendendo a borda e o texto.
+ * Pulso de luz em volta de uma frase de destaque (elementos com data-pulse,
+ * como o "Acelerado por IA." da home), no estilo da linha que liga as etapas
+ * da metodologia: de tempos em tempos, um traço de luz (branco na frente,
+ * depois a cor da marca, depois cinza, com uma cauda longa) dá uma volta
+ * rápida em torno da frase, sem caixa nenhuma, e o texto acende enquanto ele passa.
  *
  * O primeiro pulso vem logo depois que o título aparece; os outros, a cada
  * alguns segundos enquanto a frase está na tela, e de novo ao passar o mouse.
- * Com "reduzir movimento", fica só a borda, sem o pulso.
+ * Com "reduzir movimento", não há pulso (a frase fica como as outras).
  */
 
 const SVG = 'http://www.w3.org/2000/svg';
 /** Quantos pedaços formam o rastro (mais pedaços = degradê mais suave). */
-const SEGMENTS = 22;
+const SEGMENTS = 44;
+/** Tamanho da cauda: parte da volta e limite em px. */
+const TAIL = 0.72;
+const TAIL_MAX = 680;
 /** Duração de uma volta e intervalo entre as voltas, em ms. */
-const LAP = 1250;
+const LAP = 1500;
 const EVERY = 6000;
 /** Cores do rastro, da frente para trás (as mesmas da linha da metodologia). */
 const COLORS: [number, number, number][] = [
@@ -40,15 +43,13 @@ function rect(svg: SVGSVGElement) {
 }
 
 function setup(box: HTMLElement) {
-	const base = document.createElementNS(SVG, 'svg');
+	// Com "reduzir movimento", não desenha nada.
+	if (reduced) return;
 	const run = document.createElementNS(SVG, 'svg');
-	base.setAttribute('class', 'pulse-svg pulse-base');
-	run.setAttribute('class', 'pulse-svg pulse-run');
-	base.setAttribute('aria-hidden', 'true');
+	run.setAttribute('class', 'pulse-svg');
 	run.setAttribute('aria-hidden', 'true');
-	const outline = rect(base);
 	const trail = Array.from({ length: SEGMENTS }, () => rect(run));
-	box.append(base, run);
+	box.append(run);
 
 	let perimeter = 0;
 	let length = 0;
@@ -56,8 +57,9 @@ function setup(box: HTMLElement) {
 	const layout = () => {
 		const w = box.offsetWidth;
 		const h = box.offsetHeight;
-		const r = Math.min(10, h * 0.2);
-		for (const node of [outline, ...trail]) {
+		// Cantos bem arredondados: o pulso contorna a frase, sem cara de caixa.
+		const r = Math.min(h * 0.42, 26);
+		for (const node of trail) {
 			node.setAttribute('x', '0.75');
 			node.setAttribute('y', '0.75');
 			node.setAttribute('width', String(Math.max(0, w - 1.5)));
@@ -67,19 +69,18 @@ function setup(box: HTMLElement) {
 		const iw = w - 1.5;
 		const ih = h - 1.5;
 		perimeter = 2 * (iw + ih) - 8 * r + 2 * Math.PI * r;
-		length = Math.min(perimeter * 0.42, 260);
+		length = Math.min(perimeter * TAIL, TAIL_MAX);
 		const piece = length / SEGMENTS;
 		trail.forEach((node, i) => {
 			// Cada pedaço do rastro: um traço só (o resto da volta fica vazio).
 			node.setAttribute('stroke-dasharray', `${(piece + 0.6).toFixed(2)} ${(perimeter * 3).toFixed(2)}`);
 			node.setAttribute('stroke', `rgb(${mix(i / (SEGMENTS - 1))})`);
-			node.setAttribute('stroke-opacity', (1 - (i / SEGMENTS) * 0.8).toFixed(3));
+			// A cauda vai sumindo até o fim.
+			node.setAttribute('stroke-opacity', Math.pow(1 - i / SEGMENTS, 1.3).toFixed(3));
 		});
 	};
 	layout();
 	new ResizeObserver(layout).observe(box);
-
-	if (reduced) return;
 
 	let running = false;
 	let lastRun = 0;
@@ -108,7 +109,7 @@ function setup(box: HTMLElement) {
 			// Sai rápido e freia no fim, como um pulso.
 			const eased = 1 - Math.pow(1 - t, 2.4);
 			place(eased * total);
-			if (t > 0.55) box.classList.remove('is-pulsing');
+			if (t > 0.7) box.classList.remove('is-pulsing');
 			if (t < 1) requestAnimationFrame(step);
 			else {
 				place(-1);
