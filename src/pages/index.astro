@@ -78,14 +78,15 @@ const capabilities = [
 	description="A Kafé Apps cria aplicativos, plataformas, sistemas e soluções de IA sob medida, em código e com engenharia acelerada por IA. Software house de Jaraguá do Sul (SC) que atende todo o Brasil."
 >
 	<!-- Início: o mascote (no celular, como no Zirtuno: título curto, mascote grande e "Diga oi") -->
-	<section class="hero" data-liquid="mascot" data-rail="Início" data-horizon data-ascii-strong>
+	<section class:list={['hero', { 'hero-solo': !site.mascot }]} data-liquid="mascot" data-rail="Início" data-horizon data-ascii-strong>
 		<div class="container hero-inner">
 			<div class="hero-copy">
 				<p class="eyebrow" data-reveal>Seu time de engenharia, de {site.location.state} para o Brasil</p>
 				<h1 class="display hero-title" data-split>Mais negócio, <em>menos software.</em></h1>
 				<p class="lead hero-lead" data-reveal style="--delay: 0.35s">
 					A Kafé Apps cria aplicativos, plataformas, sistemas e soluções de IA sob medida, em código e com
-					engenheiros acelerados por inteligência artificial. Do MVP ao produto em escala, sem desperdício.
+					engenheiros acelerados por inteligência artificial.{' '}
+					<span class="hero-lead-more">Do MVP ao produto em escala, sem desperdício.</span>
 				</p>
 				<div class="btn-row" data-reveal style="--delay: 0.5s">
 					<a class="btn" href={site.contact.briefUrl} data-mascot-look="nod">
@@ -620,6 +621,82 @@ const capabilities = [
 		.hero-proof {
 			order: 6;
 			justify-content: center;
+		}
+
+		/*
+		 * Sem o mascote: título grande no alto, alinhado à esquerda; o texto e o
+		 * botão principal no fim da primeira tela, perto do polegar. No meio, as
+		 * letras do fundo respiram. O segundo botão vira um link, e os selos
+		 * (que reaparecem mais abaixo na página) ficam só no computador.
+		 */
+		.hero-solo {
+			padding-top: calc(var(--header-h) + 28px);
+			padding-bottom: 28px;
+		}
+
+		.hero-solo .hero-copy {
+			display: flex;
+			flex-direction: column;
+			flex: 1;
+			gap: 0;
+		}
+
+		.hero-solo .eyebrow {
+			align-self: start;
+			max-width: none;
+			text-align: left;
+			line-height: 1.4;
+		}
+
+		.hero-solo .eyebrow {
+			align-items: flex-start;
+		}
+
+		.hero-solo .eyebrow::before {
+			display: inline-block;
+			margin-top: 0.45em;
+		}
+
+		.hero-solo .hero-title {
+			align-self: start;
+			margin-top: 20px;
+			font-size: clamp(3.4rem, 15vw, 5rem);
+			line-height: 0.92;
+			text-align: left;
+		}
+
+		.hero-solo .hero-lead {
+			margin-top: auto;
+			padding-top: 40px;
+			font-size: 1.02rem;
+			line-height: 1.55;
+			text-align: left;
+		}
+
+		/* No celular, só a primeira frase (a segunda fica para o computador). */
+		.hero-solo .hero-lead-more {
+			display: none;
+		}
+
+		.hero-solo .btn-row {
+			flex-direction: column;
+			align-items: stretch;
+			gap: 6px;
+			margin-top: 24px;
+		}
+
+		.hero-solo .btn-row :global(.btn-ghost) {
+			align-self: center;
+			width: auto;
+			padding-block: 10px;
+			border-color: transparent;
+			background: none;
+			box-shadow: none;
+			color: var(--text-secondary);
+		}
+
+		.hero-solo .hero-proof {
+			display: none;
 		}
 	}
 
