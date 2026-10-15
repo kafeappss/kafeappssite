@@ -6,6 +6,7 @@ import Marquee from '../components/Marquee.astro';
 import Mascot from '../components/Mascot.astro';
 import LiquidSlot from '../components/LiquidSlot.astro';
 import GradientBand from '../components/GradientBand.astro';
+import PaletteToy from '../components/PaletteToy.astro';
 import Figure from '../components/Figure.astro';
 import MethodSteps from '../components/MethodSteps.astro';
 import Testimonials from '../components/Testimonials.astro';
@@ -118,7 +119,14 @@ const capabilities = [
 			}
 		</div>
 		<!-- Sem o mascote: o degradê fluido no fundo do topo, como na Stripe. -->
-		{!site.mascot && <GradientBand class="hero-gradient" />}
+		{
+			!site.mascot && (
+				<>
+					<GradientBand class="hero-gradient" />
+					<PaletteToy class="hero-palette" />
+				</>
+			)
+		}
 		{site.mascot && <Mascot />}
 	</section>
 
@@ -572,6 +580,13 @@ const capabilities = [
 		background: rgb(255 255 255 / 0.55);
 	}
 
+	.hero-panel :global(.hero-palette) {
+		position: absolute;
+		right: clamp(16px, 3vw, 40px);
+		bottom: clamp(16px, 3vw, 36px);
+		z-index: 2;
+	}
+
 	/* Tela larga: mascote ao lado do texto, com o "Diga oi" embaixo. */
 	@media (min-width: 960px) and (min-aspect-ratio: 9/10) {
 		.hero-inner {
@@ -704,7 +719,18 @@ const capabilities = [
 		.hero-panel {
 			margin: 6px 6px 0;
 			border-radius: 22px;
-			padding-bottom: 56px;
+			padding-bottom: 96px;
+		}
+
+		.hero-panel .hero-title {
+			max-width: none;
+			font-size: clamp(2.3rem, 10.2vw, 3.1rem);
+		}
+
+		.hero-panel :global(.hero-palette) {
+			right: 50%;
+			bottom: 22px;
+			transform: translateX(50%);
 		}
 
 		.hero-panel .eyebrow {

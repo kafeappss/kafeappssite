@@ -4,22 +4,25 @@ Site institucional da [Kafé Apps](https://kafeapps.com.br): software house de J
 
 Feito com [Astro](https://astro.build), gera um site 100% estático (HTML, CSS e um pouco de JavaScript): rápido, bom para SEO e fácil de hospedar em qualquer lugar.
 
-## Identidade visual: cores do Linear e mascote de vidro no estilo do Zirtuno
+## Identidade visual: tema claro B2B, na linha da Stripe
 
-- **Cores do [Linear](https://linear.app)**, com os mesmos valores que o site deles usa: fundo `#08090a`, texto `#f7f8f8`, cinzas `#d0d6e0`, `#8a8f98` e `#62666d`, bordas brancas a 8% e 12%, botão principal em pílula clara (`#e5e5e6`, texto `#08090a`) e o roxo da marca (`#5e6ad2`) com o destaque `#7170ff`. Os títulos têm dois tons: branco e, no trecho entre `<em>`, cinza.
-- O cinza `#62666d`, que o Linear usa em rótulos minúsculos, não passa no contraste mínimo para texto; aqui ele fica só em detalhes, e os textos secundários usam `#8a8f98`.
-- **Mascote e ilustrações em vidro escuro**, no mesmo design do mascote do Zirtuno: corpo quase preto e translúcido que clareia perto da borda, uma linha fina de luz no contorno, reflexo suave em cima, olhos "//" que brilham com halo e, na abertura da home, uma onda de luz roxa em que o mascote fica mergulhado (com o "Diga oi" por cima dela). As formas que ele vira em cada seção usam o mesmo vidro.
-- No "(08) Quem somos" da home, no lugar da forma do líquido, fica a tela "Entregas em produção desde 2021" (`src/components/Figure.astro`).
-- Cores do vidro no topo de `src/styles/global.css`: `--liquid` (luz do vidro e da onda, `#7c7cff`), `--liquid-ink` (olhos, contorno e crista da onda, `#c9cbff`) e `--liquid-bg` (base do vidro, igual a `--bg`).
+O site tem dois temas, escolhidos em `theme`, em `src/data/site.ts`:
+
+- **`claro` (padrão)**: visual de software house B2B, com referências na Stripe e na AbacatePay. Fundo cinza bem claro (`#f6f6f8`), cartões brancos com sombra suave, texto quase preto, botão principal preto em pílula e o índigo da marca (`#5359d0`) no trecho dos títulos entre `<em>`.
+  - **Ritmo de cores**: as seções da home alternam entre cinza claro (`tone-soft`), branco com bordas (`tone-white`), um painel no tom da marca (`tone-brand panel`) e um painel azul-marinho (`theme-dark tone-dark panel`, na seção de IA). O convite final é um painel com degradê e o rodapé é azul-marinho e arredondado. As classes ficam em `src/styles/global.css` e não mudam nada no tema escuro.
+  - **Topo**: um painel arredondado com um degradê fluido em WebGL (`src/components/GradientBand.astro` e `src/scripts/gradient.ts`), claro atrás do texto e vivo do outro lado, com uma luz que segue o cursor. As cores são `--grad-1` a `--grad-4`. O mesmo degradê aparece no convite final (vivo embaixo) e na página 404.
+  - **Brinquedo de cores**: as bolinhas no canto do topo trocam as cores do degradê (Kafé, Café, Oceano e Menta), com transição suave; clicar numa área vazia do topo passa para a próxima. As paletas ficam em `src/components/PaletteToy.astro`.
+  - **Telas de produto animadas** (`src/components/Figure.astro`): roadmap, painel, revisão de código, agente de IA, sprint, histórico de entregas, pré-orçamento, app, automações e design system. Ao aparecer, cada tela se monta (barras crescem, o gráfico se desenha, listas entram uma a uma e os números contam); no computador, elas se inclinam de leve na direção do cursor (`src/scripts/figures.ts`).
+- **`escuro`**: as cores do [Linear](https://linear.app) (fundo `#08090a`, cinzas frios e o roxo da marca), com o fundo de letras que acende em manchas (`src/scripts/ascii.ts`) e, se ligado, o mascote de vidro.
 
 ### Ligar e desligar o mascote
 
-O mascote fica ligado em `mascot: true`, em `src/data/site.ts`. Com `false`, o topo da home mostra um planeta (`src/components/Planet.astro`) e as seções mostram telas de produto (`src/components/Figure.astro`, escolhidas em `src/data/figures.ts`); no pré-orçamento, a Kafeína fala dentro do cartão e um painel resume as respostas.
+O mascote (feito para o tema escuro) fica em `mascot`, em `src/data/site.ts`. Com `false` (padrão), o topo da home mostra o degradê e as seções mostram as telas de produto (escolhidas em `src/data/figures.ts`); no pré-orçamento, a Kafeína fala dentro do cartão e um painel resume as respostas. Com `true`, voltam o líquido em WebGL, as formas de cada seção e as reações descritas abaixo.
 
 ## Destaques
 
-- **Líquido que explica o conteúdo (WebGL)**: um único corpo de líquido, em vidro escuro com borda de luz, acompanha a navegação e vira o desenho do que está escrito: um relógio no problema do tempo, barras de crescimento na virada, um ciclo na metodologia, o K da Kafé no "Sobre" e uma xícara no convite final. Cada forma tem um espaço reservado no layout, rola junto com o conteúdo e nunca fica por cima do texto. Nos cartões de serviço, basta passar o mouse para o líquido virar celular, navegador, IA, foguete, rede ou layout. Veja "Formas do líquido" abaixo.
-- **Mascote com personalidade**: no início da home (e tristinho na página 404), com os olhos em "//" inspirados nos recortes do K. Ele acompanha o cursor, pisca, olha para onde a pessoa clica e muda de expressão:
+- **Líquido que explica o conteúdo (WebGL, com o mascote ligado)**: um único corpo de líquido, em vidro escuro com borda de luz, acompanha a navegação e vira o desenho do que está escrito: um relógio no problema do tempo, barras de crescimento na virada, um ciclo na metodologia, o K da Kafé no "Sobre" e uma xícara no convite final. Cada forma tem um espaço reservado no layout, rola junto com o conteúdo e nunca fica por cima do texto. Nos cartões de serviço, basta passar o mouse para o líquido virar celular, navegador, IA, foguete, rede ou layout. Veja "Formas do líquido" abaixo.
+- **Mascote com personalidade** (tema escuro, com `mascot: true`): no início da home (e tristinho na página 404), com os olhos em "//" inspirados nos recortes do K. Ele acompanha o cursor, pisca, olha para onde a pessoa clica e muda de expressão:
   - clique: uma reação diferente a cada vez (feliz, piscadinha, surpreso, apaixonado); cliques demais o deixam tonto e depois bravo;
   - clique duplo: cambalhota; toque longo (celular): enche de ar;
   - arrastar (mouse): puxa-puxa. O corpo fica no lugar e se inclina, e o pedaço que você segura sai dele preso por um "pescoço" que afina e resiste conforme estica (perto do limite, ele treme de esforço). Ao soltar, a ponta volta num estalo e o corpo achata, balança e assenta;
@@ -30,7 +33,7 @@ O mascote fica ligado em `mascot: true`, em `src/data/site.ts`. Com `false`, o t
   - digitar "café" em qualquer lugar: festa; copiar um texto: piscadinha; voltar ao topo depois de ler tudo: carinho;
   - cumprimenta conforme a hora do dia. No celular, a fala aparece dentro do botão "Diga oi".
   Falas em `src/scripts/mascot.ts`; expressões e movimentos em `src/scripts/liquid.ts`.
-- **Fundo de letras**: uma grade de letras e números em fonte mono, quase apagada, que acende em manchas que vagam devagar pela tela (e sobem um pouco ao rolar a página). De tempos em tempos uma letra troca por outra, e uma parte das manchas acende na cor da marca. O mascote e as formas ficam por cima, com o brilho da cor-assinatura em volta. Código em `src/scripts/ascii.ts`; tamanho da letra e da grade no topo do arquivo.
+- **Fundo de letras** (tema escuro): uma grade de letras e números em fonte mono, quase apagada, que acende em manchas que vagam devagar pela tela (e sobem um pouco ao rolar a página). De tempos em tempos uma letra troca por outra, e uma parte das manchas acende na cor da marca. O mascote e as formas ficam por cima, com o brilho da cor-assinatura em volta. Código em `src/scripts/ascii.ts`; tamanho da letra e da grade no topo do arquivo.
 - **Trilho de seções**: à direita (telas largas), uma régua compacta de tracinhos com uma bolinha no começo de cada seção. Parada, ela fica lisa e só o tracinho da posição atual se destaca; durante a rolagem, os tracinhos perto da posição atual crescem como uma lupa, que some pouco depois de parar. Com o mouse por cima, a lupa segue o cursor e mostra o nome da seção; clicar leva até lá (pelo teclado, cada seção é um botão).
 - **Acessível e leve**: respeita "reduzir movimento" do sistema, tem fundo estático quando não há WebGL, reduz a qualidade em aparelhos mais modestos e economiza bateria quando a página está parada.
 - **Conteúdo para SEO**: página para cada serviço, blog com artigos originais, dados estruturados (schema.org), sitemap, `robots.txt` e imagem de compartilhamento.
@@ -62,7 +65,11 @@ npm run check    # verificação de tipos
 | Método, formatos de trabalho, comparativo e perguntas frequentes | `src/data/method.ts` |
 | Artigos do blog | `src/content/blog/*.md` |
 | Cases | `src/content/cases/*.md` (use `_modelo-de-case.md` como base) |
-| Cores (as do Linear), fontes e espaçamentos | `src/styles/global.css` (variáveis no topo) |
+| Tema (claro ou escuro) e mascote | `theme` e `mascot` em `src/data/site.ts` |
+| Cores dos dois temas, fontes e espaçamentos | `src/styles/global.css` (variáveis no topo; o tema claro fica em `html[data-theme='claro']`) |
+| Cores do degradê do topo e do convite final | `--grad-1` a `--grad-4` em `src/styles/global.css` |
+| Paletas do brinquedo de cores | `src/components/PaletteToy.astro` |
+| Telas de produto e a animação delas | `src/components/Figure.astro` e `src/scripts/figures.ts` |
 | Logos (KAFÉ APPS e o símbolo K) | `src/assets/brand/` e `public/favicon.svg` |
 | Arquivos da marca para download (K e logo, branco e preto, sem fundo) | `public/brand/` |
 

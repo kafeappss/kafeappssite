@@ -1,0 +1,96 @@
+---
+/**
+ * "Brinquedo" de cores do topo (como o da Stripe): bolinhas que trocam as
+ * cores do degradê fluido. Clicar numa área vazia do topo passa para a
+ * próxima paleta. As cores trocam suave (ver src/scripts/gradient.ts).
+ * Para mudar as paletas, edite a lista abaixo (hex de 6 dígitos).
+ */
+const palettes = [
+	{ name: 'Kafé', colors: ['#5e6ad2', '#9b6cf0', '#f472b6', '#fb923c'] },
+	{ name: 'Café', colors: ['#8b5a3c', '#d08c5b', '#f4c27a', '#c06c84'] },
+	{ name: 'Oceano', colors: ['#2563eb', '#06b6d4', '#67e8f9', '#818cf8'] },
+	{ name: 'Menta', colors: ['#059669', '#34d399', '#a3e635', '#22d3ee'] },
+];
+
+interface Props {
+	class?: string;
+}
+
+const { class: className } = Astro.props;
+---
+
+<div class:list={['palette', className]} role="group" aria-label="Cores do fundo" data-palette>
+	{
+		palettes.map((palette, index) => (
+			<button
+				type="button"
+				class="swatch"
+				aria-label={`Cores do fundo: ${palette.name}`}
+				aria-pressed={index === 0 ? 'true' : 'false'}
+				data-colors={palette.colors.join(',')}
+				style={palette.colors.map((color, i) => `--c${i + 1}: ${color}`).join('; ')}
+			/>
+		))
+	}
+</div>
+
+<script>
+	document.querySelectorAll<HTMLElement>('[data-palette]').forEach((group) => {
+		const swatches = Array.from(group.querySelectorAll<HTMLButtonElement>('.swatch'));
+		let active = 0;
+
+		const apply = (index: number) => {
+			active = index;
+			const colors = (swatches[index].dataset.colors ?? '').split(',');
+			colors.forEach((color, i) => document.documentElement.style.setProperty(`--grad-${i + 1}`, color));
+			swatches.forEach((swatch, i) => swatch.setAttribute('aria-pressed', String(i === index)));
+			document.dispatchEvent(new CustomEvent('kafe:palette'));
+		};
+
+		swatches.forEach((swatch, index) => swatch.addEventListener('click', () => apply(index)));
+
+		// Clicar numa área vazia do topo (fora de textos, links e botões) passa para a próxima paleta.
+		const section = group.closest('section');
+		section?.addEventListener('click', (event) => {
+			const target = event.target as Element;
+			if (target.closest('a, button, h1, p, li, input, label, [data-palette]')) return;
+			apply((active + 1) % swatches.length);
+		});
+	});
+</script>
+
+<style>
+	.palette {
+		display: inline-flex;
+		gap: 8px;
+		padding: 6px;
+		border: 1px solid rgb(255 255 255 / 0.7);
+		border-radius: var(--radius-pill);
+		background: rgb(255 255 255 / 0.5);
+		box-shadow: var(--shadow-sm);
+		backdrop-filter: blur(10px);
+		-webkit-backdrop-filter: blur(10px);
+	}
+
+	.swatch {
+		width: 24px;
+		height: 24px;
+		border-radius: 50%;
+		background: conic-gradient(from 200deg, var(--c1), var(--c2), var(--c3), var(--c4), var(--c1));
+		box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.08);
+		transition:
+			transform 0.4s var(--ease-out),
+			box-shadow 0.3s ease;
+	}
+
+	.swatch:hover {
+		transform: scale(1.12);
+	}
+
+	.swatch[aria-pressed='true'] {
+		box-shadow:
+			inset 0 0 0 1px rgb(0 0 0 / 0.08),
+			0 0 0 2px #fff,
+			0 0 0 3.5px var(--text);
+	}
+</style>

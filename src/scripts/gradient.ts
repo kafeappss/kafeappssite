@@ -2,7 +2,8 @@
  * Degradê fluido do topo da home, na linha do topo clássico da Stripe: quatro
  * cores que se misturam em manchas e andam devagar, claras do lado do texto e
  * vivas do outro, com uma luz suave que segue o cursor. As cores vêm de
- * --grad-1 a --grad-4 (src/styles/global.css).
+ * --grad-1 a --grad-4 (src/styles/global.css); o evento "kafe:palette" (das
+ * bolinhas de cor do topo) faz o degradê ler as cores de novo e trocar suave.
  *
  * Para quando sai da tela ou a aba fica em segundo plano. Sem WebGL, fica o
  * degradê em CSS que está no fundo do elemento; com "reduzir movimento", fica
@@ -156,20 +157,29 @@ export function initGradient(root: HTMLElement) {
 	gl.uniform1f(gl.getUniformLocation(program, 'uMode'), root.dataset.mode === 'bottom' ? 1 : 0);
 	const pointer = { x: 0.78, y: 0.55, tx: 0.78, ty: 0.55 };
 
-	/** Lê as cores do CSS (chamado de novo quando o "brinquedo" de cor muda a paleta). */
+	/** Cores atuais e cores de destino (a troca de paleta é suave). */
+	const current: [number, number, number][] = [];
+	let target: [number, number, number][] = [];
+	let blend = 1;
+
+	/** Lê as cores do CSS (de novo quando o "brinquedo" de cores troca a paleta). */
 	function readColors() {
 		const styles = getComputedStyle(root);
-		const colors: [string, [number, number, number]][] = [
-			['--grad-1', [0.37, 0.42, 0.82]],
-			['--grad-2', [0.65, 0.55, 0.98]],
-			['--grad-3', [0.96, 0.65, 0.49]],
-			['--grad-4', [0.49, 0.83, 0.99]],
+		const fallbacks: [number, number, number][] = [
+			[0.37, 0.42, 0.82],
+			[0.61, 0.42, 0.94],
+			[0.96, 0.45, 0.71],
+			[0.98, 0.57, 0.24],
 		];
-		colors.forEach(([name, fallback], index) => {
-			gl!.uniform3fv(gl!.getUniformLocation(program!, `uC${index + 1}`), hexColor(styles.getPropertyValue(name), fallback));
-		});
+		return fallbacks.map((fallback, index) => hexColor(styles.getPropertyValue(`--grad-${index + 1}`), fallback));
 	}
-	readColors();
+
+	function uploadColors() {
+		current.forEach((color, index) => gl!.uniform3fv(gl!.getUniformLocation(program!, `uC${index + 1}`), color));
+	}
+
+	readColors().forEach((color) => current.push([...color] as [number, number, number]));
+	uploadColors();
 
 	const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 	// Começa num ponto "bonito" do ruído, e não no zero.
@@ -204,6 +214,12 @@ export function initGradient(root: HTMLElement) {
 		time += dt;
 		pointer.x += (pointer.tx - pointer.x) * Math.min(1, dt * 1.5);
 		pointer.y += (pointer.ty - pointer.y) * Math.min(1, dt * 1.5);
+		if (blend < 1) {
+			blend = Math.min(1, blend + dt / 1.4);
+			const k = blend >= 1 ? 1 : Math.min(1, dt * 3.2);
+			current.forEach((color, i) => color.forEach((_, c) => (color[c] += (target[i][c] - color[c]) * k)));
+			uploadColors();
+		}
 		draw();
 	}
 
@@ -242,8 +258,13 @@ export function initGradient(root: HTMLElement) {
 		{ passive: true },
 	);
 	document.addEventListener('kafe:palette', () => {
-		readColors();
-		draw();
+		target = readColors();
+		if (reduced || !frame) {
+			target.forEach((color, i) => (current[i] = [...color] as [number, number, number]));
+			uploadColors();
+			draw();
+			blend = 1;
+		} else blend = 0;
 	});
 	canvas.addEventListener('webglcontextlost', (event) => {
 		event.preventDefault();
