@@ -1,0 +1,41 @@
+---
+/**
+ * Planeta do topo da home (ver src/scripts/planet.ts). Enquanto o WebGL carrega,
+ * ou se ele não existir, aparece a imagem estática public/planeta.jpg.
+ */
+interface Props {
+	class?: string;
+}
+
+const { class: className } = Astro.props;
+---
+
+<div class:list={['planet', className]} aria-hidden="true">
+	<canvas class="planet-canvas" data-planet></canvas>
+</div>
+
+<script>
+	import { initPlanet } from '../scripts/planet';
+
+	document.querySelectorAll<HTMLCanvasElement>('[data-planet]').forEach((canvas) => initPlanet(canvas));
+</script>
+
+<style>
+	.planet {
+		position: relative;
+		aspect-ratio: 1;
+		background: url('/planeta.jpg') center / contain no-repeat;
+		pointer-events: none;
+	}
+
+	.planet.is-live {
+		background: none;
+	}
+
+	.planet-canvas {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+	}
+</style>

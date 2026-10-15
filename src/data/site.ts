@@ -21,6 +21,12 @@ export const site = {
 	description:
 		'Software house de Jaraguá do Sul (SC). Criamos aplicativos, plataformas, sistemas e soluções de IA sob medida, em código e com engenharia acelerada por IA, para startups e empresas que querem crescer.',
 	foundingYear: 2021,
+	/**
+	 * Mascote interativo: o líquido em WebGL com olhos "//", reações, falas e as
+	 * formas que ele vira em cada seção. Desligado, o topo da home mostra o planeta
+	 * e as seções mostram telas de produto. Para trazer o mascote de volta, use true.
+	 */
+	mascot: false,
 	ceo: 'Danilo Fonseca',
 	location: {
 		city: 'Jaraguá do Sul',

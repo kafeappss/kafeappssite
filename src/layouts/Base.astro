@@ -108,7 +108,7 @@ const structuredData = [organization, ...schema];
 	</head>
 	<body>
 		<a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
-		<LiquidCanvas />
+		{site.mascot && <LiquidCanvas />}
 		<Header />
 		<main id="conteudo">
 			<slot />

@@ -4,19 +4,22 @@ Site institucional da [Kafé Apps](https://kafeapps.com.br): software house de J
 
 Feito com [Astro](https://astro.build), gera um site 100% estático (HTML, CSS e um pouco de JavaScript): rápido, bom para SEO e fácil de hospedar em qualquer lugar.
 
-## Identidade visual: cores e ilustrações no estilo do Linear
+## Identidade visual: Linear nas cores, SpaceX no topo, telas de produto nas seções
 
-- **Cores do [Linear](https://linear.app)**, com os mesmos valores que o site deles usa: fundo `#08090a`, texto `#f7f8f8`, cinzas `#d0d6e0`, `#8a8f98` e `#62666d`, bordas brancas a 8% e 12%, botão principal em pílula clara (`#e5e5e6`, texto `#08090a`) e o roxo da marca (`#5e6ad2`) com o destaque `#7170ff` nos detalhes.
-- Os títulos têm dois tons, como no Linear: a primeira parte em branco e o trecho entre `<em>` em cinza.
-- O cinza `#62666d`, que o Linear usa em rótulos minúsculos, não passa no contraste mínimo para texto; aqui ele fica só em detalhes (legendas "FIG", réguas, linhas), e os textos secundários usam `#8a8f98`.
-- **Mascote e ilustrações em traço, como as figuras do Linear**: objetos em 3D desenhados só com linha fina cinza, sem preenchimento; a face de trás aparece em cima à direita, as arestas escondidas ficam pontilhadas e os traços acendem perto do cursor. O mascote mantém os olhos em "//" (em branco) e ganha uma sombra pontilhada no chão. Cada espaço de ilustração tem uma legenda "FIG 0.x".
-- Entre uma seção e outra, o desenho se recolhe numa bolinha, que salta em arco até o próximo espaço, achata ao pousar e "estoura" no novo desenho. Se o desenho anterior já saiu da tela, o novo nasce direto no lugar.
-- Todas as cores ficam no topo de `src/styles/global.css`. No desenho em WebGL: `--liquid` é a cor do traço, `--liquid-hi` a do traço perto do cursor, `--liquid-ink` a dos olhos e `--liquid-bg` a do fundo (deve ser igual a `--bg`).
+- **Cores do [Linear](https://linear.app)**, com os mesmos valores que o site deles usa: fundo `#08090a`, texto `#f7f8f8`, cinzas `#d0d6e0`, `#8a8f98` e `#62666d`, bordas brancas a 8% e 12%, botão principal em pílula clara (`#e5e5e6`, texto `#08090a`) e o roxo da marca (`#5e6ad2`) com o destaque `#7170ff` nos detalhes. Os títulos têm dois tons: branco e, no trecho entre `<em>`, cinza.
+- O cinza `#62666d`, que o Linear usa em rótulos minúsculos, não passa no contraste mínimo para texto; aqui ele fica só em detalhes, e os textos secundários usam `#8a8f98`.
+- **Topo da home: um planeta** escuro com luz realista, como na SpaceX (`src/components/Planet.astro` e `src/scripts/planet.ts`). Ele gira devagar e a luz acompanha o cursor de leve; com "reduzir movimento" fica parado, e sem WebGL aparece a imagem `public/planeta.jpg`. O mesmo planeta aparece na página 404.
+- **Seções: telas de produto** no estilo do Linear (`src/components/Figure.astro`): roadmap, painel de métricas, revisão de código, agente de IA, sprint nas 4Ds, histórico de entregas, pré-orçamento, app, automações e design system. Cada seção escolhe a sua em `src/data/figures.ts`. São ilustrações: ficam escondidas dos leitores de tela.
+- **Pré-orçamento sem mascote:** a Kafeína fala dentro do cartão do formulário e, no computador, um painel ao lado resume as respostas.
+
+### O mascote (desligado, guardado para voltar)
+
+O mascote interativo continua no código, inteiro: o líquido em WebGL com os olhos "//", reações, falas, o "Diga oi" e as formas que ele vira em cada seção. Para trazê-lo de volta, troque `mascot: false` por `mascot: true` em `src/data/site.ts`. As cores dele ficam em `--liquid` e `--liquid-ink`, no topo de `src/styles/global.css` (hoje com a crema `#f4a957`, a versão aprovada).
 
 ## Destaques
 
-- **Líquido que explica o conteúdo (WebGL)**: um único corpo de líquido, desenhado em traço fino como as ilustrações do Linear (3D em linha, arestas escondidas pontilhadas), acompanha a navegação e vira o desenho do que está escrito: um relógio no problema do tempo, barras de crescimento na virada, um ciclo na metodologia, o K da Kafé no "Sobre" e uma xícara no convite final. Cada forma tem um espaço reservado no layout, rola junto com o conteúdo e nunca fica por cima do texto. Nos cartões de serviço, basta passar o mouse para o líquido virar celular, navegador, IA, foguete, rede ou layout. Veja "Formas do líquido" abaixo.
-- **Mascote com personalidade**: no início da home (e tristinho na página 404), com os olhos em "//" inspirados nos recortes do K. Ele acompanha o cursor, pisca, olha para onde a pessoa clica e muda de expressão:
+- **Líquido que explica o conteúdo (WebGL, só com o mascote ligado)**: um único corpo de líquido, em estilo 2D sólido, acompanha a navegação e vira o desenho do que está escrito: um relógio no problema do tempo, barras de crescimento na virada, um ciclo na metodologia, o K da Kafé no "Sobre" e uma xícara no convite final. Cada forma tem um espaço reservado no layout, rola junto com o conteúdo e nunca fica por cima do texto. Nos cartões de serviço, basta passar o mouse para o líquido virar celular, navegador, IA, foguete, rede ou layout. Veja "Formas do líquido" abaixo.
+- **Mascote com personalidade (desligado por padrão)**: no início da home (e tristinho na página 404), com os olhos em "//" inspirados nos recortes do K. Ele acompanha o cursor, pisca, olha para onde a pessoa clica e muda de expressão:
   - clique: uma reação diferente a cada vez (feliz, piscadinha, surpreso, apaixonado); cliques demais o deixam tonto e depois bravo;
   - clique duplo: cambalhota; toque longo (celular): enche de ar;
   - arrastar (mouse): puxa-puxa. O corpo fica no lugar e se inclina, e o pedaço que você segura sai dele preso por um "pescoço" que afina e resiste conforme estica (perto do limite, ele treme de esforço). Ao soltar, a ponta volta num estalo e o corpo achata, balança e assenta;

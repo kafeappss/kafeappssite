@@ -48,11 +48,10 @@
 	--black: var(--bg);
 	--white: var(--text);
 
-	/* Mascote e ilustrações, desenhados em traço como as do Linear: cor do
-	   traço, do traço perto do cursor e dos olhos "//". Use hex de 6 dígitos. */
-	--liquid: #8a8f98;
-	--liquid-hi: #d0d6e0;
-	--liquid-ink: #f7f8f8;
+	/* Mascote (desligado por padrão: veja "mascot" em src/data/site.ts): cor do
+	   corpo e dos olhos "//", e o fundo desenhado pelo WebGL. Hex de 6 dígitos. */
+	--liquid: #f4a957;
+	--liquid-ink: #1b120c;
 	--liquid-bg: #08090a;
 
 	--gray-100: #f7f8f8;
@@ -143,7 +142,6 @@ html {
 }
 
 body {
-	counter-reset: fig;
 	min-height: 100vh;
 	font-family: var(--font-sans);
 	font-size: var(--fs-body);
@@ -381,6 +379,44 @@ ol[role='list'] {
 		justify-self: stretch;
 		width: auto;
 		height: clamp(260px, 28vw, 360px);
+	}
+}
+
+/* Telas de produto no lugar do líquido (mascote desligado): ocupam a largura
+   do espaço, ficam depois do texto no celular e nunca são cortadas na altura. */
+.figure-slot.slot {
+	order: 0;
+	justify-self: stretch;
+	width: 100%;
+	height: auto;
+}
+
+/* No bloco do K (Quem somos), a tela ocupa o bloco, sem inclinação. */
+.figure-slot.k-slot {
+	--tilt: none;
+}
+
+/* Pré-orçamento no convite final: centralizado, inclinado só para trás. */
+.cta-figure {
+	--tilt: rotateX(12deg);
+	width: min(100%, 560px);
+	margin-top: 28px;
+	text-align: left;
+}
+
+.figure-slot.turn-slot {
+	--tilt: rotateX(10deg);
+	justify-self: center;
+	width: min(100%, 760px);
+	margin-bottom: clamp(32px, 5vw, 56px);
+}
+
+@media (min-width: 960px) {
+	.head-split .figure-slot.slot,
+	.figure-slot.page-hero-slot,
+	.figure-slot.ia-slot {
+		height: auto;
+		align-self: center;
 	}
 }
 

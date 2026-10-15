@@ -1,11 +1,15 @@
 ---
 /**
- * Espaço reservado para o metal líquido (ver src/scripts/liquid.ts): quando a
- * seção está em foco, a forma dela mora aqui e rola junto com o conteúdo.
- * Sem WebGL (ou antes de ele carregar), aparece o ícone no lugar.
+ * Espaço reservado para a ilustração da seção.
+ * - Com o mascote ligado (site.mascot), é o lugar onde o líquido em WebGL vira a
+ *   forma da seção (ver src/scripts/liquid.ts); sem WebGL, aparece o ícone.
+ * - Com o mascote desligado, mostra a tela de produto equivalente (Figure.astro).
  */
 import Icon from './Icon.astro';
 import type { IconKey } from './Icon.astro';
+import Figure from './Figure.astro';
+import { figureForShape } from '../data/figures';
+import { site } from '../data/site';
 
 interface Props {
 	icon?: IconKey;
@@ -13,14 +17,23 @@ interface Props {
 	/** Multiplica o tamanho da forma dentro do espaço. */
 	scale?: number;
 	iconSize?: number;
+	/** Forma da seção (ex.: "clock"): define a tela de produto quando o mascote está desligado. */
+	shape?: string;
 }
 
-const { icon, class: className, scale, iconSize = 44, ...rest } = Astro.props;
+const { icon, class: className, scale, iconSize = 44, shape, ...rest } = Astro.props;
+const figure = !site.mascot && shape ? figureForShape[shape] : undefined;
 ---
 
-<div class:list={['liquid-slot', className]} data-liquid-anchor={scale ? String(scale) : ''} aria-hidden="true" {...rest}>
-	{icon && <Icon name={icon} size={iconSize} class="liquid-slot-icon" />}
-</div>
+{
+	figure ? (
+		<Figure name={figure} class={['figure-slot', className].filter(Boolean).join(' ')} />
+	) : site.mascot ? (
+		<div class:list={['liquid-slot', className]} data-liquid-anchor={scale ? String(scale) : ''} aria-hidden="true" {...rest}>
+			{icon && <Icon name={icon} size={iconSize} class="liquid-slot-icon" />}
+		</div>
+	) : null
+}
 
 <style>
 	.liquid-slot {
@@ -28,19 +41,6 @@ const { icon, class: className, scale, iconSize = 44, ...rest } = Astro.props;
 		display: grid;
 		place-items: center;
 		pointer-events: none;
-	}
-
-	/* Legenda de figura, como nas ilustrações do Linear ("FIG 0.1"). */
-	.liquid-slot::before {
-		counter-increment: fig;
-		content: 'FIG 0.' counter(fig);
-		position: absolute;
-		top: 0;
-		left: 0;
-		font-family: var(--font-mono);
-		font-size: 0.6875rem;
-		letter-spacing: 0.04em;
-		color: var(--text-quaternary);
 	}
 
 	.liquid-slot :global(.liquid-slot-icon) {

@@ -66,8 +66,15 @@ if (form) {
 	const react = (reaction?: string) => {
 		if (reaction) window.dispatchEvent(new CustomEvent('kafe:mascot-react', { detail: reaction }));
 	};
-	const say = (line: string, reaction?: string, duration = 3600) =>
+	// Sem o mascote (site.mascot = false), a fala aparece dentro do próprio cartão.
+	const voice = form.querySelector<HTMLElement>('[data-kf-voice]');
+	const say = (line: string, reaction?: string, duration = 3600) => {
 		window.dispatchEvent(new CustomEvent('kafe:mascot-say', { detail: { line, reaction, duration } }));
+		if (voice && line && line !== replyEl.textContent) {
+			voice.textContent = line;
+			voice.hidden = false;
+		}
+	};
 	const sayOnce = (key: string, line: string, reaction?: string) => {
 		if (said.has(key)) return;
 		said.add(key);
@@ -430,12 +437,33 @@ if (form) {
 		next.disabled = false;
 	}
 
-	// Boas-vindas, assim que o mascote aparecer na tela.
+	// Resumo do pedido (sem o mascote): preenche a cada resposta.
+	const summary = document.querySelectorAll<HTMLElement>('[data-kf-sum]');
+	let budgetTouched = false;
+	const updateSummary = (event?: Event) => {
+		if ((event?.target as HTMLInputElement | undefined)?.name === 'investimento') budgetTouched = true;
+		summary.forEach((el) => {
+			const name = el.dataset.kfSum ?? '';
+			let text = '';
+			if (name === 'problema') text = problem.value.trim();
+			else if (name === 'investimento') text = budgetTouched ? (budgetOut.textContent ?? '') : '';
+			else text = form.querySelector<HTMLInputElement>(`input[name="${name}"]:checked`)?.dataset.label ?? '';
+			if (text.length > 90) text = `${text.slice(0, 88).trim()}…`;
+			el.textContent = text || 'A definir';
+			el.toggleAttribute('data-empty', !text);
+		});
+	};
+	if (summary.length) {
+		form.addEventListener('input', updateSummary);
+		form.addEventListener('change', updateSummary);
+	}
+
+	// Boas-vindas, assim que o mascote aparecer na tela (ou logo, se ele estiver desligado).
 	const hit = document.querySelector<HTMLElement>('[data-mascot-hit]');
 	let tries = 0;
 	const greet = () => {
-		if (hit?.dataset.visible === 'true') say(lines.hello, 'happy', 4200);
+		if (!hit || hit.dataset.visible === 'true') say(lines.hello, 'happy', 4200);
 		else if (++tries < 20) window.setTimeout(greet, 300);
 	};
-	window.setTimeout(greet, 900);
+	window.setTimeout(greet, hit ? 900 : 300);
 }

@@ -124,12 +124,9 @@ uniform vec4 uGrid;    // espaçamento, raio do ponto, deslocamento da rolagem, 
 uniform vec3 uPtr;     // cursor x, y, ativo
 uniform vec4 uHorizon; // faixa de café: topo (y), fundo (y), x do mascote, onda extra embaixo dele
 uniform vec4 uBox;     // caixa que contém o líquido (min x, min y, max x, max y)
-uniform vec3 uTint;    // cor do traço das ilustrações
-uniform vec3 uHi;      // cor do traço perto do cursor
+uniform vec3 uTint;    // cor do líquido
 uniform vec3 uInk;     // cor dos olhos
 uniform vec3 uBg;      // cor do fundo da página
-uniform vec2 uDepth;   // deslocamento da face de trás (volume 3D)
-uniform float uDpr;    // pixels do aparelho por pixel CSS
 uniform sampler2D uSmoke;
 
 float smin(float a, float b, float k) {
@@ -139,23 +136,6 @@ float smin(float a, float b, float k) {
 
 float smax(float a, float b, float k) {
 	return -smin(-a, -b, k);
-}
-
-// Largura de um pixel da tela medida na distância (deixa o traço com a mesma
-// espessura em qualquer direção).
-float fw(float d, float px) {
-#ifdef HAS_DERIV
-	// Limitado: um salto no valor (na borda da área de desenho) não vira traço.
-	return clamp(fwidth(d), px * 0.25, px * 2.0);
-#else
-	return px;
-#endif
-}
-
-// Traço fino e nítido sobre a borda (d = 0), com a largura definida em pixels CSS.
-float stroke(float d, float f, float widthCss) {
-	float hw = 0.5 * widthCss * uDpr;
-	return 1.0 - smoothstep(hw - 0.6, hw + 0.6, abs(d) / f);
 }
 
 float sdRBox(vec2 p, vec2 b, float r) {
@@ -268,12 +248,13 @@ float eyes(vec2 p) {
 	return min(left, right) * s;
 }
 
-// Fundo: a cor lisa da página, com uma névoa fria quase invisível e uma luz que passeia.
+// Fundo: só uma fumaça quente que flui devagar e uma luz que passeia, na cor do líquido.
 vec3 background(vec2 p, vec2 uv, float aura) {
 	vec2 sm = texture2D(uSmoke, uv).rg;
-	vec3 col = uBg + vec3(0.92, 0.94, 1.0) * sm.r * (0.006 + 0.008 * aura) + uTint * 0.01 * sm.g;
-	// Halo discreto da cor da marca em volta do cursor.
-	col += uTint * exp(-dot2(p - uPtr.xy) * 5.0) * 0.02 * uPtr.z;
+	// Parte da cor de fundo da página, para o desenho não destoar dela.
+	vec3 col = uBg + vec3(0.92, 0.94, 1.0) * sm.r * (0.012 + 0.02 * aura) + uTint * 0.03 * sm.g;
+	// Halo da cor-assinatura em volta do cursor.
+	col += uTint * exp(-dot2(p - uPtr.xy) * 5.0) * 0.035 * uPtr.z;
 	return col;
 }
 
@@ -290,10 +271,6 @@ float surface(vec2 p) {
 	// Uma faixa que termina no fim da seção: o café nunca fica atrás do texto seguinte.
 	return max(p.y - top, uHorizon.y - p.y);
 }
-// Tudo o que é desenhado: as formas e a faixa de líquido do fim da abertura.
-float scene(vec2 p, float near) {
-	return smin(near < 0.45 ? field(p) : 8.0, surface(p), 0.08);
-}
 
 void main() {
 	vec2 uv = gl_FragCoord.xy / uRes;
@@ -301,51 +278,58 @@ void main() {
 	vec2 p = (uv * 2.0 - 1.0) * vec2(aspect, 1.0);
 	float px = 2.0 / uRes.y;
 
-	// Estilo das ilustrações do Linear: objetos em 3D desenhados só com traço
-	// fino e cinza. A face da frente é a forma; a de trás, a mesma forma
-	// deslocada para cima e para a direita. O contorno das duas juntas é a
-	// silhueta, e as arestas de trás que ficam escondidas aparecem pontilhadas.
+	// Longe do líquido, nem calcula a forma.
 	float near = boxDistance(p);
-	// Fora da área de desenho, a distância até ela já basta (e é contínua).
-	float far = max(near, 0.45);
-	float dFront = far;
-	float dMid = far;
-	float dBack = far;
-	if (near < 0.45) {
-		dFront = field(p);
-		// Dois cortes no meio do caminho fecham a silhueta nas pontas finas.
-		dMid = min(field(p - uDepth * 0.333), field(p - uDepth * 0.667));
-		dBack = field(p - uDepth);
-	}
-	float dSweep = min(dFront, min(dMid, dBack));
-	float fFront = fw(dFront, px);
-	float fBack = fw(dBack, px);
-	float fSweep = fw(dSweep, px);
-
-	vec3 col = background(p, uv, 0.0);
+	float dShape = near < 0.45 ? field(p) : 8.0;
+	float dSurf = surface(p);
+	// O mascote se funde com a superfície quando encosta nela.
+	float d = smin(dShape, dSurf, 0.08);
+	float aura = exp(-max(dShape, 0.0) * 6.0) * (1.0 - smoothstep(0.25, 0.45, near));
+	vec3 col = background(p, uv, aura);
 	float opacity = 0.2 + 0.8 * uDim * uDim;
-	// Pontilhado: um ponto a cada 4 pixels CSS, seguindo a diagonal da tela.
-	float dots = step(0.5, fract((gl_FragCoord.x + gl_FragCoord.y) / (4.0 * uDpr)));
-
-	// Sombra do mascote: uma elipse pontilhada no chão.
+	// Brilho suave em volta (2D, como uma luz que vaza da forma).
+	col += uTint * aura * 0.1 * opacity;
+	// Sombra do mascote no chão (encolhe quando ele pula).
 	if (uShadow.w > 0.001) {
-		vec2 sr = vec2(uShadow.z, uShadow.z * 0.22);
-		float de = (length((p - uShadow.xy) / sr) - 1.0) * sr.y;
-		col = mix(col, uTint, stroke(de, fw(de, px), 1.0) * dots * uShadow.w * 0.7);
+		vec2 sp = (p - uShadow.xy) / vec2(uShadow.z, uShadow.z * 0.2);
+		col *= 1.0 - 0.55 * uShadow.w * (1.0 - smoothstep(0.15, 1.0, length(sp)));
 	}
+	float depth = uHorizon.x - p.y;
+	float band = max(uHorizon.x - uHorizon.y, 0.001);
+	float surfOn = step(uHorizon.y + 0.001, uHorizon.x);
+	col += uTint * exp(-abs(p.y - uHorizon.x) * 9.0) * 0.12 * surfOn * step(-0.02, -depth);
 
-	// O objeto esconde o que está atrás dele (o fundo continua liso por dentro).
-	float inside = 1.0 - smoothstep(-fSweep, fSweep, dSweep);
-	col = mix(col, uBg + vec3(0.004, 0.005, 0.006), inside * opacity);
-	// Os traços acendem um pouco perto do cursor.
-	float hover = exp(-dot2(p - uPtr.xy) * 7.0) * uPtr.z;
-	vec3 ink = mix(uTint, uHi, hover * 0.85);
-	float lineSil = stroke(dSweep, fSweep, 1.0);
-	float lineFront = stroke(dFront, fFront, 1.0);
-	float visible = max(lineSil, lineFront);
-	float hidden = stroke(dBack, fBack, 1.0) * (1.0 - visible) * dots;
-	col = mix(col, ink, visible * opacity);
-	col = mix(col, uTint, hidden * 0.55 * opacity);
+	if (d < px * 2.0) {
+		// 2D bem acabado: cor chapada, um degradê de cima para baixo e uma
+		// borda de luz do lado de cima (e sombra leve embaixo). Sem volume 3D.
+		float edgeW = uCss * 5.0;
+		float boxH = max(uBox.w - uBox.y, 0.001);
+		float top = clamp((p.y - uBox.y) / boxH, 0.0, 1.0);
+		// Quanto do ponto é superfície (e não forma): define o degradê e o sumiço para baixo.
+		float isSurf = smoothstep(-0.03, 0.03, dShape - dSurf);
+		vec3 fill = uTint * mix(0.84 + 0.16 * top, 1.0 - 0.4 * smoothstep(0.0, band, depth), isSurf);
+		float reach = uExpr2.z > 0.01 ? 4.0 : 1.5;
+		if (d > -edgeW * reach) {
+			float e = px;
+			float dx = smin(near < 0.45 ? field(p + vec2(e, 0.0)) : 8.0, surface(p + vec2(e, 0.0)), 0.08);
+			float dy = smin(near < 0.45 ? field(p + vec2(0.0, e)) : 8.0, surface(p + vec2(0.0, e)), 0.08);
+			vec2 grad = vec2(dx - d, dy - d);
+			vec2 n = grad / max(length(grad), 1e-5);
+			float facing = dot(n, normalize(vec2(-0.45 + uLight.x * 0.3, 0.9)));
+			float rim = 1.0 - smoothstep(0.0, edgeW, -d);
+			fill += vec3(0.16) * max(facing, 0.0) * rim;
+			fill *= 1.0 - 0.16 * max(-facing, 0.0) * rim;
+			// Gotas, mascote e café ganham o reflexo curvo de desenho animado, rente à borda de cima.
+			float glossy = max(uExpr2.z, isSurf);
+			if (glossy > 0.01) {
+				float inside = -d;
+				float shine = smoothstep(edgeW * 1.2, edgeW * 1.8, inside) * (1.0 - smoothstep(edgeW * 2.4, edgeW * 3.4, inside));
+				fill = mix(fill, vec3(1.0, 0.97, 0.92), shine * smoothstep(0.6, 0.95, facing) * 0.6 * glossy);
+			}
+		}
+		float alpha = (1.0 - smoothstep(-px, px, d)) * mix(opacity, 1.0 - smoothstep(band * 0.55, band, depth), isSurf);
+		col = mix(col, fill, alpha);
+	}
 
 	if (uEye.w > 0.01 && length(p - uEye.xy) < uEye.z * 1.4) {
 		float ed = eyes(p);
@@ -499,9 +483,7 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 	});
 	if (!gl) return;
 
-	// Com derivadas na tela, o traço fica com a mesma espessura em qualquer direção.
-	const derivatives = Boolean(gl.getExtension('OES_standard_derivatives'));
-	const program = createProgram(gl, (derivatives ? '#extension GL_OES_standard_derivatives : enable\n#define HAS_DERIV 1\n' : '') + FRAGMENT_SHADER);
+	const program = createProgram(gl, FRAGMENT_SHADER);
 	const smokeProgram = createProgram(gl, SMOKE_SHADER);
 	if (!program || !smokeProgram) return;
 
@@ -549,10 +531,7 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 		css: u('uCss'),
 		box: u('uBox'),
 		tint: u('uTint'),
-		hi: u('uHi'),
 		ink: u('uInk'),
-		depth: u('uDepth'),
-		dpr: u('uDpr'),
 		bg: u('uBg'),
 		smoke: u('uSmoke'),
 		light: u('uLight'),
@@ -581,8 +560,7 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 	// Resolução real do aparelho (até 2x): as bordas ficam nítidas como o texto.
 	let quality = 1;
 	let tint = cssColor('--liquid', [1, 1, 1]);
-	let ink = cssColor('--liquid-ink', [0.97, 0.97, 0.97]);
-	const highlight = cssColor('--liquid-hi', [0.82, 0.84, 0.88]);
+	let ink = cssColor('--liquid-ink', [0.02, 0.02, 0.02]);
 	const pageBg = cssColor('--liquid-bg', [0.03, 0.035, 0.04]);
 	let time = 0;
 	let running = false;
@@ -591,7 +569,7 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 	let skipFrame = false;
 	let lastInteraction = performance.now();
 
-	const globals = { dim: 1, k: 0.2, wob: 0.011, shine: 1, settle: 0, depth: 0 };
+	const globals = { dim: 1, k: 0.2, wob: 0.011, shine: 1, settle: 0 };
 	const eye = { alpha: 0, gx: 0, gy: 0, openL: 1, openR: 1, nextBlink: 2, blinkUntil: 0, spin: 0, roll: 0, offX: 0, offY: 0 };
 	const expr: Expression = { happy: 0, surprise: 0, angry: 0, love: 0, dizzy: 0, star: 0, sad: 0 };
 	const mascot = {
@@ -820,15 +798,12 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 					k: crisp ? 0.004 : 0.025 * detail,
 					wob: 0,
 					shine: 0,
-					// Volume do desenho em traço: o mascote é mais raso que as ilustrações.
-					depth: (def.eyes ? 0.07 : 0.1) * place.s,
 				}
 			: {
 					dim: (def.dim ?? 0.95) * place.dim,
 					k: (def.k ?? 0.2) * detail * (crisp ? 1 + 2.2 * loose : 1),
 					wob: (def.wob ?? 0.011) * detail * (crisp ? loose : 1),
 					shine: crisp ? 0 : 1,
-					depth: (def.eyes ? 0.07 : 0.1) * place.s,
 				};
 		for (const key of Object.keys(goal) as (keyof typeof goal)[]) {
 			globals[key] += (goal[key] - globals[key]) * ease;
@@ -1240,20 +1215,19 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 			// (um pé fica plantado, o outro bate com a ponta para cima, e o corpo quica).
 			const wantTap = mascot.lookMood === 'tap' && !mascot.dragging && !mascot.sleeping ? 1 : 0;
 			mascot.tap += (wantTap - mascot.tap) * Math.min(1, dt * (wantTap ? 7 : 9));
-			const feet = mascot.tap;
-			if (feet > 0.01) {
+			if (mascot.tap > 0.01) {
 				const k = mascot.tap;
 				const beat = Math.max(0, Math.sin(time * Math.PI * 2 * 2.4));
 				const lift = beat * beat;
-				// Logo abaixo do corpo, com uma fresta (sem se fundir a ele). Eles
-				// acompanham o corpo, menos a quicada: o pé plantado fica no chão.
+				// Sapatinhos logo abaixo do corpo (com uma fresta mínima, sem se fundir a ele).
+				// Eles acompanham o corpo, menos a quicada: o pé plantado fica no chão.
 				const bounce = 0.035 * R0 * lift * k;
-				const fw = 0.2 * R0 * feet;
-				const fh = 0.11 * R0 * feet;
-				const sole = body[1] - bounce - Math.max(body[3], R0 * 0.5) - 0.04 * R0 - fh;
+				const fw = 0.2 * R0 * k;
+				const fh = 0.11 * R0 * k;
+				const sole = body[1] - bounce - Math.max(body[3], R0 * 0.5) - 0.03 * R0 - fh;
 				target[1] += bounce;
 				out[FOOT_L] = { v: [body[0] - 0.33 * R0, sole, fw, fh, fh, -0.08, 0], op: 1 };
-				out[FOOT_R] = { v: [body[0] + 0.33 * R0, sole + 0.1 * R0 * lift * k, fw, fh, fh, 0.08 + 0.45 * lift * k, 0], op: 1 };
+				out[FOOT_R] = { v: [body[0] + 0.33 * R0, sole + 0.15 * R0 * lift * k, fw, fh, fh, 0.08 + 0.5 * lift * k, 0], op: 1 };
 			}
 			if (active === 'party') target[1] += Math.abs(Math.sin(time * 9)) * 0.1 * R0;
 			if (mascot.sleeping) {
@@ -1451,7 +1425,7 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 		if (solid && visibleMascot) {
 			const R = 0.82 * lastPlace.s;
 			const lift = clamp((body[1] - restY) / Math.max(R, 0.01), 0, 1.5);
-			mascot.shadow = [body[0], restY - R * 1.24, R * 0.72 * (1 - lift * 0.3), eye.alpha * (1 - lift * 0.45)];
+			mascot.shadow = [body[0], restY - R * 1.12, R * 0.8 * (1 - lift * 0.3), eye.alpha * (1 - lift * 0.45)];
 		} else {
 			mascot.shadow[3] += (0 - mascot.shadow[3]) * Math.min(1, dt * 6);
 		}
@@ -1825,8 +1799,7 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 
 		// Gota do cursor (só nas formações "orgânicas").
 		// A gotinha que segue o cursor só aparece perto do mascote (no resto, ficaria parecendo mancha).
-		// A gotinha que seguia o cursor perto do mascote não combina com o desenho em traço.
-		const cursorTarget = 0;
+		const cursorTarget = pointer.active && def.eyes && !mascot.dragging ? 0.055 * Math.min(aspect, 1) : 0;
 		if (cursor.r < 0.002 && pointer.active) {
 			cursor.x = pointer.x;
 			cursor.y = pointer.y;
@@ -1944,10 +1917,6 @@ export function initLiquid(canvas: HTMLCanvasElement) {
 		gl!.uniform4f(uniforms.box, ...liquidBox());
 		gl!.uniform3f(uniforms.tint, ...tint);
 		gl!.uniform3f(uniforms.ink, ...ink);
-		gl!.uniform3f(uniforms.hi, ...highlight);
-		// A face de trás sobe e vai para a direita (como se a câmera estivesse acima).
-		gl!.uniform2f(uniforms.depth, globals.depth * 0.5, globals.depth * 0.866);
-		gl!.uniform1f(uniforms.dpr, height / cssH);
 		gl!.uniform3f(uniforms.bg, ...pageBg);
 		gl!.uniform2f(uniforms.light, pointer.lightX, pointer.lightY);
 		gl!.uniform4fv(uniforms.a, dataA);

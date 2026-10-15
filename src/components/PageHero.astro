@@ -50,7 +50,7 @@ const breadcrumbSchema = {
 		{lead && <p class="lead" data-reveal style="--delay: 0.2s">{lead}</p>}
 		<slot />
 		</div>
-		{hasSlot && <LiquidSlot class="slot page-hero-slot" />}
+		{hasSlot && <LiquidSlot class="slot page-hero-slot" shape={liquid} />}
 	</div>
 	<script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
 </section>

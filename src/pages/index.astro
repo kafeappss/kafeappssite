@@ -5,6 +5,7 @@ import SectionHead from '../components/SectionHead.astro';
 import Marquee from '../components/Marquee.astro';
 import Mascot from '../components/Mascot.astro';
 import LiquidSlot from '../components/LiquidSlot.astro';
+import Planet from '../components/Planet.astro';
 import MethodSteps from '../components/MethodSteps.astro';
 import Testimonials from '../components/Testimonials.astro';
 import Clients from '../components/Clients.astro';
@@ -97,16 +98,29 @@ const capabilities = [
 					<li><Icon name="k" size={18} /> Metodologia 4Ds</li>
 				</ul>
 			</div>
-			<!-- Espaço do mascote: ao lado do texto no computador, logo abaixo do título no celular. -->
-			<div class="hero-stage">
-				<div class="hero-mascot" data-liquid-anchor aria-hidden="true"></div>
-				<button class="talk-pill" type="button" data-mascot-talk>
-					<span class="talk-eyes" aria-hidden="true"><i></i><i></i></span>
-					<span class="talk-label" data-mascot-label aria-live="polite">Diga oi</span>
-				</button>
-			</div>
+			<!-- Mascote ou planeta: ao lado do texto no computador, logo abaixo do título no celular. -->
+			{
+				site.mascot ? (
+					<div class="hero-stage">
+						<div class="hero-mascot" data-liquid-anchor aria-hidden="true" />
+						<button class="talk-pill" type="button" data-mascot-talk>
+							<span class="talk-eyes" aria-hidden="true">
+								<i />
+								<i />
+							</span>
+							<span class="talk-label" data-mascot-label aria-live="polite">
+								Diga oi
+							</span>
+						</button>
+					</div>
+				) : (
+					<div class="hero-stage has-planet">
+						<Planet class="hero-planet" />
+					</div>
+				)
+			}
 		</div>
-		<Mascot />
+		{site.mascot && <Mascot />}
 	</section>
 
 	<Marquee items={capabilities} />
@@ -121,7 +135,7 @@ const capabilities = [
 					title="Boas ideias raramente morrem por serem ruins. <em>Morrem por demorar.</em>"
 					lead="Meses de desenvolvimento antes do primeiro usuário, orçamento consumido por funcionalidades que ninguém pediu e um time caro antes de o negócio provar que funciona. Existe outro caminho."
 				/>
-				<LiquidSlot class="slot" icon="clock" />
+				<LiquidSlot class="slot" icon="clock" shape="clock" />
 			</div>
 			<ol role="list" class="pains">
 				{
@@ -140,7 +154,7 @@ const capabilities = [
 	<!-- 02 · Virada: as barras de crescimento -->
 	<section class="section" data-liquid="bars" data-rail="Virada">
 		<div class="container turn">
-			<LiquidSlot class="slot turn-slot" />
+			<LiquidSlot class="slot turn-slot" shape="bars" />
 			<SectionHead
 				num="02"
 				eyebrow="A virada"
@@ -177,7 +191,7 @@ const capabilities = [
 					title="Do aplicativo à IA, <em>tudo em código.</em>"
 					lead="Seis frentes, um só time: estratégia, design, engenharia e inteligência artificial trabalhando juntos, do primeiro rascunho à evolução contínua."
 				/>
-				<LiquidSlot class="slot" />
+				<LiquidSlot class="slot" shape="code" />
 			</div>
 			<div class="bento">
 				{
@@ -240,7 +254,7 @@ const capabilities = [
 	<section class="section" id="ia" data-liquid="code-ai" data-rail="IA">
 		<div class="container ia">
 			<div class="ia-stage">
-				<LiquidSlot class="slot ia-slot" icon="spark" />
+				<LiquidSlot class="slot ia-slot" icon="spark" shape="code-ai" />
 			</div>
 			<div class="ia-copy">
 				<SectionHead
@@ -286,7 +300,7 @@ const capabilities = [
 					title="Quatro etapas. <em>Nenhuma surpresa.</em>"
 					lead="Nossa metodologia própria combina design inteligente, engenharia acelerada por IA e processos ágeis. Você acompanha cada etapa em tempo real."
 				/>
-				<LiquidSlot class="slot" />
+				<LiquidSlot class="slot" shape="cycle-0" />
 			</div>
 			<MethodSteps liquid />
 		</div>
@@ -356,7 +370,7 @@ const capabilities = [
 			</div>
 			<div class="soul-bento">
 				<div class="k-tile">
-					<LiquidSlot class="k-slot" icon="k" iconSize={64} />
+					<LiquidSlot class="k-slot" icon="k" iconSize={64} shape="k" />
 					<span class="k-caption label">Kafé Apps · desde {site.foundingYear}</span>
 				</div>
 				<dl class="stats">
@@ -498,6 +512,25 @@ const capabilities = [
 		min-height: 220px;
 	}
 
+	/* Planeta (mascote desligado): grande, passando da borda da tela, como a SpaceX. */
+	.hero:has(.has-planet) {
+		overflow-x: clip;
+	}
+
+	.has-planet {
+		position: relative;
+		justify-self: stretch;
+		min-height: 300px;
+	}
+
+	.has-planet :global(.hero-planet) {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		width: min(115vw, 620px);
+		transform: translate(-46%, -50%);
+	}
+
 	/* Tela larga: mascote ao lado do texto, com o "Diga oi" embaixo. */
 	@media (min-width: 960px) and (min-aspect-ratio: 9/10) {
 		.hero-inner {
@@ -508,6 +541,18 @@ const capabilities = [
 
 		.hero-mascot {
 			height: clamp(340px, 52vh, 560px);
+		}
+
+		.has-planet {
+			align-self: stretch;
+			min-height: clamp(360px, 56vh, 620px);
+		}
+
+		.has-planet :global(.hero-planet) {
+			left: auto;
+			right: -9vw;
+			width: min(56vw, 920px);
+			transform: translateY(-50%);
 		}
 	}
 
