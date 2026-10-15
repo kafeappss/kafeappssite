@@ -355,18 +355,17 @@ ol[role='list'] {
 
 /* --------------------------------------------------------------------------
    Divisões de cor entre as seções, retas e de ponta a ponta da tela: faixas
-   um pouco mais claras, uma faixa no tom da marca, uma de vidro e uma
-   azul-marinho, separadas por linhas finas. As de marca e de vidro são
-   translúcidas, para as letras do fundo continuarem aparecendo; a
-   azul-marinho é quase sólida.
+   um pouco mais claras, uma faixa no tom da marca e uma de vidro, separadas
+   por linhas finas e translúcidas, para as letras do fundo continuarem
+   aparecendo. (O azul-marinho de "Quem confia" fica em src/pages/index.astro.)
    -------------------------------------------------------------------------- */
 
-:is(.tone-band, .tone-brand, .tone-glass, .tone-navy) {
+:is(.tone-band, .tone-brand, .tone-glass) {
 	border-block: 1px solid var(--line);
 }
 
 /* Duas divisões seguidas: uma linha só entre elas. */
-:is(.tone-band, .tone-brand, .tone-glass, .tone-navy) + :is(.tone-band, .tone-brand, .tone-glass, .tone-navy) {
+:is(.tone-band, .tone-brand, .tone-glass) + :is(.tone-band, .tone-brand, .tone-glass) {
 	border-top: 0;
 }
 
@@ -385,13 +384,6 @@ ol[role='list'] {
 	background:
 		radial-gradient(60% 60% at 90% 0%, rgb(var(--brand-rgb) / 0.16), transparent 70%),
 		rgb(255 255 255 / 0.015);
-}
-
-.tone-navy {
-	background:
-		radial-gradient(70% 60% at 85% 0%, rgb(var(--brand-rgb) / 0.3), transparent 70%),
-		radial-gradient(50% 50% at 0% 100%, rgb(155 108 240 / 0.14), transparent 70%),
-		rgb(11 13 31 / 0.92);
 }
 
 /* --------------------------------------------------------------------------

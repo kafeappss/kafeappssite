@@ -117,25 +117,12 @@ const socialIcons = {
 </footer>
 
 <style>
-	/* Rodapé azul-marinho, arredondado e solto das bordas da tela (como o da
-	   AbacatePay), logo abaixo do convite final. */
 	.site-footer {
 		position: relative;
-		margin: 0 10px 10px;
 		padding-top: clamp(72px, 9vw, 120px);
-		border: 1px solid rgb(255 255 255 / 0.07);
-		border-radius: 28px;
-		background:
-			radial-gradient(60% 50% at 100% 0%, rgb(var(--brand-rgb) / 0.22), transparent 70%),
-			#0b0d1f;
+		border-top: 1px solid var(--line);
+		background: linear-gradient(180deg, rgb(var(--bg-rgb) / 0.55), rgb(var(--bg-rgb) / 0.2) 70%, transparent);
 		overflow: hidden;
-	}
-
-	@media (max-width: 639px) {
-		.site-footer {
-			margin: 0 6px 6px;
-			border-radius: 22px;
-		}
 	}
 
 	.footer-grid {
