@@ -2,9 +2,10 @@
 /**
  * Mascotinho: um círculo discreto com os olhos "//" (os recortes do K), em
  * fonte mono, como as letras do fundo. Ele pisca, segue o cursor e reage (ver
- * src/scripts/mini-mascot.ts). Em telas largas fica sempre no canto de cima à
- * direita, alinhado com o trilho lateral; nas outras, no cabeçalho, ao lado do
- * menu (ocupando o espaço reservado em Header.astro, .mini-slot).
+ * src/scripts/mini-mascot.ts). Em telas largas fica sempre à vista, no alto, no
+ * meio do espaço entre o botão "Fale com a gente" e a borda direita da tela;
+ * nas outras, no cabeçalho, ao lado do menu (ocupando o espaço reservado em
+ * Header.astro, .mini-slot).
  *
  * Clicar nele (ou ⌘K / Ctrl+K) abre um painel para buscar no site, tirar
  * dúvidas rápidas sobre a Kafé e falar com a equipe (src/scripts/mini-panel.ts).
@@ -415,11 +416,13 @@ const shortcuts: { label: string; icon: IconKey; href: string; external?: boolea
 		}
 	}
 
-	/* Telas largas: sempre no canto de cima à direita, alinhado com o trilho. */
+	/* Telas largas: sempre à vista, no meio do espaço entre o fim do botão do
+	   cabeçalho e a borda da tela (a sobra do container menos o círculo, ao meio;
+	   o cabeçalho garante pelo menos 64px de sobra, ver Header.astro). */
 	@media (min-width: 1100px) {
 		.mini,
 		:global(.site-header.is-hidden) ~ .mini {
-			right: 8px;
+			right: max(14px, ((100vw - min(100vw - 2 * var(--gutter), var(--container))) / 2 - var(--mini-size)) / 2);
 			transform: none;
 			opacity: 1;
 		}
@@ -677,7 +680,8 @@ const shortcuts: { label: string; icon: IconKey; href: string; external?: boolea
 	@media (min-width: 1100px) {
 		.mini-panel {
 			top: calc((var(--header-h) - 36px) / 2 + 46px);
-			right: 8px;
+			/* Alinhado pela direita com o mascote. */
+			right: max(14px, ((100vw - min(100vw - 2 * var(--gutter), var(--container))) / 2 - 36px) / 2);
 			max-height: min(680px, calc(100dvh - 90px));
 		}
 	}
