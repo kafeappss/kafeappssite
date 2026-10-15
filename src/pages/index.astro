@@ -879,24 +879,52 @@ const capabilities = [
 	}
 
 	/* 07 · Quem confia: fundo azul-marinho com uma luz anil vindo do canto de
-	   cima à direita. O azul fica numa camada com máscara, que some aos poucos
-	   em cima e embaixo (sem cortar seco o fundo de letras da página). */
+	   cima à direita. O azul fica numa camada que passa um pouco das bordas da
+	   seção e some devagar (curva suave, não linear), então não aparece uma
+	   linha de divisão nem um corte seco no fundo de letras da página. */
 	#clientes {
+		--fade: clamp(260px, 30vw, 440px);
+		--bleed: calc(var(--section-y) * 0.75);
 		isolation: isolate;
 	}
 
 	#clientes::before {
+		--ease-mask: linear-gradient(
+			180deg,
+			transparent 0,
+			rgb(0 0 0 / 0.03) calc(var(--fade) * 0.1),
+			rgb(0 0 0 / 0.1) calc(var(--fade) * 0.2),
+			rgb(0 0 0 / 0.22) calc(var(--fade) * 0.3),
+			rgb(0 0 0 / 0.35) calc(var(--fade) * 0.4),
+			rgb(0 0 0 / 0.5) calc(var(--fade) * 0.5),
+			rgb(0 0 0 / 0.65) calc(var(--fade) * 0.6),
+			rgb(0 0 0 / 0.78) calc(var(--fade) * 0.7),
+			rgb(0 0 0 / 0.9) calc(var(--fade) * 0.8),
+			rgb(0 0 0 / 0.97) calc(var(--fade) * 0.9),
+			#000 var(--fade),
+			#000 calc(100% - var(--fade)),
+			rgb(0 0 0 / 0.97) calc(100% - var(--fade) * 0.9),
+			rgb(0 0 0 / 0.9) calc(100% - var(--fade) * 0.8),
+			rgb(0 0 0 / 0.78) calc(100% - var(--fade) * 0.7),
+			rgb(0 0 0 / 0.65) calc(100% - var(--fade) * 0.6),
+			rgb(0 0 0 / 0.5) calc(100% - var(--fade) * 0.5),
+			rgb(0 0 0 / 0.35) calc(100% - var(--fade) * 0.4),
+			rgb(0 0 0 / 0.22) calc(100% - var(--fade) * 0.3),
+			rgb(0 0 0 / 0.1) calc(100% - var(--fade) * 0.2),
+			rgb(0 0 0 / 0.03) calc(100% - var(--fade) * 0.1),
+			transparent 100%
+		);
 		content: '';
 		position: absolute;
-		inset: 0;
+		inset: calc(var(--bleed) * -1) 0;
 		z-index: -1;
 		pointer-events: none;
 		background:
-			radial-gradient(55% 60% at 78% 16%, rgb(44 52 118 / 0.55), transparent 70%),
-			radial-gradient(40% 45% at 4% 88%, rgb(34 38 92 / 0.35), transparent 70%),
+			radial-gradient(55% 50% at 78% 30%, rgb(44 52 118 / 0.6), transparent 70%),
+			radial-gradient(40% 40% at 4% 74%, rgb(34 38 92 / 0.35), transparent 70%),
 			#0b0d1c;
-		-webkit-mask-image: linear-gradient(180deg, transparent 0, #000 180px, #000 calc(100% - 180px), transparent 100%);
-		mask-image: linear-gradient(180deg, transparent 0, #000 180px, #000 calc(100% - 180px), transparent 100%);
+		-webkit-mask-image: var(--ease-mask);
+		mask-image: var(--ease-mask);
 	}
 
 	/* 05 · IA ------------------------------------------------------------------ */
