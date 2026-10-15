@@ -5,7 +5,6 @@ import SectionHead from '../components/SectionHead.astro';
 import Marquee from '../components/Marquee.astro';
 import Mascot from '../components/Mascot.astro';
 import LiquidSlot from '../components/LiquidSlot.astro';
-import Planet from '../components/Planet.astro';
 import Figure from '../components/Figure.astro';
 import MethodSteps from '../components/MethodSteps.astro';
 import Testimonials from '../components/Testimonials.astro';
@@ -99,9 +98,9 @@ const capabilities = [
 					<li><Icon name="k" size={18} /> Metodologia 4Ds</li>
 				</ul>
 			</div>
-			<!-- Mascote ou planeta: ao lado do texto no computador, logo abaixo do título no celular. -->
+			<!-- Mascote: ao lado do texto no computador, logo abaixo do título no celular. -->
 			{
-				site.mascot ? (
+				site.mascot && (
 					<div class="hero-stage" data-horizon-anchor>
 						<div class="hero-mascot" data-liquid-anchor aria-hidden="true" />
 						<button class="talk-pill" type="button" data-mascot-talk>
@@ -113,10 +112,6 @@ const capabilities = [
 								Diga oi
 							</span>
 						</button>
-					</div>
-				) : (
-					<div class="hero-stage has-planet">
-						<Planet class="hero-planet" />
 					</div>
 				)
 			}
@@ -254,9 +249,13 @@ const capabilities = [
 	<!-- 05 · Engenharia aumentada por IA: código + faísca -->
 	<section class="section tone-glass panel" id="ia" data-liquid="code-ai" data-rail="IA">
 		<div class="container ia">
-			<div class="ia-stage">
-				<LiquidSlot class="slot ia-slot" icon="spark" shape="code-ai" />
-			</div>
+			{
+				site.mascot && (
+					<div class="ia-stage">
+						<LiquidSlot class="slot ia-slot" icon="spark" shape="code-ai" />
+					</div>
+				)
+			}
 			<div class="ia-copy">
 				<SectionHead
 					num="05"
@@ -513,28 +512,11 @@ const capabilities = [
 		min-height: 220px;
 	}
 
-	/* Planeta (mascote desligado): grande, passando da borda da tela, como a SpaceX. */
-	.hero:has(.has-planet) {
-		overflow-x: clip;
-	}
 
-	.has-planet {
-		position: relative;
-		justify-self: stretch;
-		min-height: 300px;
-	}
-
-	.has-planet :global(.hero-planet) {
-		position: absolute;
-		top: 50%;
-		left: 50%;
-		width: min(115vw, 620px);
-		transform: translate(-46%, -50%);
-	}
 
 	/* Tela larga: mascote ao lado do texto, com o "Diga oi" embaixo. */
 	@media (min-width: 960px) and (min-aspect-ratio: 9/10) {
-		.hero-inner {
+		.hero-inner:has(.hero-stage) {
 			grid-template-columns: minmax(0, 1.3fr) minmax(0, 0.7fr);
 			align-items: center;
 			gap: 24px;
@@ -542,7 +524,7 @@ const capabilities = [
 
 		/* Como no Zirtuno: o mascote fica baixo, com a parte de baixo mergulhada na
 		   onda de luz do fim da abertura, e o "Diga oi" vai para cima da onda. */
-		.hero-stage:not(.has-planet) {
+		.hero-stage {
 			position: relative;
 			align-self: stretch;
 		}
@@ -561,17 +543,6 @@ const capabilities = [
 			bottom: calc(-1 * clamp(96px, 13vh, 150px));
 		}
 
-		.has-planet {
-			align-self: stretch;
-			min-height: clamp(360px, 56vh, 620px);
-		}
-
-		.has-planet :global(.hero-planet) {
-			left: auto;
-			right: -6vw;
-			width: min(50vw, 820px);
-			transform: translateY(-50%);
-		}
 	}
 
 	/*
@@ -967,7 +938,7 @@ const capabilities = [
 	}
 
 	@media (min-width: 960px) {
-		.ia {
+		.ia:has(.ia-stage) {
 			grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
 			gap: 64px;
 			align-items: start;
