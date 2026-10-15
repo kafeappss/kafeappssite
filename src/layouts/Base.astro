@@ -9,6 +9,7 @@ import LiquidCanvas from '../components/LiquidCanvas.astro';
 import AsciiField from '../components/AsciiField.astro';
 import WhatsAppFloat from '../components/WhatsAppFloat.astro';
 import SectionRail from '../components/SectionRail.astro';
+import MiniMascot from '../components/MiniMascot.astro';
 import { site } from '../data/site';
 import { gilroyCss, gilroyPreload } from '../scripts/gilroy';
 
@@ -112,6 +113,7 @@ const structuredData = [organization, ...schema];
 		<AsciiField />
 		{site.mascot && <LiquidCanvas />}
 		<Header />
+		{!site.mascot && <MiniMascot />}
 		<main id="conteudo">
 			<slot />
 		</main>
@@ -122,7 +124,7 @@ const structuredData = [organization, ...schema];
 		<script>
 			import '../scripts/reveal';
 			import '../scripts/spotlight';
-			import '../scripts/decode';
+			import '../scripts/pulse';
 		</script>
 	</body>
 </html>

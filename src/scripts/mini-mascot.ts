@@ -4,9 +4,9 @@
  *
  * Interações (as mesmas do mascote antigo, num formato pequeno):
  * - os olhos seguem o cursor e piscam de tempos em tempos;
- * - clique: uma reação e uma fala diferentes a cada vez; cliques demais em
- *   sequência: fica tonto, depois bravo;
- * - clique duplo: dá uma volta;
+ * - clique (ou ⌘K / Ctrl+K): abre o painel de busca e atalhos
+ *   (src/scripts/mini-panel.ts), e ele fica olhando para o que a pessoa digita;
+ *   cliques demais em sequência: fica tonto, depois bravo;
  * - mouse rápido por cima: cócegas; devagar: carinho;
  * - mouse em "Tirar minha ideia do papel": acena que sim; num botão de contato:
  *   pula de alegria; em temas de IA: olhos de estrela;
@@ -19,8 +19,7 @@
  * Na página 404 ele começa tristinho; no pré-orçamento, ajuda a pessoa.
  */
 
-// Módulo (e não script global): os nomes daqui não se misturam com os do mascote antigo.
-export {};
+import { initPanel } from './mini-panel';
 
 type Mood = 'idle' | 'happy' | 'wink' | 'surprise' | 'love' | 'star' | 'dizzy' | 'angry' | 'sad' | 'sleep';
 type Anim = 'nod' | 'bounce' | 'spin' | 'shake' | 'wobble' | 'giggle';
@@ -39,15 +38,15 @@ const EYES: Record<Mood, [string, string]> = {
 	sleep: ['-', '-'],
 };
 
+/** Dicas do rodapé do painel (uma diferente a cada vez que ele abre). */
 const SEQUENCE: { mood: Mood; anim?: Anim; line: string; desktop?: boolean }[] = [
-	{ mood: 'happy', anim: 'bounce', line: 'Oi! Sou feito de código. E de um pouco de IA. ✦' },
+	{ mood: 'happy', line: 'Pode perguntar do seu jeito, sem tecniquês.' },
 	{ mood: 'wink', line: 'Psiu… o café já está passando. ☕' },
 	{ mood: 'surprise', line: 'Passa o mouse nas letras do fundo. 👀', desktop: true },
-	{ mood: 'love', anim: 'bounce', line: 'Quer um pré-orçamento? A Kafeína, nossa IA, faz em minutos. 🧡' },
+	{ mood: 'love', line: 'A Kafeína, nossa IA, faz um pré-orçamento em minutos. 🧡' },
 	{ mood: 'happy', line: 'Mais negócio, menos software.' },
 	{ mood: 'wink', line: 'Engenheiros + IA: entregas em dias, não em meses.' },
-	{ mood: 'surprise', line: 'Clica duas vezes rapidinho. Duvido. 😏', desktop: true },
-	{ mood: 'love', line: 'Bora tirar a sua ideia do papel?' },
+	{ mood: 'star', line: '⌘K ou Ctrl+K abre este painel em qualquer página.', desktop: true },
 	{ mood: 'wink', line: 'Segredo: digita "café" em qualquer lugar da página. 🤫', desktop: true },
 ];
 
@@ -88,8 +87,11 @@ const root = document.querySelector<HTMLElement>('[data-mini]');
 const face = root?.querySelector<HTMLButtonElement>('[data-mini-face]');
 const eyes = root ? Array.from(root.querySelectorAll<HTMLElement>('[data-mini-eye]')) : [];
 const bubble = root?.querySelector<HTMLElement>('[data-mini-bubble]');
+const panelNode = document.querySelector<HTMLElement>('[data-mini-panel]');
+const tip = panelNode?.querySelector<HTMLElement>('[data-mini-tip]');
+const tipEyes = panelNode?.querySelector<HTMLElement>('[data-mini-tip-eyes]');
 
-if (root && face && bubble && eyes.length === 2) {
+if (root && face && bubble && panelNode && eyes.length === 2) {
 	const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 	const fine = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 	const sadPage = document.querySelector('[data-mascot-mood="sad"]') !== null;
@@ -107,7 +109,9 @@ if (root && face && bubble && eyes.length === 2) {
 	let sleeping = false;
 	let away = false;
 	let lastLineAt = 0;
+	let looking = false;
 	const said = new Set<string>();
+	let panel: ReturnType<typeof initPanel> | null = null;
 
 	const setMood = (next: Mood, ms = 0) => {
 		mood = next;
@@ -129,6 +133,8 @@ if (root && face && bubble && eyes.length === 2) {
 	};
 
 	const say = (line: string, ms = 3200) => {
+		// Com o painel aberto, ele não fala (o painel já está ali).
+		if (panel?.isOpen()) return;
 		bubble.textContent = line;
 		bubble.classList.add('is-visible');
 		lastLineAt = performance.now();
@@ -186,7 +192,7 @@ if (root && face && bubble && eyes.length === 2) {
 	window.addEventListener(
 		'pointermove',
 		(event) => {
-			if (event.pointerType !== 'mouse' || reduced) return;
+			if (event.pointerType !== 'mouse' || reduced || looking) return;
 			const rect = face.getBoundingClientRect();
 			const dx = event.clientX - (rect.left + rect.width / 2);
 			const dy = event.clientY - (rect.top + rect.height / 2);
@@ -219,26 +225,50 @@ if (root && face && bubble && eyes.length === 2) {
 		}
 	});
 
-	// Cliques: uma reação por vez; cliques demais deixam tonto e depois bravo.
+	// Painel de busca e atalhos: abre no clique. Aberto, ele olha para o que a
+	// pessoa digita e reage ao que acontece lá dentro.
+	const lookAtPanel = (value: boolean) => {
+		looking = value;
+		root.style.setProperty('--look-x', value ? '-2.6px' : '0px');
+		root.style.setProperty('--look-y', value ? '2.2px' : '0px');
+	};
+	panel = initPanel(panelNode, face, {
+		open: () => {
+			sleeping = false;
+			bubble.classList.remove('is-visible');
+			const step = sequence[index++ % sequence.length];
+			if (tip) tip.textContent = step.line;
+			if (tipEyes) tipEyes.textContent = EYES[step.mood].join(' ');
+			react('happy', 'bounce', 1600);
+			lookAtPanel(true);
+		},
+		close: () => {
+			lookAtPanel(false);
+			setMood(baseMood);
+		},
+		type: (found) => {
+			if (found) setMood('idle');
+			else react('surprise', undefined, 1400);
+		},
+		answer: () => react('happy', 'nod', 1600),
+		pick: () => react('love', 'bounce', 1400),
+	});
+
+	// Cliques demais em sequência: fica tonto, depois bravo.
 	face.addEventListener('click', () => {
 		const now = performance.now();
 		clicks = clicks.filter((t) => now - t < 2600).concat(now);
 		sleeping = false;
 		if (clicks.length >= 8) {
+			panel?.setOpen(false);
 			react('angry', 'shake', 2600);
 			say(pick(LINES.angry));
-			return;
-		}
-		if (clicks.length >= 5) {
+		} else if (clicks.length >= 5) {
+			panel?.setOpen(false);
 			react('dizzy', 'wobble', 2200);
 			say(pick(LINES.dizzy));
-			return;
 		}
-		const step = sequence[index++ % sequence.length];
-		react(step.mood, step.anim ?? 'bounce', 2400);
-		say(step.line);
 	});
-	face.addEventListener('dblclick', () => react('happy', 'spin', 1600));
 
 	// Reações aos elementos marcados com data-mascot-look.
 	let lastLook: Element | null = null;
@@ -332,7 +362,7 @@ if (root && face && bubble && eyes.length === 2) {
 		const hello = hour < 5 ? 'Boa noite! Café a essa hora? ☕' : hour < 12 ? 'Bom dia! ☕' : hour < 18 ? 'Boa tarde! ☕' : 'Boa noite! ☕';
 		setTimeout(() => {
 			react('happy', 'bounce', 2000);
-			say(`${hello} Clica em mim.`, 3600);
+			say(`${hello} Procurando algo? Clica em mim.`, 4200);
 		}, 1800);
 	} else if (sadPage) setTimeout(() => say(SEQUENCE_404[0].line, 3600), 1500);
 }

@@ -109,6 +109,11 @@ const timings = ['O quanto antes', 'Nos próximos 30 dias', 'Em 2 ou 3 meses', '
 		const submit = form.querySelector<HTMLButtonElement>('[data-submit]')!;
 		const { endpoint, whatsapp, email } = form.dataset;
 
+		// Pergunta vinda do painel do mascotinho (/contato?mensagem=...): já chega escrita.
+		const prefill = new URLSearchParams(window.location.search).get('mensagem');
+		const message = form.querySelector<HTMLTextAreaElement>('#mensagem');
+		if (prefill && message && !message.value) message.value = prefill.slice(0, 2000);
+
 		const setStatus = (message: string, tone: 'ok' | 'error' | '' = '') => {
 			status.textContent = message;
 			status.dataset.tone = tone;

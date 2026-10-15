@@ -830,48 +830,60 @@ ol[role='list'] {
 }
 
 /* --------------------------------------------------------------------------
-   Destaque de terminal (ver src/scripts/decode.ts): letras que se decodificam
-   e um cursor piscando no fim, como no "Acelerado por IA." da home.
+   Frase com borda e pulso de luz (ver src/scripts/pulse.ts), como o
+   "Acelerado por IA." da home: uma linha fina contorna a frase e, de tempos em
+   tempos, um pulso dá a volta nela, acendendo a borda e o texto.
    -------------------------------------------------------------------------- */
 
-.dc {
+[data-pulse] {
+	position: relative;
 	display: inline-block;
-	text-align: center;
+	padding: 0.02em 0.2em 0.1em;
+	border-radius: 10px;
 }
 
-.dc.is-scrambling {
-	font-family: var(--font-mono);
-	font-weight: 500;
-	color: var(--accent-hover);
+[data-pulse] em {
+	transition: color 0.9s ease;
 }
 
-.ai-caret {
-	display: inline-block;
-	width: 0.085em;
-	height: 0.8em;
-	margin-left: 0.12em;
-	vertical-align: -0.04em;
-	border-radius: 1px;
-	background: var(--accent);
-	box-shadow: 0 0 18px rgb(var(--brand-rgb) / 0.75);
-	animation: caret-blink 1.05s steps(1) infinite;
+[data-pulse].is-pulsing em {
+	color: var(--text-secondary);
+	transition-duration: 0.3s;
 }
 
-/* O cursor aparece junto com o título. */
-.js [data-split] .ai-caret {
+.pulse-svg {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	overflow: visible;
+	pointer-events: none;
+	fill: none;
+	stroke-width: 1.5;
+}
+
+.pulse-base rect {
+	stroke: var(--line-strong);
+	transition: stroke 1.2s ease;
+}
+
+[data-pulse].is-pulsing .pulse-base rect {
+	stroke: rgb(var(--fg-rgb) / 0.22);
+	transition-duration: 0.3s;
+}
+
+.pulse-run {
+	filter: drop-shadow(0 0 4px rgb(var(--brand-rgb) / 0.7));
+}
+
+/* A borda aparece junto com o título. */
+.js [data-split] .pulse-svg {
 	opacity: 0;
-	transition: opacity 0.5s ease 0.9s;
+	transition: opacity 0.8s ease 0.7s;
 }
 
-.js [data-split].is-in .ai-caret {
+.js [data-split].is-in .pulse-svg {
 	opacity: 1;
-}
-
-@keyframes caret-blink {
-	50% {
-		background: transparent;
-		box-shadow: none;
-	}
 }
 
 /* --------------------------------------------------------------------------
