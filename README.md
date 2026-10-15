@@ -11,7 +11,9 @@ Feito com [Astro](https://astro.build), gera um site 100% estático (HTML, CSS e
 - **Mascote e ilustrações em vidro escuro** (desligados por enquanto; veja abaixo), no mesmo design do mascote do Zirtuno: corpo quase preto e translúcido que clareia perto da borda, uma linha fina de luz no contorno, reflexo suave em cima, olhos "//" que brilham com halo e, na abertura da home, uma onda de luz roxa em que o mascote fica mergulhado (com o "Diga oi" por cima dela). As formas que ele vira em cada seção usam o mesmo vidro.
 - No "(08) Quem somos" da home, no lugar da forma do líquido, fica a tela "Entregas em produção desde 2021" (`src/components/Figure.astro`).
 - **Divisões de cor entre as seções** (classes em `src/styles/global.css`): faixas um pouco mais claras (`tone-band`, em "A virada" e no blog), uma faixa no tom da marca (`tone-brand`, em "O que dá para construir") e uma de vidro (`tone-glass`, na IA). Todas são retas, de ponta a ponta da tela, separadas por linhas finas e translúcidas, para as letras do fundo continuarem aparecendo.
-- **Convite final**: um painel índigo arredondado, com raios de luz subindo da borda de baixo, que se esticam na direção do cursor (`src/components/CtaSection.astro` e `src/scripts/rays.ts`). Com o mascote ligado, ele descansa nos cantos enquanto o convite está na tela.
+- **Convite final**: um painel índigo arredondado com um leque de raios de luz em 3D, na linha do da Stripe: uma meia esfera de raios finos saindo de um ponto de luz forte na borda de baixo, que gira devagar e se inclina para o lado do cursor; os da frente ficam mais longos e claros (`src/components/CtaSection.astro` e `src/scripts/rays.ts`, com a quantidade de raios e a velocidade do giro no topo). Com o mascote ligado, ele descansa nos cantos enquanto o convite está na tela.
+- **Mascotinho do cabeçalho** (só com o mascote grande desligado): um círculo discreto com os olhos "//" em fonte mono. Ele pisca, segue o cursor, dá bom dia (uma vez por visita), reage a cliques (fica tonto ou bravo se apertarem demais), gira com dois cliques, ri com o mouse em cima, fica triste quando o cursor sai da página, cochila depois de 30 s parado, faz festa quando alguém digita "café" e também reage aos elementos com `data-mascot-look`. Em telas largas fica no canto de cima à direita, alinhado com o trilho; nas outras, ao lado do menu (`src/components/MiniMascot.astro` e `src/scripts/mini-mascot.ts`).
+- **"Acelerado por IA."**: no título da seção de IA, as letras chegam embaralhadas, como um terminal decodificando, e se acertam da esquerda para a direita, com um cursor piscando no fim (de novo ao passar o mouse). Código em `src/scripts/decode.ts`; o cursor é a classe `.ai-caret` em `src/styles/global.css`.
 - Cores do vidro no topo de `src/styles/global.css`: `--liquid` (luz do vidro e da onda, `#7c7cff`), `--liquid-ink` (olhos, contorno e crista da onda, `#c9cbff`) e `--liquid-bg` (base do vidro, igual a `--bg`).
 
 ### Ligar e desligar o mascote
@@ -67,6 +69,7 @@ npm run check    # verificação de tipos
 | Cores (as do Linear), fontes e espaçamentos | `src/styles/global.css` (variáveis no topo) |
 | Divisões de cor entre as seções | classes `tone-band`, `tone-brand` e `tone-glass` em `src/styles/global.css`, aplicadas nas seções de `src/pages/index.astro` |
 | Convite final (painel índigo e raios de luz) | `src/components/CtaSection.astro` e `src/scripts/rays.ts` |
+| Mascotinho do cabeçalho (círculo com os olhos "//") e suas falas | `src/components/MiniMascot.astro` e `src/scripts/mini-mascot.ts` |
 | Logos (KAFÉ APPS e o símbolo K) | `src/assets/brand/` e `public/favicon.svg` |
 | Arquivos da marca para download (K e logo, branco e preto, sem fundo) | `public/brand/` |
 

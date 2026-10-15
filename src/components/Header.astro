@@ -1,6 +1,7 @@
 ---
 import Logo from './Logo.astro';
 import Icon from './Icon.astro';
+import MiniMascot from './MiniMascot.astro';
 import { nav, site, whatsappLink } from '../data/site';
 import { services } from '../data/services';
 import { hasCases } from '../scripts/cases';
@@ -58,6 +59,7 @@ const whatsapp = whatsappLink();
 			<a class="btn btn-sm header-cta" href="/contato" data-mascot-look="tap">
 				Fale com a gente <Icon name="arrow" class="arrow" />
 			</a>
+			{!site.mascot && <MiniMascot />}
 			<button
 				class="menu-toggle"
 				type="button"
