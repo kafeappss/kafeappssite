@@ -67,8 +67,8 @@ const structuredData = [organization, ...schema];
 ---
 
 <!doctype html>
-<!-- data-liquid-style: "solid" (formas sólidas que se montam) ou "liquid" (gotas que se fundem). -->
-<html lang="pt-BR" data-liquid-style="solid">
+<!-- data-theme: "claro" ou "escuro" (src/data/site.ts). data-liquid-style: "solid" (formas sólidas que se montam) ou "liquid" (gotas que se fundem). -->
+<html lang="pt-BR" data-theme={site.theme} data-liquid-style="solid">
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -76,8 +76,8 @@ const structuredData = [organization, ...schema];
 		<meta name="description" content={description} />
 		<link rel="canonical" href={canonical} />
 		{noindex && <meta name="robots" content="noindex, follow" />}
-		<meta name="theme-color" content="#08090a" />
-		<meta name="color-scheme" content="dark" />
+		<meta name="theme-color" content={site.theme === 'claro' ? '#f6f6f8' : '#08090a'} />
+		<meta name="color-scheme" content={site.theme === 'claro' ? 'light' : 'dark'} />
 
 		<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 		<link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
@@ -109,7 +109,7 @@ const structuredData = [organization, ...schema];
 	</head>
 	<body>
 		<a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
-		<AsciiField />
+		{site.theme === 'escuro' && <AsciiField />}
 		{site.mascot && <LiquidCanvas />}
 		<Header />
 		<main id="conteudo">

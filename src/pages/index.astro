@@ -5,7 +5,7 @@ import SectionHead from '../components/SectionHead.astro';
 import Marquee from '../components/Marquee.astro';
 import Mascot from '../components/Mascot.astro';
 import LiquidSlot from '../components/LiquidSlot.astro';
-import Planet from '../components/Planet.astro';
+import GradientBand from '../components/GradientBand.astro';
 import Figure from '../components/Figure.astro';
 import MethodSteps from '../components/MethodSteps.astro';
 import Testimonials from '../components/Testimonials.astro';
@@ -78,7 +78,7 @@ const capabilities = [
 	description="A Kafé Apps cria aplicativos, plataformas, sistemas e soluções de IA sob medida, em código e com engenharia acelerada por IA. Software house de Jaraguá do Sul (SC) que atende todo o Brasil."
 >
 	<!-- Início: o mascote (no celular, como no Zirtuno: título curto, mascote grande e "Diga oi") -->
-	<section class="hero" data-liquid="mascot" data-rail="Início" data-horizon>
+	<section class:list={['hero', { 'hero-panel': !site.mascot }]} data-liquid="mascot" data-rail="Início" data-horizon>
 		<div class="container hero-inner">
 			<div class="hero-copy">
 				<p class="eyebrow" data-reveal>Software house · Código + IA · {site.location.city}, {site.location.state}</p>
@@ -99,9 +99,9 @@ const capabilities = [
 					<li><Icon name="k" size={18} /> Metodologia 4Ds</li>
 				</ul>
 			</div>
-			<!-- Mascote ou planeta: ao lado do texto no computador, logo abaixo do título no celular. -->
+			<!-- Mascote (tema escuro): ao lado do texto no computador, logo abaixo do título no celular. -->
 			{
-				site.mascot ? (
+				site.mascot && (
 					<div class="hero-stage" data-horizon-anchor>
 						<div class="hero-mascot" data-liquid-anchor aria-hidden="true" />
 						<button class="talk-pill" type="button" data-mascot-talk>
@@ -114,13 +114,11 @@ const capabilities = [
 							</span>
 						</button>
 					</div>
-				) : (
-					<div class="hero-stage has-planet">
-						<Planet class="hero-planet" />
-					</div>
 				)
 			}
 		</div>
+		<!-- Sem o mascote: o degradê fluido no fundo do topo, como na Stripe. -->
+		{!site.mascot && <GradientBand class="hero-gradient" />}
 		{site.mascot && <Mascot />}
 	</section>
 
@@ -532,6 +530,48 @@ const capabilities = [
 		transform: translate(-46%, -50%);
 	}
 
+	/* Topo sem o mascote: um painel arredondado com o degradê fluido no fundo.
+	   As cores ficam claras atrás do texto e vivas do outro lado. */
+	.hero-panel {
+		isolation: isolate;
+		margin: 10px 10px 0;
+		border-radius: 28px;
+		overflow: hidden;
+	}
+
+	.hero-panel .hero-inner {
+		position: relative;
+		z-index: 1;
+	}
+
+	.hero-panel .hero-copy {
+		max-width: 780px;
+	}
+
+	.hero-panel :global(.hero-gradient) {
+		position: absolute;
+		inset: 0;
+		z-index: 0;
+	}
+
+	.hero-panel .eyebrow {
+		padding: 7px 14px 7px 12px;
+		border: 1px solid rgb(var(--fg-rgb) / 0.08);
+		border-radius: var(--radius-pill);
+		background: rgb(255 255 255 / 0.6);
+		backdrop-filter: blur(8px);
+		-webkit-backdrop-filter: blur(8px);
+		letter-spacing: 0.14em;
+	}
+
+	.hero-panel .eyebrow::before {
+		border-radius: 50%;
+	}
+
+	.hero-panel .btn-ghost {
+		background: rgb(255 255 255 / 0.55);
+	}
+
 	/* Tela larga: mascote ao lado do texto, com o "Diga oi" embaixo. */
 	@media (min-width: 960px) and (min-aspect-ratio: 9/10) {
 		.hero-inner {
@@ -659,6 +699,21 @@ const capabilities = [
 		.hero-proof {
 			order: 6;
 			justify-content: center;
+		}
+
+		.hero-panel {
+			margin: 6px 6px 0;
+			border-radius: 22px;
+			padding-bottom: 56px;
+		}
+
+		.hero-panel .eyebrow {
+			padding: 0;
+			border: 0;
+			background: none;
+			backdrop-filter: none;
+			-webkit-backdrop-filter: none;
+			letter-spacing: 0.12em;
 		}
 	}
 
