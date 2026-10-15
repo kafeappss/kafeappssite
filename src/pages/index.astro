@@ -878,6 +878,27 @@ const capabilities = [
 		display: none;
 	}
 
+	/* 07 · Quem confia: fundo azul-marinho com uma luz anil vindo do canto de
+	   cima à direita. O azul fica numa camada com máscara, que some aos poucos
+	   em cima e embaixo (sem cortar seco o fundo de letras da página). */
+	#clientes {
+		isolation: isolate;
+	}
+
+	#clientes::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		pointer-events: none;
+		background:
+			radial-gradient(55% 60% at 78% 16%, rgb(44 52 118 / 0.55), transparent 70%),
+			radial-gradient(40% 45% at 4% 88%, rgb(34 38 92 / 0.35), transparent 70%),
+			#0b0d1c;
+		-webkit-mask-image: linear-gradient(180deg, transparent 0, #000 180px, #000 calc(100% - 180px), transparent 100%);
+		mask-image: linear-gradient(180deg, transparent 0, #000 180px, #000 calc(100% - 180px), transparent 100%);
+	}
+
 	/* 05 · IA ------------------------------------------------------------------ */
 	.ia {
 		display: grid;
