@@ -178,7 +178,7 @@ const cycle = (active: number): ShapeDef => ({
 
 export const shapes = {
 	/* --- Mascote: o próprio líquido ganha olhos ------------------------- */
-	// Uma forma só, como os personagens do Duolingo (os pezinhos entram pelo motor).
+	// Uma forma só, desenhada em traço (os pezinhos entram pelo motor quando ele bate o pé).
 	mascot: {
 		...organic,
 		eyes: true,

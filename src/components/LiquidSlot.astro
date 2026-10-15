@@ -30,6 +30,19 @@ const { icon, class: className, scale, iconSize = 44, ...rest } = Astro.props;
 		pointer-events: none;
 	}
 
+	/* Legenda de figura, como nas ilustrações do Linear ("FIG 0.1"). */
+	.liquid-slot::before {
+		counter-increment: fig;
+		content: 'FIG 0.' counter(fig);
+		position: absolute;
+		top: 0;
+		left: 0;
+		font-family: var(--font-mono);
+		font-size: 0.6875rem;
+		letter-spacing: 0.04em;
+		color: var(--text-quaternary);
+	}
+
 	.liquid-slot :global(.liquid-slot-icon) {
 		color: var(--text-dim);
 		opacity: 0.6;
