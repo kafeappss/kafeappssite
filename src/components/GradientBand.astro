@@ -5,12 +5,14 @@
  */
 interface Props {
 	class?: string;
+	/** "side": vivo do lado oposto ao texto (topo da home); "bottom": vivo embaixo (convite final). */
+	mode?: 'side' | 'bottom';
 }
 
-const { class: className } = Astro.props;
+const { class: className, mode = 'side' } = Astro.props;
 ---
 
-<div class:list={['gradient', className]} data-gradient aria-hidden="true">
+<div class:list={['gradient', className]} data-gradient data-mode={mode} aria-hidden="true">
 	<canvas></canvas>
 </div>
 
@@ -29,6 +31,14 @@ const { class: className } = Astro.props;
 			radial-gradient(40% 50% at 95% 85%, var(--grad-4), transparent 70%),
 			radial-gradient(40% 55% at 70% 70%, var(--grad-3), transparent 70%),
 			radial-gradient(50% 70% at 100% 50%, var(--grad-1), transparent 75%),
+			#fbfaff;
+	}
+
+	.gradient[data-mode='bottom'] {
+		background:
+			radial-gradient(50% 50% at 20% 100%, var(--grad-3), transparent 70%),
+			radial-gradient(50% 60% at 80% 100%, var(--grad-2), transparent 70%),
+			radial-gradient(60% 50% at 50% 110%, var(--grad-1), transparent 75%),
 			#fbfaff;
 	}
 

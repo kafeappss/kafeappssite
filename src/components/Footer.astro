@@ -25,7 +25,7 @@ const socialIcons = {
 } as const;
 ---
 
-<footer class="site-footer" data-liquid="pool">
+<footer class="site-footer theme-dark" data-liquid="pool">
 	<div class="container">
 		<div class="footer-grid">
 			<div class="footer-brand">
@@ -123,6 +123,23 @@ const socialIcons = {
 		border-top: 1px solid var(--line);
 		background: linear-gradient(180deg, rgb(var(--bg-rgb) / 0.55), rgb(var(--bg-rgb) / 0.2) 70%, transparent);
 		overflow: hidden;
+	}
+
+	/* Tema claro: rodapé azul-marinho, arredondado, como o da AbacatePay. */
+	:global(html[data-theme='claro']) .site-footer {
+		margin: 0 10px 10px;
+		border-top: 0;
+		border-radius: 28px;
+		background:
+			radial-gradient(60% 50% at 100% 0%, rgb(var(--brand-rgb) / 0.22), transparent 70%),
+			var(--bg);
+	}
+
+	@media (max-width: 639px) {
+		:global(html[data-theme='claro']) .site-footer {
+			margin: 0 6px 6px;
+			border-radius: 22px;
+		}
 	}
 
 	.footer-grid {

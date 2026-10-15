@@ -1,6 +1,7 @@
 ---
 import Icon from './Icon.astro';
 import Figure from './Figure.astro';
+import GradientBand from './GradientBand.astro';
 import { site, whatsappLink } from '../data/site';
 
 interface Props {
@@ -19,7 +20,8 @@ const {
 const whatsapp = whatsappLink();
 ---
 
-<section class="section cta" data-liquid="cup bottom" data-rail={rail}>
+<section class:list={['section cta', { 'cta-panel panel': !site.mascot && site.theme === 'claro' }]} data-liquid="cup bottom" data-rail={rail}>
+	{!site.mascot && site.theme === 'claro' && <GradientBand class="cta-gradient" mode="bottom" />}
 	<div class="container cta-inner">
 		<p class="eyebrow" data-reveal>Próximo passo</p>
 		<h2 class="h1" data-split set:html={title} />
@@ -83,6 +85,43 @@ const whatsapp = whatsappLink();
 		justify-self: stretch;
 		height: clamp(150px, 18vw, 230px);
 		margin-top: 12px;
+	}
+
+	/* Tema claro: um painel grande com o degradê do topo, vivo embaixo, como o
+	   convite final da AbacatePay. */
+	.cta-panel {
+		isolation: isolate;
+		overflow: hidden;
+		margin-bottom: 10px;
+		padding-bottom: 0;
+	}
+
+	.cta-panel :global(.cta-gradient) {
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+	}
+
+	.cta-panel .cta-inner {
+		position: relative;
+	}
+
+	.cta-panel .btn-ghost {
+		background: rgb(255 255 255 / 0.6);
+	}
+
+	/* A conversa da Kafeína sobe da borda de baixo do painel. */
+	.cta-panel :global(.cta-figure) {
+		--tilt: none;
+		width: min(100%, 620px);
+		margin-top: clamp(32px, 5vw, 56px);
+		margin-bottom: -2px;
+	}
+
+	.cta-panel :global(.cta-figure .win) {
+		border-bottom-left-radius: 0;
+		border-bottom-right-radius: 0;
+		border-bottom: 0;
 	}
 
 	.cta-note {

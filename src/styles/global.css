@@ -141,6 +141,25 @@
 	color: var(--text);
 }
 
+/* No tema claro, as ilhas escuras são azul-marinho (como as seções escuras da
+   Stripe), e não pretas. */
+html[data-theme='claro'] .theme-dark {
+	--bg: #0b0d1f;
+	--bg-level-1: #11142b;
+	--bg-level-2: #161a35;
+	--bg-level-3: #1b1f3d;
+	--bg-secondary: #1f2444;
+	--bg-tertiary: #262b4f;
+	--bg-quaternary: #2e345b;
+	--bg-rgb: 11 13 31;
+	--text-tertiary: #9a9fb5;
+	--text-quaternary: #6d7290;
+	--text-quiet: #a5aaff;
+	--card-bg: linear-gradient(180deg, rgb(255 255 255 / 0.045), rgb(255 255 255 / 0.015));
+	--card-blur: 0px;
+	--shadow-lg: 0 40px 90px -30px rgb(0 0 0 / 0.6);
+}
+
 /* Tema claro (padrão): B2B, limpo e objetivo. */
 html[data-theme='claro'] {
 	--bg: #f6f6f8;
@@ -446,6 +465,49 @@ ol[role='list'] {
 
 .section-head .lead {
 	max-width: 640px;
+}
+
+/* --------------------------------------------------------------------------
+   Ritmo de cores das seções (tema claro), como na Stripe e na AbacatePay:
+   branco, cinza claro, um tom da marca e painéis azul-marinho arredondados.
+   No tema escuro essas classes não mudam nada.
+   -------------------------------------------------------------------------- */
+
+html[data-theme='claro'] .tone-white {
+	background: var(--bg-level-1);
+	border-block: 1px solid var(--line);
+}
+
+html[data-theme='claro'] .tone-soft {
+	background: var(--bg);
+}
+
+/* Painel: um bloco arredondado, solto das bordas da tela. */
+html[data-theme='claro'] .panel {
+	margin: 10px;
+	border-radius: 28px;
+}
+
+html[data-theme='claro'] .tone-brand {
+	background:
+		radial-gradient(60% 80% at 100% 0%, rgb(var(--brand-rgb) / 0.14), transparent 70%),
+		radial-gradient(50% 70% at 0% 100%, rgb(244 114 182 / 0.08), transparent 70%),
+		#f1f1fd;
+}
+
+html[data-theme='claro'] .tone-dark {
+	background:
+		radial-gradient(70% 60% at 85% 0%, rgb(var(--brand-rgb) / 0.28), transparent 70%),
+		radial-gradient(50% 50% at 0% 100%, rgb(155 108 240 / 0.14), transparent 70%),
+		var(--bg);
+	color: var(--text);
+}
+
+@media (max-width: 639px) {
+	html[data-theme='claro'] .panel {
+		margin: 6px;
+		border-radius: 22px;
+	}
 }
 
 /* --------------------------------------------------------------------------

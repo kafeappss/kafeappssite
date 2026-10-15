@@ -125,7 +125,7 @@ const capabilities = [
 	<Marquee items={capabilities} />
 
 	<!-- 01 · Problema: o relógio -->
-	<section class="section" id="problema" data-liquid="clock" data-rail="Problema">
+	<section class="section tone-soft" id="problema" data-liquid="clock" data-rail="Problema">
 		<div class="container">
 			<div class="head-split">
 				<SectionHead
@@ -151,7 +151,7 @@ const capabilities = [
 	</section>
 
 	<!-- 02 · Virada: as barras de crescimento -->
-	<section class="section" data-liquid="bars" data-rail="Virada">
+	<section class="section tone-white" data-liquid="bars" data-rail="Virada">
 		<div class="container turn">
 			<LiquidSlot class="slot turn-slot" shape="bars" />
 			<SectionHead
@@ -181,7 +181,7 @@ const capabilities = [
 	</section>
 
 	<!-- 03 · Serviços: passe o mouse e o líquido vira cada serviço -->
-	<section class="section services" id="servicos" data-liquid="code" data-rail="Serviços">
+	<section class="section services tone-soft" id="servicos" data-liquid="code" data-rail="Serviços">
 		<div class="container">
 			<div class="head-split">
 				<SectionHead
@@ -233,7 +233,7 @@ const capabilities = [
 	</section>
 
 	<!-- 04 · O que dá para construir -->
-	<section class="section" data-liquid="rest">
+	<section class="section tone-brand panel" data-liquid="rest">
 		<div class="container">
 			<SectionHead num="04" eyebrow="O que dá para construir" title="Do delivery ao SaaS, <em>sua ideia tem lugar aqui.</em>" />
 			<ul role="list" class="types" data-reveal>
@@ -250,7 +250,7 @@ const capabilities = [
 	</section>
 
 	<!-- 05 · Engenharia aumentada por IA: código + faísca -->
-	<section class="section" id="ia" data-liquid="code-ai" data-rail="IA">
+	<section class="section theme-dark tone-dark panel" id="ia" data-liquid="code-ai" data-rail="IA">
 		<div class="container ia">
 			<div class="ia-stage">
 				<LiquidSlot class="slot ia-slot" icon="spark" shape="code-ai" />
@@ -290,7 +290,7 @@ const capabilities = [
 	</section>
 
 	<!-- 06 · Metodologia 4Ds: o ciclo (cada etapa gira o ciclo) -->
-	<section class="section" id="metodo" data-liquid="cycle-0" data-rail="Método">
+	<section class="section tone-soft" id="metodo" data-liquid="cycle-0" data-rail="Método">
 		<div class="container">
 			<div class="head-split">
 				<SectionHead
@@ -332,7 +332,7 @@ const capabilities = [
 	</section>
 
 	<!-- 07 · Clientes -->
-	<section class="section" id="clientes" data-liquid="rest" data-rail="Clientes">
+	<section class="section tone-white" id="clientes" data-liquid="rest" data-rail="Clientes">
 		<div class="container">
 			<SectionHead
 				num="07"
@@ -347,7 +347,7 @@ const capabilities = [
 	</section>
 
 	<!-- 08 · Quem somos: o K -->
-	<section class="section" id="sobre" data-liquid="rest" data-rail="Sobre">
+	<section class="section tone-soft" id="sobre" data-liquid="rest" data-rail="Sobre">
 		<div class="container soul">
 			<div class="soul-text">
 				<SectionHead
@@ -404,7 +404,7 @@ const capabilities = [
 
 	{
 		posts.length > 0 && (
-			<section class="section" data-liquid="rest">
+			<section class="section tone-white" data-liquid="rest">
 				<div class="container">
 					<div class="head-row">
 						<SectionHead
@@ -428,7 +428,7 @@ const capabilities = [
 		)
 	}
 
-	<section class="section" data-liquid="rest" data-rail="Dúvidas">
+	<section class="section tone-soft" data-liquid="rest" data-rail="Dúvidas">
 		<div class="container faq-layout">
 			<SectionHead
 				eyebrow="Perguntas frequentes"
@@ -827,6 +827,50 @@ const capabilities = [
 		background-color: rgb(var(--fg-rgb) / 0.02);
 	}
 
+	/* Tema claro: cartões brancos que sobem um pouco com o mouse. */
+	:global(html[data-theme='claro']) .svc:not(.svc-cta) {
+		background: var(--bg-level-1);
+		box-shadow: var(--shadow-sm);
+		transition:
+			border-color 0.35s ease,
+			box-shadow 0.5s var(--ease-out),
+			transform 0.5s var(--ease-out);
+	}
+
+	:global(html[data-theme='claro']) .svc:not(.svc-cta):hover {
+		border-color: rgb(var(--brand-rgb) / 0.35);
+		box-shadow: var(--shadow-md);
+		transform: translateY(-3px);
+	}
+
+	/* O ícone ganha um quadrado com o tom da marca. */
+	:global(html[data-theme='claro']) .svc-slot {
+		width: 56px;
+		height: 56px;
+		margin: 0;
+		border-radius: 14px;
+		background: var(--accent-tint);
+		border: 1px solid rgb(var(--brand-rgb) / 0.14);
+		transition:
+			background-color 0.35s ease,
+			transform 0.5s var(--ease-out);
+	}
+
+	:global(html[data-theme='claro']) .svc-slot :global(.svc-icon) {
+		width: 26px;
+		height: 26px;
+		color: var(--accent);
+	}
+
+	:global(html[data-theme='claro']) .svc:hover .svc-slot {
+		background: var(--accent);
+		transform: rotate(-6deg) scale(1.06);
+	}
+
+	:global(html[data-theme='claro']) .svc:hover .svc-slot :global(.svc-icon) {
+		color: #fff;
+	}
+
 	.svc-top {
 		display: flex;
 		align-items: flex-start;
@@ -915,6 +959,23 @@ const capabilities = [
 		border-color: var(--primary-hover);
 	}
 
+	:global(html[data-theme='claro']) .svc-cta {
+		color: #fff;
+		background:
+			radial-gradient(120% 90% at 100% 0%, rgb(155 108 240 / 0.55), transparent 60%),
+			radial-gradient(90% 80% at 0% 100%, rgb(244 114 182 / 0.35), transparent 60%),
+			#11142b;
+		border-color: transparent;
+	}
+
+	:global(html[data-theme='claro']) .svc-cta .svc-num {
+		color: rgb(255 255 255 / 0.7);
+	}
+
+	:global(html[data-theme='claro']) .svc-cta .svc-more {
+		color: #fff;
+	}
+
 	.svc-cta .svc-num {
 		color: rgb(8 9 10 / 0.7);
 	}
@@ -950,6 +1011,15 @@ const capabilities = [
 
 	.types li:hover,
 	.types li:nth-child(3n + 2) {
+		color: var(--text);
+	}
+
+	:global(html[data-theme='claro']) .types li {
+		color: var(--text-tertiary);
+	}
+
+	:global(html[data-theme='claro']) .types li:hover,
+	:global(html[data-theme='claro']) .types li:nth-child(3n + 2) {
 		color: var(--text);
 	}
 
@@ -1315,8 +1385,8 @@ const capabilities = [
 			grid-column: span 4;
 		}
 
-		.span-3 .svc-slot,
-		.span-4 .svc-slot {
+		:global(html:not([data-theme='claro'])) .span-3 .svc-slot,
+		:global(html:not([data-theme='claro'])) .span-4 .svc-slot {
 			width: 168px;
 			height: 148px;
 		}

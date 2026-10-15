@@ -21,6 +21,7 @@ precision mediump float;
 uniform vec2 uRes;
 uniform float uTime;
 uniform vec2 uPointer; // cursor (0 a 1), com atraso
+uniform float uMode;   // 0 = vivo do lado oposto ao texto; 1 = vivo embaixo
 uniform vec3 uC1;
 uniform vec3 uC2;
 uniform vec3 uC3;
@@ -92,9 +93,11 @@ void main() {
 
 	// Do lado do texto as cores ficam claras (leitura); do outro, vivas.
 	// Na tela larga o texto fica à esquerda; em pé (celular), em cima.
-	float strength = aspect > 1.0
-		? smoothstep(0.32, 1.0, uv.x + 0.12 * n2)
-		: smoothstep(0.8, 1.2, 1.0 - uv.y + 0.08 * n2);
+	float strength = uMode > 0.5
+		? smoothstep(0.35, 1.05, 1.0 - uv.y + 0.1 * n2)
+		: aspect > 1.0
+			? smoothstep(0.32, 1.0, uv.x + 0.12 * n2)
+			: smoothstep(0.8, 1.2, 1.0 - uv.y + 0.08 * n2);
 	// Uma luz suave segue o cursor.
 	float glow = exp(-dot((uv - uPointer) * vec2(aspect, 1.0), (uv - uPointer) * vec2(aspect, 1.0)) * 6.0);
 	strength = clamp(strength + glow * 0.22, 0.0, 1.0);
@@ -150,6 +153,7 @@ export function initGradient(root: HTMLElement) {
 	const uRes = gl.getUniformLocation(program, 'uRes');
 	const uTime = gl.getUniformLocation(program, 'uTime');
 	const uPointer = gl.getUniformLocation(program, 'uPointer');
+	gl.uniform1f(gl.getUniformLocation(program, 'uMode'), root.dataset.mode === 'bottom' ? 1 : 0);
 	const pointer = { x: 0.78, y: 0.55, tx: 0.78, ty: 0.55 };
 
 	/** Lê as cores do CSS (chamado de novo quando o "brinquedo" de cor muda a paleta). */
