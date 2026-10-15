@@ -29,7 +29,7 @@ const WEAK = 0.7;
 const FADE = 160;
 /** Mouse: raio da luz (em linhas da grade), quanto as letras acendem, força
  *  com o cursor parado e quanto tempo o rastro leva para apagar (segundos). */
-const TOUCH_RADIUS = 7;
+const TOUCH_RADIUS = 2.2;
 const TOUCH_BOOST = 1.0;
 const TOUCH_REST = 0.55;
 const TRAIL_LIFE = 0.8;
