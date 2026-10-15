@@ -12,8 +12,10 @@
  * data-ascii-strong: o início da home, o topo das páginas internas) e mais
  * fracas no resto, com uma passagem suave na borda de baixo do topo.
  *
- * Com o mouse por cima, as letras perto do cursor acendem de leve, com um
- * rastro curto que se apaga sozinho (só com mouse; no celular não há cursor).
+ * Com o mouse por cima, as letras coladas no cursor acendem de leve (a recém-
+ * tocada embaralha um instante, como num terminal) e deixam um rastro
+ * contínuo que se apaga sozinho em uns 3 segundos. Só com mouse (no celular
+ * não há cursor).
  */
 
 /** Tamanho de cada letra e da casa dela na grade, em pixels CSS. */
@@ -32,9 +34,7 @@ const FADE = 160;
 const TOUCH_RADIUS = 2.2;
 const TOUCH_BOOST = 1.0;
 const TOUCH_REST = 0.55;
-const TRAIL_LIFE = 0.8;
-/** Pontos no rastro (o primeiro é o próprio cursor). */
-const TRAIL = 8;
+const TRAIL_LIFE = 3;
 const ATLAS_SLOTS = 64;
 
 const VERTEX = /* glsl */ `
@@ -58,8 +58,8 @@ ${COMMON}
 uniform float uTime;
 uniform float uScroll; // rolagem da página, em linhas da grade
 uniform float uAspect; // largura / altura da casa
-uniform vec3 uTrail[${TRAIL}]; // cursor e rastro: coluna, linha e força (0 = apagado)
-uniform float uTouchRadius;  // raio da luz do cursor, em linhas
+uniform sampler2D uTouch; // rastro do mouse: um valor por casa (0 = apagado)
+uniform vec2 uGridSize;   // colunas e linhas da grade
 
 float hash(vec2 p) {
 	p = fract(p * vec2(123.34, 456.21));
@@ -116,18 +116,15 @@ void main() {
 	// A cor da marca acende numa parte das manchas e passeia devagar.
 	float glow = smoothstep(0.56, 0.74, fbm(q * 0.55 + vec2(-t * 0.05, t * 0.02) + 9.0));
 
-	// Mouse: perto do cursor (e do rastro dele), as letras acendem de leve, e
-	// algumas aparecem bem fracas onde não há mancha.
-	float touch = 0.0;
-	for (int i = 0; i < ${TRAIL}; i++) {
-		vec3 p = uTrail[i];
-		if (p.z <= 0.0) continue;
-		float d = length((cell + 0.5 - p.xy) * vec2(uAspect, 1.0));
-		touch = max(touch, p.z * (1.0 - smoothstep(uTouchRadius * 0.2, uTouchRadius, d)));
-	}
+	// Mouse: as letras por onde o cursor passou acendem de leve e vão apagando
+	// devagar (mais devagar no fim); algumas aparecem bem fracas onde não há
+	// mancha. A letra recém-tocada embaralha um instante, como num terminal.
+	float touch = texture2D(uTouch, (cell + 0.5) / uGridSize).r;
 	if (touch > 0.0) {
-		bright = bright * (1.0 + touch * ${TOUCH_BOOST.toFixed(2)}) + touch * 0.13 * level * step(0.55, hash(cell + 17.1));
-		glow = max(glow, touch * 0.3);
+		float k = touch * touch * (3.0 - 2.0 * touch);
+		bright = bright * (1.0 + k * ${TOUCH_BOOST.toFixed(2)}) + k * 0.13 * level * step(0.55, hash(cell + 17.1));
+		glow = max(glow, k * 0.3);
+		if (touch > 0.9) glyph = floor(hash(cell + floor(t * 14.0) * 0.61) * ${GLYPHS.length.toFixed(1)});
 	}
 
 	gl_FragColor = vec4(bright, glow, glyph / 255.0, 1.0);
@@ -233,8 +230,8 @@ export function initAscii(canvas: HTMLCanvasElement) {
 		time: gl.getUniformLocation(cellsProgram, 'uTime'),
 		scroll: gl.getUniformLocation(cellsProgram, 'uScroll'),
 		aspect: gl.getUniformLocation(cellsProgram, 'uAspect'),
-		trail: gl.getUniformLocation(cellsProgram, 'uTrail'),
-		touchRadius: gl.getUniformLocation(cellsProgram, 'uTouchRadius'),
+		touch: gl.getUniformLocation(cellsProgram, 'uTouch'),
+		gridSize: gl.getUniformLocation(cellsProgram, 'uGridSize'),
 	};
 	const u = (name: string) => gl.getUniformLocation(screenProgram, name);
 	const screenUniforms = {
@@ -269,22 +266,70 @@ export function initAscii(canvas: HTMLCanvasElement) {
 	let last = 0;
 	let scrolled = false;
 
-	// Mouse: a posição do cursor e o rastro (pontos em pixels CSS, com a hora).
+	// Mouse: a posição do cursor e o rastro, um valor por casa da grade (0 a 1),
+	// que vai apagando sozinho e vai para a placa de vídeo como uma textura.
 	const fineMouse = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-	const cursor = { x: 0, y: 0, inside: false };
-	const trail: { x: number; y: number; at: number }[] = [];
-	const trailData = new Float32Array(TRAIL * 3);
+	const cursor = { x: 0, y: 0, inside: false, moved: false, px: -1, py: -1 };
+	const touchTexture = texture(gl);
+	let touchGrid = new Float32Array(1);
+	let touchBytes = new Uint8Array(1);
+	let touchLit = false;
 
-	function updateTrail() {
-		const now = performance.now() / 1000;
-		while (trail.length && now - trail[0].at > TRAIL_LIFE) trail.shift();
-		trailData.fill(0);
-		if (!cursor.inside) return;
-		trailData.set([(cursor.x * dpr) / cellW, (cursor.y * dpr) / cellH, TOUCH_REST], 0);
-		trail.slice(-(TRAIL - 1)).forEach((point, i) => {
-			const life = 1 - (now - point.at) / TRAIL_LIFE;
-			trailData.set([(point.x * dpr) / cellW, (point.y * dpr) / cellH, Math.max(0, life) * 0.9], (i + 1) * 3);
-		});
+	function uploadTouch() {
+		gl!.activeTexture(gl!.TEXTURE2);
+		gl!.bindTexture(gl!.TEXTURE_2D, touchTexture);
+		gl!.pixelStorei(gl!.UNPACK_ALIGNMENT, 1);
+		gl!.texImage2D(gl!.TEXTURE_2D, 0, gl!.LUMINANCE, cols, rows, 0, gl!.LUMINANCE, gl!.UNSIGNED_BYTE, touchBytes);
+	}
+
+	/** Acende as casas em volta de um ponto (coluna e linha, com fração). */
+	function stamp(cx: number, cy: number, weight: number) {
+		const aspect = cellW / cellH;
+		const rx = TOUCH_RADIUS / aspect;
+		const r0 = Math.max(0, Math.floor(cy - TOUCH_RADIUS));
+		const r1 = Math.min(rows - 1, Math.ceil(cy + TOUCH_RADIUS));
+		const c0 = Math.max(0, Math.floor(cx - rx));
+		const c1 = Math.min(cols - 1, Math.ceil(cx + rx));
+		for (let r = r0; r <= r1; r++) {
+			for (let c = c0; c <= c1; c++) {
+				const d = Math.hypot((c + 0.5 - cx) * aspect, r + 0.5 - cy) / TOUCH_RADIUS;
+				const x = Math.min(1, Math.max(0, (d - 0.2) / 0.8));
+				const value = weight * (1 - x * x * (3 - 2 * x));
+				const i = r * cols + c;
+				if (value > touchGrid[i]) touchGrid[i] = value;
+			}
+		}
+	}
+
+	/** Apaga um pouco o rastro, marca o caminho do cursor e envia para a placa de vídeo. */
+	function updateTouch(dt: number) {
+		if (!touchLit && !cursor.inside) return;
+		const fade = dt / TRAIL_LIFE;
+		let lit = false;
+		for (let i = 0; i < touchGrid.length; i++) {
+			if (touchGrid[i] <= 0) continue;
+			touchGrid[i] = Math.max(0, touchGrid[i] - fade);
+			if (touchGrid[i] > 0) lit = true;
+		}
+		if (cursor.inside) {
+			const cx = (cursor.x * dpr) / cellW;
+			const cy = (cursor.y * dpr) / cellH;
+			if (cursor.moved && cursor.px >= 0) {
+				// Marca o caminho inteiro desde o último quadro: rastro contínuo, sem buracos.
+				const length = Math.hypot((cx - cursor.px) * (cellW / cellH), cy - cursor.py);
+				const steps = Math.max(1, Math.ceil(length / 0.5));
+				for (let k = 1; k <= steps; k++) {
+					stamp(cursor.px + ((cx - cursor.px) * k) / steps, cursor.py + ((cy - cursor.py) * k) / steps, 1);
+				}
+			} else stamp(cx, cy, cursor.moved ? 1 : TOUCH_REST);
+			cursor.px = cx;
+			cursor.py = cy;
+			cursor.moved = false;
+			lit = true;
+		}
+		for (let i = 0; i < touchGrid.length; i++) touchBytes[i] = touchGrid[i] * 255;
+		uploadTouch();
+		touchLit = lit;
 	}
 
 	/** Desenha todas as letras numa tira, uma por casa, no tamanho real da tela. */
@@ -325,6 +370,12 @@ export function initAscii(canvas: HTMLCanvasElement) {
 		canvas.height = height;
 		cols = Math.ceil(width / cellW);
 		rows = Math.ceil(height / cellH);
+		// Rastro do mouse do tamanho da grade nova (começa apagado).
+		touchGrid = new Float32Array(cols * rows);
+		touchBytes = new Uint8Array(cols * rows);
+		touchLit = false;
+		cursor.px = -1;
+		uploadTouch();
 		gl!.bindTexture(gl!.TEXTURE_2D, cellsTexture);
 		gl!.texImage2D(gl!.TEXTURE_2D, 0, gl!.RGBA, cols, rows, 0, gl!.RGBA, gl!.UNSIGNED_BYTE, null);
 		gl!.bindFramebuffer(gl!.FRAMEBUFFER, cellsBuffer);
@@ -340,9 +391,10 @@ export function initAscii(canvas: HTMLCanvasElement) {
 		gl!.uniform1f(cellsUniforms.time, time);
 		gl!.uniform1f(cellsUniforms.scroll, reducedMotion ? 0 : window.scrollY / CELL_H);
 		gl!.uniform1f(cellsUniforms.aspect, cellW / cellH);
-		updateTrail();
-		gl!.uniform3fv(cellsUniforms.trail, trailData);
-		gl!.uniform1f(cellsUniforms.touchRadius, TOUCH_RADIUS);
+		gl!.activeTexture(gl!.TEXTURE2);
+		gl!.bindTexture(gl!.TEXTURE_2D, touchTexture);
+		gl!.uniform1i(cellsUniforms.touch, 2);
+		gl!.uniform2f(cellsUniforms.gridSize, cols, rows);
 		gl!.drawArrays(gl!.TRIANGLES, 0, 3);
 
 		// 2) A tela inteira, copiando as letras da tira.
@@ -376,6 +428,7 @@ export function initAscii(canvas: HTMLCanvasElement) {
 		if (last && dt < 1 / 32 && !scrolled) return;
 		last = now;
 		time += Math.min(dt, 0.1);
+		updateTouch(Math.min(dt, 0.1));
 		draw();
 	}
 
@@ -410,17 +463,15 @@ export function initAscii(canvas: HTMLCanvasElement) {
 				cursor.x = event.clientX;
 				cursor.y = event.clientY;
 				cursor.inside = true;
-				const now = performance.now() / 1000;
-				const lastPoint = trail[trail.length - 1];
-				if (!lastPoint || Math.hypot(cursor.x - lastPoint.x, cursor.y - lastPoint.y) > 12 || now - lastPoint.at > 0.05) {
-					trail.push({ x: cursor.x, y: cursor.y, at: now });
-					if (trail.length > TRAIL * 2) trail.shift();
-				}
+				cursor.moved = true;
 				scrolled = true;
 			},
 			{ passive: true },
 		);
-		document.documentElement.addEventListener('pointerleave', () => (cursor.inside = false));
+		document.documentElement.addEventListener('pointerleave', () => {
+			cursor.inside = false;
+			cursor.px = -1;
+		});
 	}
 	window.addEventListener(
 		'scroll',
