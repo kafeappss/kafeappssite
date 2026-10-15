@@ -25,23 +25,12 @@ const whatsapp = whatsappLink();
 		<h2 class="h1" data-split set:html={title} />
 		<p class="lead" data-reveal style="--delay: 0.2s">{lead}</p>
 		<div class="btn-row" data-reveal style="--delay: 0.3s">
-			<a class="btn" href={site.contact.briefUrl} data-mascot-look="tap">Começar meu projeto <Icon name="arrow" class="arrow" /></a>
-			{
-				whatsapp ? (
-					<a class="btn btn-ghost" href={whatsapp} target="_blank" rel="noopener" data-mascot-look="tap">
-						<Icon name="whatsapp" size={20} /> Chamar no WhatsApp
-					</a>
-				) : (
-					site.contact.email && (
-						<a class="btn btn-ghost" href={`mailto:${site.contact.email}`}>
-							<Icon name="mail" size={20} /> {site.contact.email}
-						</a>
-					)
-				)
-			}
+			<a class="btn" href={whatsapp} target="_blank" rel="noopener" data-mascot-look="tap">
+				<Icon name="whatsapp" size={20} /> Começar meu projeto
+			</a>
 		</div>
 		<p class="cta-note" data-reveal style="--delay: 0.4s">
-			Pré-orçamento em poucos minutos com a <strong>Kafeína</strong>, a assistente de IA da Kafé.
+			Prefere estimar antes? Faça um <a href={site.contact.briefUrl}>pré-orçamento com a <strong>Kafeína</strong></a>.
 		</p>
 		<!-- Raios de luz subindo da borda de baixo do painel (src/scripts/rays.ts). -->
 		<div class="cta-rays" aria-hidden="true">
@@ -151,5 +140,11 @@ const whatsapp = whatsappLink();
 	.cta-note strong {
 		font-weight: 600;
 		color: #fff;
+	}
+
+	.cta-note a {
+		color: inherit;
+		text-decoration: underline;
+		text-underline-offset: 0.2em;
 	}
 </style>

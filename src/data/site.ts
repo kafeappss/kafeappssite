@@ -40,11 +40,11 @@ export const site = {
 		email: 'contato@kafeapps.com.br',
 		/**
 		 * TODO: número de WhatsApp só com dígitos, com DDI e DDD (ex.: 5547999999999).
-		 * Enquanto estiver vazio, o botão flutuante de WhatsApp não aparece.
+		 * Usado nos CTAs e links diretos de contato com o WhatsApp.
 		 */
-		whatsapp: '',
+		whatsapp: '5547996196940',
 		/** Ex.: "(47) 99999-9999". Exibido no rodapé e na página de contato. */
-		phoneDisplay: '',
+		phoneDisplay: '+55 (47) 99619-6940',
 		/**
 		 * Endereço que recebe o formulário de contato (ex.: Formspree, Web3Forms,
 		 * Getform ou um endpoint próprio). Vazio = o formulário abre o WhatsApp

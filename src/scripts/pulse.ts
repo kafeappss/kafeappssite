@@ -11,7 +11,6 @@
  *
  * O primeiro pulso vem logo depois que o título aparece; os outros, a cada
  * poucos segundos enquanto a frase está na tela, e de novo ao passar o mouse.
- * Com "reduzir movimento", não há pulso (a frase fica como as outras).
  */
 
 /** Duração de uma passada e intervalo entre o começo de uma e da próxima, em ms. */
@@ -21,14 +20,10 @@ const EVERY = 4000;
 const TAIL = 1.15;
 const TAIL_MIN = 240;
 
-const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
 /** Sai devagar, acelera no meio e freia no fim. */
 const ease = (t: number) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
 
 function setup(box: HTMLElement) {
-	if (reduced) return;
-
 	// Cópias da frase (com as mesmas palavras, para quebrar a linha no mesmo lugar).
 	const source = Array.from(box.childNodes);
 	const layer = (name: string) => {

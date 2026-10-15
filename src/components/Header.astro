@@ -55,7 +55,7 @@ const whatsapp = whatsappLink();
 		</nav>
 
 		<div class:list={['header-actions', { 'has-mini': !site.mascot }]}>
-			<a class="btn btn-sm header-cta" href="/contato" data-mascot-look="tap">
+			<a class="btn btn-sm header-cta" href={whatsapp} target="_blank" rel="noopener" data-mascot-look="tap">
 				Fale com a gente <Icon name="arrow" class="arrow" />
 			</a>
 			{/* Lugar do mascotinho (MiniMascot.astro), que fica fixo por cima deste espaço. */}
@@ -91,14 +91,12 @@ const whatsapp = whatsappLink();
 				</ul>
 			</nav>
 			<div class="mobile-foot">
-				<a class="btn" href={site.contact.briefUrl}>Começar meu projeto <Icon name="arrow" class="arrow" /></a>
-				{
-					whatsapp && (
-						<a class="btn btn-ghost" href={whatsapp} target="_blank" rel="noopener">
-							<Icon name="whatsapp" size={20} /> WhatsApp
-						</a>
-					)
-				}
+				<a class="btn" href={whatsapp} target="_blank" rel="noopener">
+					<Icon name="whatsapp" size={20} /> Fale com a gente
+				</a>
+				<a class="btn btn-ghost" href={site.contact.briefUrl}>
+					Pré-orçamento com a Kafeína <Icon name="arrow" class="arrow" />
+				</a>
 				<ul role="list" class="mobile-social">
 					{
 						site.social.map((social) => (

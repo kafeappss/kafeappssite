@@ -42,7 +42,6 @@ type AiSummary = {
 const form = document.querySelector<HTMLFormElement>('[data-kf-form]');
 
 if (form) {
-	const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 	const steps = Array.from(form.querySelectorAll<HTMLElement>('[data-step]'));
 	const dots = Array.from(document.querySelectorAll<HTMLElement>('[data-kf-dot]'));
 	const back = form.querySelector<HTMLButtonElement>('[data-kf-back]')!;
@@ -121,7 +120,7 @@ if (form) {
 			legend.focus({ preventScroll: true });
 		}
 		const top = form!.getBoundingClientRect().top + window.scrollY - 140;
-		if (window.scrollY > top) window.scrollTo({ top, behavior: reduced ? 'auto' : 'smooth' });
+		if (window.scrollY > top) window.scrollTo({ top, behavior: 'smooth' });
 	}
 
 	function showError(message: string, fields: Element[] = []) {
@@ -426,7 +425,7 @@ if (form) {
 		const items = Array.from(thinking.querySelectorAll('li'));
 		items.forEach((item) => item.removeAttribute('data-on'));
 		items.forEach((item, index) => window.setTimeout(() => item.setAttribute('data-on', ''), 350 + index * 650));
-		const minimum = new Promise((resolve) => window.setTimeout(resolve, reduced ? 300 : 2300));
+		const minimum = new Promise((resolve) => window.setTimeout(resolve, 2300));
 		const [{ ai, delivered }] = await Promise.all([send(data), minimum]);
 		render(data, result, ai, delivered);
 		thinking.hidden = true;

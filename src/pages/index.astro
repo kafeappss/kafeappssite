@@ -16,7 +16,7 @@ import CtaSection from '../components/CtaSection.astro';
 import Icon from '../components/Icon.astro';
 import { services } from '../data/services';
 import { aiPillars, engagementModels, faq } from '../data/method';
-import { differentials, productTypes, site, stats, technologies } from '../data/site';
+import { differentials, productTypes, site, stats, technologies, whatsappLink } from '../data/site';
 
 const posts = (await getCollection('blog', ({ data }) => !data.draft))
 	.sort((a, b) => b.data.date.getTime() - a.data.date.getTime() || a.data.title.localeCompare(b.data.title))
@@ -88,7 +88,7 @@ const capabilities = [
 				<!-- <span class="hero-lead-more">Do MVP ao produto em escala, sem desperdício.</span> -->
 				</p>
 				<div class="btn-row" data-reveal style="--delay: 0.5s">
-					<a class="btn" href={site.contact.briefUrl} data-mascot-look="nod">
+					<a class="btn" href={whatsappLink()} target="_blank" rel="noopener" data-mascot-look="nod">
 						Tirar minha ideia do papel <Icon name="arrow" class="arrow" />
 					</a>
 					<a class="btn btn-ghost" href="#servicos" data-mascot-look="look">Ver o que fazemos</a>
@@ -216,11 +216,11 @@ const capabilities = [
 						</a>
 					))
 				}
-				<a href={site.contact.briefUrl} class="svc svc-cta span-2" data-reveal style="--delay: 0.16s">
+				<a href={whatsappLink()} target="_blank" rel="noopener" class="svc svc-cta span-2" data-reveal style="--delay: 0.16s">
 					<span class="svc-num label">Não sabe por onde começar?</span>
-					<p class="svc-title">Monte um pré-orçamento com a Kafeína, nossa IA.</p>
+					<p class="svc-title">Vamos conversar sobre a sua ideia pelo WhatsApp.</p>
 					<span class="svc-more">
-						Começar agora <Icon name="arrow" size={18} />
+						Fale com a gente <Icon name="arrow" size={18} />
 					</span>
 				</a>
 			</div>

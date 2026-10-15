@@ -6,7 +6,7 @@
  * Desenho em duas etapas, em WebGL: primeiro uma textura pequena, com um pixel
  * por letra (brilho, cor e qual letra), e depois a tela inteira, copiando cada
  * letra de uma tira de letras desenhada uma vez no início. Assim o fundo pesa
- * quase nada. Sem WebGL fica o fundo liso; com "reduzir movimento", parado.
+ * quase nada. Sem WebGL fica o fundo liso.
  *
  * As letras ficam mais fortes no topo da página (o elemento marcado com
  * data-ascii-strong: o início da home, o topo das páginas internas) e mais
@@ -206,7 +206,6 @@ function texture(gl: WebGLRenderingContext) {
 }
 
 export function initAscii(canvas: HTMLCanvasElement) {
-	const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 	const gl = canvas.getContext('webgl', {
 		alpha: false,
 		antialias: false,
@@ -389,7 +388,7 @@ export function initAscii(canvas: HTMLCanvasElement) {
 		gl!.viewport(0, 0, cols, rows);
 		gl!.useProgram(cellsProgram);
 		gl!.uniform1f(cellsUniforms.time, time);
-		gl!.uniform1f(cellsUniforms.scroll, reducedMotion ? 0 : window.scrollY / CELL_H);
+		gl!.uniform1f(cellsUniforms.scroll, window.scrollY / CELL_H);
 		gl!.uniform1f(cellsUniforms.aspect, cellW / cellH);
 		gl!.activeTexture(gl!.TEXTURE2);
 		gl!.bindTexture(gl!.TEXTURE_2D, touchTexture);
@@ -433,7 +432,7 @@ export function initAscii(canvas: HTMLCanvasElement) {
 	}
 
 	function start() {
-		if (frame || reducedMotion || document.hidden) return;
+		if (frame || document.hidden) return;
 		last = 0;
 		frame = requestAnimationFrame(loop);
 	}
@@ -455,7 +454,7 @@ export function initAscii(canvas: HTMLCanvasElement) {
 		draw();
 	}).observe(canvas);
 	document.addEventListener('visibilitychange', () => (document.hidden ? stop() : start()));
-	if (fineMouse && !reducedMotion) {
+	if (fineMouse) {
 		window.addEventListener(
 			'pointermove',
 			(event) => {

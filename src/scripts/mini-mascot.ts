@@ -94,7 +94,6 @@ const tip = panelNode?.querySelector<HTMLElement>('[data-mini-tip]');
 const tipEyes = panelNode?.querySelector<HTMLElement>('[data-mini-tip-eyes]');
 
 if (root && face && bubble && panelNode && eyes.length === 2) {
-	const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 	const fine = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 	const sadPage = document.querySelector('[data-mascot-mood="sad"]') !== null;
 	const helperPage = document.querySelector('[data-mascot-mood="helper"]') !== null;
@@ -125,7 +124,6 @@ if (root && face && bubble && panelNode && eyes.length === 2) {
 	};
 
 	const play = (anim: Anim) => {
-		if (reduced) return;
 		delete root.dataset.anim;
 		// Força o navegador a recomeçar a animação, mesmo se for a mesma.
 		void root.offsetWidth;
@@ -159,7 +157,7 @@ if (root && face && bubble && panelNode && eyes.length === 2) {
 
 	// Piscadas.
 	const blink = () => {
-		if (!reduced && (mood === 'idle' || mood === 'happy' || mood === 'star')) {
+		if (mood === 'idle' || mood === 'happy' || mood === 'star') {
 			root.dataset.blink = '';
 			setTimeout(() => delete root.dataset.blink, 130);
 		}
@@ -194,7 +192,7 @@ if (root && face && bubble && panelNode && eyes.length === 2) {
 	window.addEventListener(
 		'pointermove',
 		(event) => {
-			if (event.pointerType !== 'mouse' || reduced || looking) return;
+			if (event.pointerType !== 'mouse' || looking) return;
 			const rect = face.getBoundingClientRect();
 			const dx = event.clientX - (rect.left + rect.width / 2);
 			const dy = event.clientY - (rect.top + rect.height / 2);
@@ -209,7 +207,7 @@ if (root && face && bubble && panelNode && eyes.length === 2) {
 
 	// Celular (sem mouse): de vez em quando, uma olhadinha de leve para um lado
 	// (às vezes para os dois), e um olhar rápido para onde a pessoa toca.
-	if (!fine && !reduced) {
+	if (!fine) {
 		const setLook = (x: number, y: number) => {
 			root.style.setProperty('--look-x', `${x.toFixed(2)}px`);
 			root.style.setProperty('--look-y', `${y.toFixed(2)}px`);

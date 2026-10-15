@@ -57,8 +57,6 @@ const COLORS: [number, number, number][] = [
 ];
 
 const SVG = 'http://www.w3.org/2000/svg';
-const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
 const smooth = (value: number) => {
 	const x = Math.min(1, Math.max(0, value));
 	return x * x * (3 - 2 * x);
@@ -240,7 +238,7 @@ export function initOrbit(root: HTMLElement) {
 	};
 
 	const start = () => {
-		if (frame || reduced || !visible || document.hidden) return;
+		if (frame || !visible || document.hidden) return;
 		last = 0;
 		frame = requestAnimationFrame(loop);
 	};
