@@ -57,6 +57,24 @@ const { service, index } = Astro.props;
 		border: 1px solid rgb(var(--fg-rgb) / 0.12);
 	}
 
+	/* Tema claro: o ícone num quadrado com o tom da marca, que vira índigo com o mouse. */
+	:global(html[data-theme='claro']) .service-icon {
+		border-radius: 14px;
+		color: var(--accent);
+		background: var(--accent-tint);
+		border-color: rgb(var(--brand-rgb) / 0.14);
+		transition:
+			background-color 0.35s ease,
+			color 0.35s ease,
+			transform 0.5s var(--ease-out);
+	}
+
+	:global(html[data-theme='claro']) .service-card:hover .service-icon {
+		color: #fff;
+		background: var(--accent);
+		transform: rotate(-6deg) scale(1.06);
+	}
+
 	.service-num {
 		font-size: var(--fs-xs);
 		color: var(--text-dim);

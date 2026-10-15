@@ -3,12 +3,17 @@ import Base from '../layouts/Base.astro';
 import Icon from '../components/Icon.astro';
 import Mascot from '../components/Mascot.astro';
 import Planet from '../components/Planet.astro';
+import GradientBand from '../components/GradientBand.astro';
 import { site } from '../data/site';
 ---
 
 <Base title="Página não encontrada" description="A página que você procura não existe ou mudou de endereço." noindex>
 	<!-- O mascote aparece tristinho aqui (data-mascot-mood="sad") e tenta animar a pessoa. -->
-	<section class="not-found" data-liquid="mascot" data-mascot-mood="sad">
+	<section
+		class:list={['not-found', { 'nf-panel': !site.mascot && site.theme === 'claro' }]}
+		data-liquid="mascot"
+		data-mascot-mood="sad"
+	>
 		<div class="container nf-inner">
 			<div class="nf-copy">
 				<p class="eyebrow" data-reveal>Erro 404</p>
@@ -35,13 +40,15 @@ import { site } from '../data/site';
 							</span>
 						</button>
 					</div>
-				) : (
+				) : site.theme === 'escuro' ? (
 					<div class="nf-stage nf-space">
 						<Planet class="nf-planet" />
 					</div>
-				)
+				) : null
 			}
 		</div>
+		<!-- Tema claro: o mesmo degradê fluido do topo da home. -->
+		{!site.mascot && site.theme === 'claro' && <GradientBand class="nf-gradient" />}
 		{site.mascot && <Mascot />}
 	</section>
 </Base>
@@ -105,5 +112,35 @@ import { site } from '../data/site';
 
 	.not-found .lead {
 		max-width: 520px;
+	}
+
+	.nf-panel {
+		position: relative;
+		isolation: isolate;
+		margin: 10px;
+		border-radius: 28px;
+		overflow: hidden;
+	}
+
+	.nf-panel .nf-inner {
+		position: relative;
+		z-index: 1;
+	}
+
+	.nf-panel :global(.nf-gradient) {
+		position: absolute;
+		inset: 0;
+		z-index: 0;
+	}
+
+	.nf-panel .btn-ghost {
+		background: rgb(255 255 255 / 0.55);
+	}
+
+	@media (max-width: 639px) {
+		.nf-panel {
+			margin: 6px;
+			border-radius: 22px;
+		}
 	}
 </style>

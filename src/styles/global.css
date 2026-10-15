@@ -473,6 +473,23 @@ ol[role='list'] {
    No tema escuro essas classes não mudam nada.
    -------------------------------------------------------------------------- */
 
+/* Cartões no claro: brancos e limpos; a luz do cursor só aparece com o mouse
+   por cima, em índigo bem fraco, e o cartão ganha sombra. */
+html[data-theme='claro'] .card {
+	background: var(--card-bg);
+}
+
+html[data-theme='claro'] .card:hover {
+	background:
+		radial-gradient(420px circle at var(--mx) var(--my), rgb(var(--brand-rgb) / 0.06), transparent 60%),
+		var(--card-bg);
+	box-shadow: var(--shadow-md);
+}
+
+html[data-theme='claro'] .card::before {
+	background: radial-gradient(260px circle at var(--mx) var(--my), rgb(var(--brand-rgb) / 0.55), transparent 70%);
+}
+
 html[data-theme='claro'] .tone-white {
 	background: var(--bg-level-1);
 	border-block: 1px solid var(--line);
