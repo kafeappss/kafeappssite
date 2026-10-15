@@ -1,6 +1,5 @@
 ---
 import Icon from './Icon.astro';
-import Figure from './Figure.astro';
 import { site, whatsappLink } from '../data/site';
 
 interface Props {
@@ -19,7 +18,8 @@ const {
 const whatsapp = whatsappLink();
 ---
 
-<section class="section cta" data-liquid="cup bottom" data-rail={rail}>
+<!-- O mascote descansa nos cantos enquanto o convite está na tela (data-liquid="rest"). -->
+<section class="section cta" data-liquid="rest" data-rail={rail}>
 	<div class="container cta-inner">
 		<p class="eyebrow" data-reveal>Próximo passo</p>
 		<h2 class="h1" data-split set:html={title} />
@@ -43,20 +43,31 @@ const whatsapp = whatsappLink();
 		<p class="cta-note" data-reveal style="--delay: 0.4s">
 			Pré-orçamento em poucos minutos com a <strong>Kafeína</strong>, a assistente de IA da Kafé.
 		</p>
-		<!-- Com o mascote, o líquido desenha a xícara aqui; sem ele, aparece o pré-orçamento. -->
-		{
-			site.mascot ? (
-				<div class="cta-cup" data-liquid-anchor aria-hidden="true" />
-			) : (
-				<Figure name="orcamento" class="cta-figure" />
-			)
-		}
+		<!-- Raios de luz subindo da borda de baixo do painel (src/scripts/rays.ts). -->
+		<div class="cta-rays" aria-hidden="true">
+			<canvas data-rays></canvas>
+		</div>
 	</div>
 </section>
 
+<script>
+	import { initRays } from '../scripts/rays';
+
+	document.querySelectorAll<HTMLCanvasElement>('[data-rays]').forEach((canvas) => initRays(canvas));
+</script>
+
 <style>
+	/* Painel índigo, solto das bordas da tela, com os raios de luz subindo da
+	   borda de baixo (como o convite final da AbacatePay). */
 	.cta {
-		padding-block: clamp(120px, 14vw, 220px) clamp(40px, 5vw, 80px);
+		isolation: isolate;
+		overflow: hidden;
+		margin: 10px;
+		padding-block: clamp(96px, 11vw, 168px) 0;
+		border-radius: 28px;
+		background:
+			radial-gradient(80% 60% at 50% 100%, rgb(167 139 250 / 0.45), transparent 70%),
+			linear-gradient(180deg, #2b2d8f 0%, #4045c8 55%, #5b5fe0 100%);
 	}
 
 	.cta-inner {
@@ -68,10 +79,24 @@ const whatsapp = whatsappLink();
 
 	.cta h2 {
 		max-width: 19ch;
+		color: #fff;
+	}
+
+	.cta h2 :global(em) {
+		color: rgb(255 255 255 / 0.66);
 	}
 
 	.cta .lead {
 		max-width: 560px;
+		color: rgb(255 255 255 / 0.82);
+	}
+
+	.cta .eyebrow {
+		color: rgb(255 255 255 / 0.82);
+	}
+
+	.cta .eyebrow::before {
+		background: #fff;
 	}
 
 	.cta .btn-row {
@@ -79,19 +104,52 @@ const whatsapp = whatsappLink();
 		margin-top: 10px;
 	}
 
-	.cta-cup {
+	/* Botões claros sobre o índigo. */
+	.cta .btn:not(.btn-ghost) {
+		--btn-bg: #fff;
+		--btn-fg: #1e1f6b;
+	}
+
+	.cta .btn:not(.btn-ghost)::before {
+		background: #eef0ff;
+	}
+
+	.cta .btn-ghost {
+		--btn-fg: #fff;
+		border-color: rgb(255 255 255 / 0.35);
+		background: rgb(255 255 255 / 0.08);
+	}
+
+	.cta-rays {
+		position: relative;
 		justify-self: stretch;
-		height: clamp(150px, 18vw, 230px);
-		margin-top: 12px;
+		height: clamp(220px, 26vw, 360px);
+		margin-top: clamp(8px, 2vw, 24px);
+		margin-inline: calc(-1 * var(--gutter));
+		pointer-events: none;
+	}
+
+	.cta-rays canvas {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+	}
+
+	@media (max-width: 639px) {
+		.cta {
+			margin: 6px;
+			border-radius: 22px;
+		}
 	}
 
 	.cta-note {
 		font-size: var(--fs-small);
-		color: var(--text-dim);
+		color: rgb(255 255 255 / 0.72);
 	}
 
 	.cta-note strong {
 		font-weight: 600;
-		color: var(--text-muted);
+		color: #fff;
 	}
 </style>
