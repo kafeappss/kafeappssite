@@ -626,26 +626,43 @@ const capabilities = [
 		/*
 		 * Sem o mascote: a abertura fica só do tamanho do conteúdo (o começo da
 		 * próxima parte aparece embaixo e convida a rolar), com menos texto: só a
-		 * primeira frase do texto de apoio, e os selos (que reaparecem mais abaixo
-		 * na página) ficam só no computador.
+		 * primeira frase do texto de apoio.
 		 */
 		.hero-solo {
 			min-height: auto;
-			padding-top: calc(var(--header-h) + 40px);
-			padding-bottom: 56px;
+			padding-top: calc(var(--header-h) + 28px);
+			padding-bottom: 40px;
 		}
 
-		.hero-solo .hero-lead-more,
-		.hero-solo .hero-proof {
+		.hero-solo .hero-inner {
+			gap: 14px;
+		}
+
+		.hero-solo .hero-lead {
+			margin-top: 2px;
+		}
+
+		.hero-solo .hero-lead-more {
 			display: none;
+		}
+
+		/* Os selos, mais juntinhos, logo abaixo dos botões. */
+		.hero-solo .hero-proof {
+			gap: 8px 18px;
+			margin-top: 4px;
+			font-size: var(--fs-xs);
 		}
 	}
 
 	/* Celular baixinho: menos respiro, para a próxima parte ainda aparecer. */
 	@media (max-aspect-ratio: 9/10) and (max-height: 720px) {
 		.hero-solo {
-			padding-top: calc(var(--header-h) + 18px);
-			padding-bottom: 36px;
+			padding-top: calc(var(--header-h) + 12px);
+			padding-bottom: 26px;
+		}
+
+		.hero-solo .hero-title {
+			font-size: 2.75rem;
 		}
 	}
 
